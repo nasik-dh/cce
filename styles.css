@@ -1478,3 +1478,40 @@ nav .flex {
     max-height: 60vh;
     overflow-y: auto;
 }
+
+/* Ensure task items display properly in expanded cards */
+.subject-card .subject-tasks {
+    display: none;
+    animation: slideDown 0.3s ease-out;
+}
+
+.subject-card.expanded .subject-tasks {
+    display: block;
+}
+
+/* Task item styling improvements */
+.task-item {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.task-item:hover {
+    border-color: #059669;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Subject card hover effects */
+.subject-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.subject-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
