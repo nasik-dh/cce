@@ -1378,3 +1378,61 @@ nav .flex {
     align-items: center;
     gap: 12px;
 }
+
+/* Add to existing CSS */
+.rotate-180 {
+    transform: rotate(180deg);
+}
+
+/* Ensure task items display properly */
+.task-item {
+    transition: all 0.3s ease;
+}
+
+.task-item.overdue {
+    border-left: 4px solid #ef4444;
+}
+
+.task-item.due-today {
+    border-left: 4px solid #f59e0b;
+}
+
+.task-item.completed {
+    border-left: 4px solid #22c55e;
+}
+
+/* Admin task assignment styles */
+.assignment-task-card {
+    transition: all 0.3s ease;
+    border: 1px solid #e5e7eb;
+}
+
+.assignment-task-card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.assignment-task-card.completed {
+    background-color: #f0fdf4;
+    border-color: #22c55e;
+}
+
+.assignment-task-card.overdue {
+    background-color: #fef2f2;
+    border-color: #ef4444;
+}
+
+/* Responsive design for admin tasks */
+@media (max-width: 768px) {
+    .admin-tasks-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-row {
+        flex-direction: column;
+    }
+    
+    .filter-group {
+        min-width: 100%;
+    }
+}
