@@ -610,52 +610,39 @@ async function showPage(page) {
 // =============================
 // ✅ Optimized Tasks (UPDATED FOR CLASS-BASED SYSTEM)
 // =============================
-// Updated loadTasks function for class-based task system
+// =============================
+// ✅ Optimized Tasks (UPDATED FOR CLASS-BASED SYSTEM)
+// =============================
 async function loadTasks() {
-    const subjectCards = document.getElementById('subjectCards');
-    const userClassElement = document.getElementById('userClass');
+    const tasksContainer = document.getElementById('subjectCards');
     
     // Show loading state
-    subjectCards.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading tasks...</div>';
+    tasksContainer.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin mr-2"></i>Loading your tasks...</div>';
 
     try {
         // For students, load tasks based on their class
         if (currentUser.role === 'student') {
             if (!currentUser.class) {
-                subjectCards.innerHTML = '<p class="text-gray-500">No class assigned. Please contact administrator.</p>';
-                userClassElement.textContent = 'No Class Assigned';
+                tasksContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No class assigned. Please contact administrator.</p>';
+                document.getElementById('userClass').textContent = 'Class: Not Assigned';
                 return;
             }
             
             // Update class info display
-            userClassElement.textContent = `Class ${currentUser.class}`;
+            document.getElementById('userClass').textContent = `Class ${currentUser.class}`;
             
             const tasksSheetName = `${currentUser.class}_tasks_master`;
-            console.log('Loading tasks from:', tasksSheetName);
-            
             const [tasks, progress] = await Promise.all([
                 api.getSheet(tasksSheetName),
                 api.getSheet(`${currentUser.username}_progress`)
             ]);
             
-            console.log('Tasks loaded:', tasks);
-            console.log('Progress loaded:', progress);
-            
-            subjectCards.innerHTML = '';
+            tasksContainer.innerHTML = '';
 
-            if (!tasks || tasks.error || !Array.isArray(tasks) || tasks.length === 0) {
-                subjectCards.innerHTML = `
-                    <div class="text-center py-8 text-gray-500">
-                        <i class="fas fa-clipboard-list text-4xl mb-4 opacity-50"></i>
-                        <p class="text-lg mb-2">No tasks found for Class ${currentUser.class}</p>
-                        <p class="text-sm">Contact your administrator if this seems incorrect.</p>
-                    </div>
-                `;
+            if (!tasks || tasks.error || tasks.length === 0) {
+                tasksContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No tasks found for your class.</p>';
                 return;
             }
-
-            // Ensure progress is an array
-            const progressArray = Array.isArray(progress) ? progress : [];
 
             // Group tasks by subject
             const tasksBySubject = {};
@@ -674,7 +661,7 @@ async function loadTasks() {
             // Create subject cards
             Object.entries(tasksBySubject).forEach(([subject, subjectTasks]) => {
                 const completedCount = subjectTasks.filter(task => {
-                    const userTask = progressArray.find(p => 
+                    const userTask = progress.find(p => 
                         String(p.item_id) === String(task.task_id) && 
                         p.item_type === "task" && 
                         p.status === "complete"
@@ -682,124 +669,162 @@ async function loadTasks() {
                     return !!userTask;
                 }).length;
 
+                const progressPercentage = subjectTasks.length > 0 ? Math.round((completedCount / subjectTasks.length) * 100) : 0;
+
                 const subjectCard = document.createElement('div');
                 subjectCard.className = 'subject-card';
-                subjectCard.id = `subject-${subject.replace(/\s+/g, '-').toLowerCase()}`;
+                subjectCard.setAttribute('data-subject', subject);
                 
                 subjectCard.innerHTML = `
-                    <div class="subject-header" onclick="toggleSubjectTasks('${subject}')">
+                    <div class="subject-header" onclick="toggleSubjectTasks('${subject.replace(/\s+/g, '-')}')">
                         <div class="subject-name">
                             <div class="subject-icon ${getSubjectIconClass(subject)}">
-                                <i class="fas ${getSubjectIcon(subject)}"></i>
+                                <i class="${getSubjectIcon(subject)}"></i>
                             </div>
                             <div>
-                                <span>${subject}</span>
-                                <div class="subject-description">Class ${currentUser.class} ${subject}</div>
+                                <h3>${subject}</h3>
+                                <div class="subject-description">${subjectTasks.length} tasks • ${completedCount} completed</div>
                             </div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="flex items-center space-x-3">
                             <div class="task-count-badge">
                                 <i class="fas fa-tasks"></i>
-                                ${completedCount}/${subjectTasks.length}
+                                ${subjectTasks.length}
                             </div>
-                            <div class="expand-indicator">
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
+                            <i class="fas fa-chevron-down expand-indicator" id="arrow-${subject.replace(/\s+/g, '-')}"></i>
                         </div>
                     </div>
                     
-                    <div class="subject-tasks" id="tasks-${subject.replace(/\s+/g, '-').toLowerCase()}">
-                        <div class="space-y-3">
-                            ${subjectTasks.map(task => {
-                                const userTask = progressArray.find(p => 
-                                    String(p.item_id) === String(task.task_id) && 
-                                    p.item_type === "task" && 
-                                    p.status === "complete"
-                                );
-                                const completed = !!userTask;
-                                
-                                const dueDate = new Date(task.due_date);
-                                dueDate.setHours(23, 59, 59, 999);
-                                const isOverdue = !completed && dueDate < today;
-                                const isDueToday = !completed && dueDate.toDateString() === today.toDateString();
-                                const isDueSoon = !completed && dueDate > today && dueDate <= new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000));
-
-                                let statusClass = '';
-                                let statusIcon = '';
-                                let statusText = '';
-                                
-                                if (completed) {
-                                    statusClass = 'completed';
-                                    statusIcon = '✓';
-                                    statusText = 'Completed';
-                                } else if (isOverdue) {
-                                    statusClass = 'overdue';
-                                    statusIcon = '⚠️';
-                                    statusText = 'Overdue';
-                                } else if (isDueToday) {
-                                    statusClass = 'due-today';
-                                    statusIcon = '🔔';
-                                    statusText = 'Due Today';
-                                } else if (isDueSoon) {
-                                    statusClass = 'due-soon';
-                                    statusIcon = '⏰';
-                                    statusText = 'Due Soon';
-                                } else {
-                                    statusClass = 'pending';
-                                    statusIcon = '📝';
-                                    statusText = 'Pending';
-                                }
-                                
-                                const dueDateFormatted = new Date(task.due_date).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric'
-                                });
-                                
-                                return `
-                                    <div class="task-item ${statusClass}">
-                                        <div class="task-status ${statusClass}">
-                                            <span>${statusIcon}</span>
-                                        </div>
-                                        <div class="task-id">${task.task_id}</div>
-                                        <div class="task-title">${task.title}</div>
-                                        <div class="task-description">${task.description}</div>
-                                        <div class="task-due-date ${statusClass}">
-                                            <i class="fas fa-calendar-alt"></i>
-                                            <span>Due: ${dueDateFormatted}</span>
-                                            <span class="ml-2 text-xs font-medium">(${statusText})</span>
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('')}
+                    <div class="subject-progress">
+                        <div class="flex justify-between text-sm text-gray-600 mb-2">
+                            <span>Progress</span>
+                            <span>${progressPercentage}%</span>
                         </div>
-                        
-                        <div class="subject-progress">
-                            <div class="progress-bar-container">
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: ${Math.round((completedCount / subjectTasks.length) * 100)}%"></div>
-                                </div>
-                                <div class="progress-text">${Math.round((completedCount / subjectTasks.length) * 100)}%</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progressPercentage}%"></div>
                             </div>
+                            <div class="progress-text">${completedCount}/${subjectTasks.length}</div>
                         </div>
+                    </div>
+                    
+                    <div class="subject-tasks" id="tasks-${subject.replace(/\s+/g, '-')}">
+                        ${subjectTasks.map(task => {
+                            const userTask = progress.find(p => 
+                                String(p.item_id) === String(task.task_id) && 
+                                p.item_type === "task" && 
+                                p.status === "complete"
+                            );
+                            const completed = !!userTask;
+                            
+                            const dueDate = new Date(task.due_date);
+                            dueDate.setHours(23, 59, 59, 999);
+                            const isOverdue = !completed && dueDate < today;
+                            const isDueToday = !completed && dueDate.toDateString() === today.toDateString();
+                            const isDueSoon = !completed && dueDate > today && dueDate <= new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000));
+
+                            let taskClass = 'task-item';
+                            let statusIcon = '';
+                            let dueDateClass = 'task-due-date';
+                            
+                            if (completed) {
+                                taskClass += ' completed';
+                                statusIcon = '<i class="fas fa-check-circle task-status completed"></i>';
+                            } else if (isOverdue) {
+                                taskClass += ' overdue';
+                                dueDateClass += ' overdue';
+                                statusIcon = '<i class="fas fa-exclamation-circle task-status"></i>';
+                            } else if (isDueToday) {
+                                taskClass += ' due-today';
+                                dueDateClass += ' due-today';
+                                statusIcon = '<i class="fas fa-clock task-status"></i>';
+                            } else {
+                                statusIcon = '<i class="fas fa-clock task-status pending"></i>';
+                            }
+
+                            const dueDateFormatted = new Date(task.due_date).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            });
+                            
+                            return `
+                                <div class="${taskClass}">
+                                    ${statusIcon}
+                                    <div class="task-id">${task.task_id}</div>
+                                    <div class="task-title ${isOverdue ? 'task-overdue-text' : ''}">${task.title}</div>
+                                    <div class="task-description ${isOverdue ? 'task-overdue-text' : ''}">${task.description}</div>
+                                    <div class="${dueDateClass}">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        Due: ${dueDateFormatted}
+                                        ${isOverdue ? ' (OVERDUE)' : isDueToday ? ' (TODAY)' : ''}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
                 `;
                 fragment.appendChild(subjectCard);
             });
 
-            subjectCards.appendChild(fragment);
+            tasksContainer.appendChild(fragment);
         }
         
     } catch (error) {
         console.error('Error loading tasks:', error);
-        subjectCards.innerHTML = `
-            <div class="text-center py-8 text-red-500">
-                <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
-                <p class="text-lg mb-2">Error loading tasks</p>
-                <p class="text-sm">${error.message}</p>
-            </div>
-        `;
-        userClassElement.textContent = 'Error';
+        tasksContainer.innerHTML = '<p class="text-red-500 text-center py-8">Error loading tasks. Please try again.</p>';
+    }
+}
+
+// Helper functions for subject icons
+function getSubjectIconClass(subject) {
+    const subjectLower = subject.toLowerCase();
+    if (subjectLower.includes('math')) return 'mathematics';
+    if (subjectLower.includes('english')) return 'english';
+    if (subjectLower.includes('urdu')) return 'urdu';
+    if (subjectLower.includes('arabic')) return 'arabic';
+    if (subjectLower.includes('science')) return 'science';
+    if (subjectLower.includes('islamic') || subjectLower.includes('quran')) return 'islamic';
+    if (subjectLower.includes('computer')) return 'computer';
+    if (subjectLower.includes('social')) return 'social';
+    if (subjectLower.includes('physics')) return 'physics';
+    if (subjectLower.includes('chemistry')) return 'chemistry';
+    if (subjectLower.includes('biology')) return 'biology';
+    if (subjectLower.includes('history')) return 'history';
+    if (subjectLower.includes('geography')) return 'geography';
+    return 'islamic';
+}
+
+function getSubjectIcon(subject) {
+    const subjectLower = subject.toLowerCase();
+    if (subjectLower.includes('math')) return 'fas fa-calculator';
+    if (subjectLower.includes('english')) return 'fas fa-language';
+    if (subjectLower.includes('urdu') || subjectLower.includes('arabic')) return 'fas fa-font';
+    if (subjectLower.includes('science')) return 'fas fa-flask';
+    if (subjectLower.includes('islamic') || subjectLower.includes('quran')) return 'fas fa-mosque';
+    if (subjectLower.includes('computer')) return 'fas fa-laptop';
+    if (subjectLower.includes('physics')) return 'fas fa-atom';
+    if (subjectLower.includes('chemistry')) return 'fas fa-vial';
+    if (subjectLower.includes('biology')) return 'fas fa-dna';
+    if (subjectLower.includes('history')) return 'fas fa-landmark';
+    if (subjectLower.includes('geography')) return 'fas fa-globe-asia';
+    return 'fas fa-book';
+}
+
+// Function to toggle subject task visibility
+function toggleSubjectTasks(subject) {
+    const subjectCard = document.querySelector(`[data-subject="${subject}"]`);
+    const tasksContainer = document.getElementById(`tasks-${subject.replace(/\s+/g, '-')}`);
+    const arrow = document.getElementById(`arrow-${subject.replace(/\s+/g, '-')}`);
+    
+    if (tasksContainer.classList.contains('hidden')) {
+        tasksContainer.classList.remove('hidden');
+        subjectCard.classList.add('expanded');
+        arrow.classList.add('rotate-180');
+    } else {
+        tasksContainer.classList.add('hidden');
+        subjectCard.classList.remove('expanded');
+        arrow.classList.remove('rotate-180');
     }
 }
 
@@ -2559,45 +2584,32 @@ async function loadAdminEvents() {
     }
 }
 
-// Updated Admin Tasks Management for class and subject based system
+// Admin Tasks Management (UPDATED FOR ADMIN TEACHING SUBJECTS)
 async function loadAdminTasks() {
-    console.log('Loading admin tasks...');
-    
     try {
-        // Load dropdowns first
-        await Promise.all([
-            loadAdminTaskClassDropdown(),
-            loadAdminTaskSubjectDropdown(),
-            loadAdminTaskStudentDropdown()
-        ]);
+        // Update admin teaching info
+        const teachingInfo = document.getElementById('teachingSubjects');
+        if (currentUser.subjects) {
+            teachingInfo.textContent = `Teaching: ${currentUser.subjects}`;
+        } else {
+            teachingInfo.textContent = 'No subjects assigned';
+        }
         
-        // Load admin teaching info
-        await loadAdminTeachingInfo();
+        // Load class dropdown
+        await loadAdminClassDropdown();
         
-        // Show default view initially
-        showAdminTasksDefaultView();
+        // Reset view
+        document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
+        document.getElementById('adminTasksDefaultView').classList.remove('hidden');
         
     } catch (error) {
         console.error('Error loading admin tasks:', error);
     }
 }
 
-// Load admin teaching info
-async function loadAdminTeachingInfo() {
-    const teachingInfoElement = document.getElementById('teachingSubjects');
-    
-    if (currentUser.role === 'admin' && currentUser.subjects) {
-        const subjects = currentUser.subjects.split(',').map(s => s.trim()).join(', ');
-        teachingInfoElement.textContent = `Teaching: ${subjects}`;
-    } else {
-        teachingInfoElement.textContent = 'No subjects assigned';
-    }
-}
-
-// Load class dropdown for admin tasks
-async function loadAdminTaskClassDropdown() {
+// Load class dropdown for admin
+async function loadAdminClassDropdown() {
     const classSelect = document.getElementById('adminTaskClassSelect');
-    
     classSelect.innerHTML = '<option value="">-- Select Class --</option>';
     
     // Add classes 1-10
@@ -2608,194 +2620,110 @@ async function loadAdminTaskClassDropdown() {
         classSelect.appendChild(option);
     }
     
-    // Add event listener
-    classSelect.addEventListener('change', handleAdminClassSelection);
-}
-
-// Load subject dropdown for admin tasks
-async function loadAdminTaskSubjectDropdown() {
-    const subjectSelect = document.getElementById('adminTaskSubjectSelect');
-    
-    // Initially disabled
-    subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
-    subjectSelect.disabled = true;
-}
-
-// Load student dropdown for admin tasks
-async function loadAdminTaskStudentDropdown() {
-    const studentSelect = document.getElementById('adminTaskStudentSelect');
-    
-    // Initially disabled
-    studentSelect.innerHTML = '<option value="">-- Select Student --</option>';
-    studentSelect.disabled = true;
+    // Add event listener for class selection
+    classSelect.onchange = handleAdminClassSelection;
 }
 
 // Handle class selection
 async function handleAdminClassSelection(event) {
-    const selectedClass = event.target.value;
+    const classNumber = event.target.value;
     const subjectSelect = document.getElementById('adminTaskSubjectSelect');
     
-    if (!selectedClass) {
+    if (!classNumber) {
         subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
         subjectSelect.disabled = true;
-        showAdminTasksDefaultView();
+        document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
+        document.getElementById('adminTasksDefaultView').classList.remove('hidden');
         return;
     }
     
-    // Enable and populate subject dropdown based on admin's subjects
-    subjectSelect.disabled = false;
-    subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
+    // Load subjects for the selected class
+    await loadAdminClassSubjects(classNumber);
+}
+
+// Load subjects for selected class
+async function loadAdminClassSubjects(classNumber) {
+    const subjectSelect = document.getElementById('adminTaskSubjectSelect');
+    subjectSelect.innerHTML = '<option value="">-- Loading Subjects... --</option>';
+    subjectSelect.disabled = true;
     
-    if (currentUser.subjects) {
-        const adminSubjects = currentUser.subjects.split(',').map(s => s.trim());
+    try {
+        const tasksSheetName = `${classNumber}_tasks_master`;
+        const tasks = await api.getSheet(tasksSheetName);
         
-        // Load tasks from the selected class to get available subjects
-        try {
-            const tasksSheetName = `${selectedClass}_tasks_master`;
-            const tasks = await api.getSheet(tasksSheetName);
-            
-            if (Array.isArray(tasks)) {
-                // Get unique subjects that match admin's teaching subjects
-                const availableSubjects = [...new Set(tasks
-                    .filter(task => task.subject && adminSubjects.some(adminSubject => 
-                        task.subject.toLowerCase().includes(adminSubject.toLowerCase())
-                    ))
-                    .map(task => task.subject)
-                )];
-                
-                availableSubjects.forEach(subject => {
-                    const option = document.createElement('option');
-                    option.value = subject;
-                    option.textContent = subject;
-                    subjectSelect.appendChild(option);
-                });
-                
-                if (availableSubjects.length === 0) {
-                    const option = document.createElement('option');
-                    option.value = '';
-                    option.textContent = '-- No subjects found for your teaching area --';
-                    option.disabled = true;
-                    subjectSelect.appendChild(option);
-                }
-            }
-        } catch (error) {
-            console.error('Error loading subjects for class:', error);
+        subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
+        
+        if (!tasks || tasks.error || !Array.isArray(tasks) || tasks.length === 0) {
             const option = document.createElement('option');
             option.value = '';
-            option.textContent = '-- Error loading subjects --';
-            option.disabled = true;
+            option.textContent = 'No subjects found';
             subjectSelect.appendChild(option);
+            return;
         }
+        
+        // Get unique subjects
+        const subjects = [...new Set(tasks.map(task => task.subject).filter(Boolean))];
+        
+        if (subjects.length === 0) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No subjects found';
+            subjectSelect.appendChild(option);
+            return;
+        }
+        
+        // Filter subjects based on admin's teaching subjects if available
+        let filteredSubjects = subjects;
+        if (currentUser.subjects) {
+            const adminSubjects = currentUser.subjects.split(',').map(s => s.trim().toLowerCase());
+            filteredSubjects = subjects.filter(subject => 
+                adminSubjects.some(adminSubject => 
+                    subject.toLowerCase().includes(adminSubject)
+                )
+            );
+        }
+        
+        // Add subjects to dropdown
+        filteredSubjects.forEach(subject => {
+            const option = document.createElement('option');
+            option.value = subject;
+            option.textContent = subject;
+            subjectSelect.appendChild(option);
+        });
+        
+        subjectSelect.disabled = false;
+        subjectSelect.onchange = () => handleAdminSubjectSelection(classNumber, subjectSelect.value);
+        
+    } catch (error) {
+        console.error('Error loading subjects:', error);
+        subjectSelect.innerHTML = '<option value="">-- Error Loading Subjects --</option>';
     }
-    
-    // Add event listener for subject selection
-    subjectSelect.onchange = handleAdminSubjectSelection;
 }
 
 // Handle subject selection
-async function handleAdminSubjectSelection(event) {
-    const selectedClass = document.getElementById('adminTaskClassSelect').value;
-    const selectedSubject = event.target.value;
-    
-    if (!selectedClass || !selectedSubject) {
-        showAdminTasksDefaultView();
+async function handleAdminSubjectSelection(classNumber, subject) {
+    if (!classNumber || !subject) {
+        document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
+        document.getElementById('adminTasksDefaultView').classList.remove('hidden');
         return;
     }
     
-    // Load students for the selected class
-    await loadStudentsForClass(selectedClass);
-    
-    // Show the class-subject view
-    showAdminTasksClassSubjectView(selectedClass, selectedSubject);
-}
-
-// Load students for selected class
-async function loadStudentsForClass(classNumber) {
-    const studentSelect = document.getElementById('adminTaskStudentSelect');
-    
-    try {
-        const users = await api.getSheet("user_credentials", false);
-        
-        studentSelect.innerHTML = '<option value="">-- Select Student --</option>';
-        studentSelect.disabled = false;
-        
-        if (Array.isArray(users)) {
-            const studentsInClass = users.filter(user => 
-                user.role !== 'admin' && 
-                user.class && 
-                String(user.class) === String(classNumber)
-            );
-            
-            studentsInClass.forEach(student => {
-                const option = document.createElement('option');
-                option.value = student.username;
-                option.textContent = `${student.full_name || student.username} (@${student.username})`;
-                studentSelect.appendChild(option);
-            });
-            
-            if (studentsInClass.length === 0) {
-                const option = document.createElement('option');
-                option.value = '';
-                option.textContent = `-- No students found in Class ${classNumber} --`;
-                option.disabled = true;
-                studentSelect.appendChild(option);
-            }
-        }
-        
-        // Add event listener for student selection
-        studentSelect.onchange = handleAdminStudentSelection;
-        
-    } catch (error) {
-        console.error('Error loading students for class:', error);
-        studentSelect.innerHTML = '<option value="">-- Error loading students --</option>';
-        studentSelect.disabled = true;
-    }
-}
-
-// Handle student selection
-async function handleAdminStudentSelection(event) {
-    const selectedStudent = event.target.value;
-    const studentTaskAssignment = document.getElementById('studentTaskAssignment');
-    
-    if (!selectedStudent) {
-        studentTaskAssignment.classList.add('hidden');
-        return;
-    }
-    
-    // Update selected student name
-    const users = await api.getSheet("user_credentials");
-    const student = users.find(u => u.username === selectedStudent);
-    document.getElementById('selectedStudentName').textContent = 
-        student ? (student.full_name || selectedStudent) : selectedStudent;
-    
-    // Load tasks for assignment
-    await loadTasksForStudentAssignment(selectedStudent);
-    
-    studentTaskAssignment.classList.remove('hidden');
-}
-
-// Show admin tasks default view
-function showAdminTasksDefaultView() {
-    document.getElementById('adminTasksDefaultView').classList.remove('hidden');
-    document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
-    document.getElementById('studentTaskAssignment').classList.add('hidden');
-}
-
-// Show admin tasks class-subject view
-function showAdminTasksClassSubjectView(classNumber, subject) {
     document.getElementById('adminTasksDefaultView').classList.add('hidden');
     document.getElementById('adminTasksClassSubjectView').classList.remove('hidden');
     
-    // Update the info header
+    // Update header info
     document.getElementById('selectedClassSubjectInfo').textContent = 
         `Class ${classNumber} - ${subject}`;
     
-    // Load tasks for this class and subject
-    loadTasksForClassSubject(classNumber, subject);
+    // Load tasks and students for this class and subject
+    await Promise.all([
+        loadAdminClassSubjectTasks(classNumber, subject),
+        loadAdminClassStudents(classNumber)
+    ]);
 }
 
-// Load tasks for specific class and subject
-async function loadTasksForClassSubject(classNumber, subject) {
+// Load tasks for selected class and subject
+async function loadAdminClassSubjectTasks(classNumber, subject) {
     const container = document.getElementById('adminClassSubjectTasksList');
     container.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading tasks...</div>';
     
@@ -2803,7 +2731,152 @@ async function loadTasksForClassSubject(classNumber, subject) {
         const tasksSheetName = `${classNumber}_tasks_master`;
         const tasks = await api.getSheet(tasksSheetName);
         
-        if (!Array.isArray(tasks)) {
+        if (!tasks || tasks.error || !Array.isArray(tasks) || tasks.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center py-4">No tasks found.</p>';
+            return;
+        }
+        
+        // Filter tasks by subject
+        const subjectTasks = tasks.filter(task => task.subject === subject);
+        
+        if (subjectTasks.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center py-4">No tasks found for this subject.</p>';
+            return;
+        }
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        container.innerHTML = subjectTasks.map(task => {
+            const dueDate = new Date(task.due_date);
+            dueDate.setHours(23, 59, 59, 999);
+            const isOverdue = dueDate < today;
+            const isDueToday = dueDate.toDateString() === today.toDateString();
+            
+            const dueDateFormatted = new Date(task.due_date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            
+            let statusClass = '';
+            let statusText = '';
+            
+            if (isOverdue) {
+                statusClass = 'text-red-600';
+                statusText = 'Overdue';
+            } else if (isDueToday) {
+                statusClass = 'text-yellow-600';
+                statusText = 'Due Today';
+            } else {
+                statusClass = 'text-green-600';
+                statusText = 'Active';
+            }
+            
+            return `
+                <div class="assignment-task-card">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <span class="text-sm font-mono bg-gray-200 px-2 py-1 rounded">${task.task_id}</span>
+                                <span class="text-sm ${statusClass} font-medium">${statusText}</span>
+                            </div>
+                            <h5 class="font-semibold text-gray-800 mb-1">${task.title}</h5>
+                            <p class="text-sm text-gray-600 mb-2">${task.description}</p>
+                            <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                <span><i class="fas fa-calendar-alt mr-1"></i>Due: ${dueDateFormatted}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+    } catch (error) {
+        console.error('Error loading class subject tasks:', error);
+        container.innerHTML = '<p class="text-red-500 text-center py-4">Error loading tasks.</p>';
+    }
+}
+
+// Load students for selected class
+async function loadAdminClassStudents(classNumber) {
+    const studentSelect = document.getElementById('adminTaskStudentSelect');
+    studentSelect.innerHTML = '<option value="">-- Loading Students... --</option>';
+    
+    try {
+        const users = await api.getSheet("user_credentials");
+        
+        if (!users || users.error || !Array.isArray(users)) {
+            studentSelect.innerHTML = '<option value="">-- No Students Found --</option>';
+            return;
+        }
+        
+        // Filter students by class
+        const classStudents = users.filter(user => 
+            user.role === 'student' && 
+            user.class == classNumber
+        );
+        
+        studentSelect.innerHTML = '<option value="">-- Select Student --</option>';
+        
+        if (classStudents.length === 0) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No students in this class';
+            studentSelect.appendChild(option);
+            return;
+        }
+        
+        // Add students to dropdown
+        classStudents.forEach(student => {
+            const option = document.createElement('option');
+            option.value = student.username;
+            option.textContent = `${student.full_name || student.username} (@${student.username})`;
+            studentSelect.appendChild(option);
+        });
+        
+        // Add event listener for student selection
+        studentSelect.onchange = () => handleAdminStudentSelection(classNumber, document.getElementById('adminTaskSubjectSelect').value, studentSelect.value);
+        
+    } catch (error) {
+        console.error('Error loading students:', error);
+        studentSelect.innerHTML = '<option value="">-- Error Loading Students --</option>';
+    }
+}
+
+// Handle student selection
+async function handleAdminStudentSelection(classNumber, subject, studentUsername) {
+    const assignmentSection = document.getElementById('studentTaskAssignment');
+    
+    if (!studentUsername) {
+        assignmentSection.classList.add('hidden');
+        return;
+    }
+    
+    // Show selected student info
+    const users = await api.getSheet("user_credentials");
+    const selectedUser = users.find(u => u.username === studentUsername);
+    document.getElementById('selectedStudentName').textContent = 
+        `${selectedUser?.full_name || studentUsername} (@${studentUsername})`;
+    
+    assignmentSection.classList.remove('hidden');
+    
+    // Load student's current tasks for this subject
+    await loadStudentSubjectTasks(studentUsername, classNumber, subject);
+}
+
+// Load student's tasks for the selected subject
+async function loadStudentSubjectTasks(studentUsername, classNumber, subject) {
+    const container = document.getElementById('studentTasksList');
+    container.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading student tasks...</div>';
+    
+    try {
+        const [tasks, progress] = await Promise.all([
+            api.getSheet(`${classNumber}_tasks_master`),
+            api.getSheet(`${studentUsername}_progress`)
+        ]);
+        
+        if (!tasks || tasks.error || !Array.isArray(tasks)) {
             container.innerHTML = '<p class="text-gray-500">No tasks found.</p>';
             return;
         }
@@ -2816,84 +2889,20 @@ async function loadTasksForClassSubject(classNumber, subject) {
             return;
         }
         
-        container.innerHTML = subjectTasks.map(task => `
-            <div class="bg-white rounded p-3 border hover:border-blue-300 transition-colors">
-                <div class="flex justify-between items-start">
-                    <div class="flex-1">
-                        <h5 class="font-medium text-gray-800">${task.title}</h5>
-                        <p class="text-sm text-gray-600 mt-1">${task.description}</p>
-                        <div class="mt-2 flex items-center space-x-4 text-xs text-gray-500">
-                            <span><i class="fas fa-tag mr-1"></i>ID: ${task.task_id}</span>
-                            <span><i class="fas fa-calendar-alt mr-1"></i>Due: ${new Date(task.due_date).toLocaleDateString()}</span>
-                        </div>
-                    </div>
-                    <div class="flex space-x-2 ml-4">
-                        <button onclick="editTask('${task.task_id}')" class="text-blue-600 hover:text-blue-800" title="Edit Task">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button onclick="deleteTask('${task.task_id}')" class="text-red-600 hover:text-red-800" title="Delete Task">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-        
-    } catch (error) {
-        console.error('Error loading tasks for class and subject:', error);
-        container.innerHTML = '<p class="text-red-500">Error loading tasks.</p>';
-    }
-}
-
-// Load tasks for student assignment
-async function loadTasksForStudentAssignment(username) {
-    const container = document.getElementById('studentTasksList');
-    container.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading tasks...</div>';
-
-    try {
-        const selectedClass = document.getElementById('adminTaskClassSelect').value;
-        const selectedSubject = document.getElementById('adminTaskSubjectSelect').value;
-        
-        const tasksSheetName = `${selectedClass}_tasks_master`;
-        const [tasks, progress] = await Promise.all([
-            api.getSheet(tasksSheetName),
-            api.getSheet(`${username}_progress`)
-        ]);
-        
-        if (!Array.isArray(tasks)) {
-            container.innerHTML = '<p class="text-gray-500">No tasks found.</p>';
-            return;
-        }
-
-        // Filter tasks by subject
-        const subjectTasks = tasks.filter(task => task.subject === selectedSubject);
-        const progressArray = Array.isArray(progress) ? progress : [];
-        
-        if (subjectTasks.length === 0) {
-            container.innerHTML = '<p class="text-gray-500">No tasks found for this subject.</p>';
-            return;
-        }
-
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-
+        
         container.innerHTML = subjectTasks.map(task => {
-            const userTask = progressArray.find(p => 
+            const userTask = progress?.find(p => 
                 String(p.item_id) === String(task.task_id) && 
                 p.item_type === "task" && 
                 p.status === "complete"
             );
             const completed = !!userTask;
             
-            // Check if task is overdue
             const dueDate = new Date(task.due_date);
             dueDate.setHours(23, 59, 59, 999);
             const isOverdue = !completed && dueDate < today;
-            
-            let containerClass = 'assignment-task-card';
-            if (completed) {
-                containerClass += ' completed';
-            }
             
             const dueDateFormatted = new Date(task.due_date).toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -2902,22 +2911,24 @@ async function loadTasksForStudentAssignment(username) {
             });
             
             return `
-                <div class="${containerClass}">
-                    <input type="checkbox" 
-                           id="student-task-${task.task_id}" 
-                           class="task-checkbox"
+                <div class="assignment-task-card ${completed ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}">
+                    <input type="checkbox" id="student-task-${task.task_id}" 
                            ${completed ? 'checked disabled' : ''}
-                           value="${task.task_id}">
-                    <div class="pr-8">
-                        <h5 class="font-medium text-gray-800 ${completed ? 'line-through' : ''}">${task.title}</h5>
-                        <p class="text-sm text-gray-600 mt-1 ${completed ? 'line-through' : ''}">${task.description}</p>
-                        <div class="mt-2 flex items-center space-x-4 text-xs">
-                            <span class="text-gray-500"><i class="fas fa-tag mr-1"></i>ID: ${task.task_id}</span>
-                            <span class="${isOverdue ? 'text-red-500 font-medium' : 'text-gray-500'}">
-                                <i class="fas fa-calendar-alt mr-1"></i>Due: ${dueDateFormatted}
-                                ${isOverdue ? ' (OVERDUE)' : ''}
-                            </span>
-                            ${completed ? '<span class="text-green-600 font-medium"><i class="fas fa-check mr-1"></i>Completed</span>' : ''}
+                           class="task-checkbox">
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm font-mono bg-gray-200 px-2 py-1 rounded">${task.task_id}</span>
+                            ${completed ? 
+                                '<span class="text-green-600 text-sm font-medium"><i class="fas fa-check mr-1"></i>Completed</span>' :
+                                isOverdue ? 
+                                '<span class="text-red-600 text-sm font-medium"><i class="fas fa-exclamation-triangle mr-1"></i>Overdue</span>' :
+                                '<span class="text-blue-600 text-sm font-medium"><i class="fas fa-clock mr-1"></i>Pending</span>'
+                            }
+                        </div>
+                        <h5 class="font-semibold ${completed ? 'line-through text-gray-500' : 'text-gray-800'}">${task.title}</h5>
+                        <p class="text-sm ${completed ? 'line-through text-gray-400' : 'text-gray-600'} mb-2">${task.description}</p>
+                        <div class="text-xs text-gray-500">
+                            <i class="fas fa-calendar-alt mr-1"></i>Due: ${dueDateFormatted}
                         </div>
                     </div>
                 </div>
@@ -2925,45 +2936,47 @@ async function loadTasksForStudentAssignment(username) {
         }).join('');
         
     } catch (error) {
-        console.error('Error loading tasks for student assignment:', error);
-        container.innerHTML = '<p class="text-red-500">Error loading tasks.</p>';
+        console.error('Error loading student tasks:', error);
+        container.innerHTML = '<p class="text-red-500">Error loading student tasks.</p>';
     }
 }
 
 // Submit tasks for selected student
 async function submitTasksForStudent() {
-    const selectedStudent = document.getElementById('adminTaskStudentSelect').value;
+    const classNumber = document.getElementById('adminTaskClassSelect').value;
+    const subject = document.getElementById('adminTaskSubjectSelect').value;
+    const studentUsername = document.getElementById('adminTaskStudentSelect').value;
     
-    if (!selectedStudent) {
-        alert('No student selected.');
+    if (!classNumber || !subject || !studentUsername) {
+        alert('Please select class, subject, and student first.');
         return;
     }
 
     const submitBtn = event.target;
     const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Assigning...';
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Updating...';
     submitBtn.disabled = true;
 
     try {
         // Get selected tasks
         const selectedTasks = [];
         document.querySelectorAll('input[id^="student-task-"]:checked:not(:disabled)').forEach(checkbox => {
-            selectedTasks.push(checkbox.value);
+            const taskId = checkbox.id.replace('student-task-', '');
+            selectedTasks.push(taskId);
         });
 
         if (selectedTasks.length === 0) {
-            alert('No new tasks were selected for assignment.');
+            alert('No tasks were selected for submission.');
             return;
         }
 
-        const progress = await api.getSheet(`${selectedStudent}_progress`);
-        const progressArray = Array.isArray(progress) ? progress : [];
+        const progress = await api.getSheet(`${studentUsername}_progress`);
         
         const promises = [];
-        let assignedCount = 0;
+        let updatedCount = 0;
 
         for (let taskId of selectedTasks) {
-            const existingTask = progressArray.find(p => 
+            const existingTask = progress?.find(p => 
                 String(p.item_id) === String(taskId) && 
                 p.item_type === "task" && 
                 p.status === "complete"
@@ -2978,21 +2991,22 @@ async function submitTasksForStudent() {
                     "100"
                 ];
                 
-                promises.push(api.addRow(`${selectedStudent}_progress`, rowData));
-                assignedCount++;
+                promises.push(api.addRow(`${studentUsername}_progress`, rowData));
+                updatedCount++;
             }
         }
 
         if (promises.length > 0) {
             await Promise.all(promises);
-            alert(`${assignedCount} task(s) assigned successfully to ${selectedStudent}!`);
-            await loadTasksForStudentAssignment(selectedStudent);
+            alert(`${updatedCount} task(s) submitted successfully for ${studentUsername}!`);
+            // Reload student tasks to update status
+            await loadStudentSubjectTasks(studentUsername, classNumber, subject);
         } else {
             alert('All selected tasks are already completed.');
         }
     } catch (error) {
-        console.error('Error assigning tasks:', error);
-        alert('Error assigning tasks. Please try again.');
+        console.error('Error submitting tasks:', error);
+        alert('Error updating tasks. Please try again.');
     } finally {
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
