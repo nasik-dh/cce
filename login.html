@@ -479,7 +479,7 @@
     </div>
 </div>
 
-<!-- Replace the existing adminTasksPage div with this -->
+<!-- Replace the existing adminTasksPage div with this updated version -->
 <div id="adminTasksPage" class="page-content hidden">
     <div class="bg-white rounded-lg shadow-lg p-6">
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
@@ -499,9 +499,6 @@
                 <select id="adminTaskSubjectSelect" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto" disabled>
                     <option value="">-- Select Subject --</option>
                 </select>
-                <button onclick="showAddTaskModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300 w-full sm:w-auto">
-                    <i class="fas fa-plus mr-2"></i>Add Task
-                </button>
             </div>
         </div>
         
@@ -512,40 +509,13 @@
                 <p class="text-sm text-blue-600 mt-1">Manage tasks for this class and subject</p>
             </div>
             
-            <!-- Tasks Management Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 admin-tasks-grid">
-                <!-- Tasks List -->
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <h4 class="font-semibold text-gray-800 mb-4">
-                        <i class="fas fa-list mr-2"></i>Subject Tasks
-                    </h4>
-                    <div id="adminClassSubjectTasksList" class="space-y-3 max-h-96 overflow-y-auto">
-                        <!-- Tasks will be loaded here -->
-                    </div>
-                </div>
-                
-                <!-- Student Assignment -->
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <h4 class="font-semibold text-gray-800 mb-4">
-                        <i class="fas fa-user-graduate mr-2"></i>Assign to Students
-                    </h4>
-                    <div class="mb-4">
-                        <select id="adminTaskStudentSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="">-- Select Student --</option>
-                        </select>
-                    </div>
-                    
-                    <div id="studentTaskAssignment" class="hidden">
-                        <div class="mb-4 p-3 bg-blue-100 rounded">
-                            <span id="selectedStudentName" class="font-medium text-blue-800"></span>
-                        </div>
-                        <div id="studentTasksList" class="space-y-2 max-h-64 overflow-y-auto mb-4">
-                            <!-- Student's tasks will be loaded here -->
-                        </div>
-                        <button onclick="submitTasksForStudent()" class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300">
-                            <i class="fas fa-save mr-2"></i>Assign Selected Tasks
-                        </button>
-                    </div>
+            <!-- Students Grid -->
+            <div class="mb-6">
+                <h4 class="font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-user-graduate mr-2"></i>Students in this class
+                </h4>
+                <div id="adminClassStudentsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Students will be loaded here -->
                 </div>
             </div>
         </div>
@@ -556,6 +526,31 @@
                 <i class="fas fa-chalkboard-teacher text-6xl text-gray-300 mb-4"></i>
                 <p class="text-gray-500 text-lg mb-2">Select a class and subject to manage tasks</p>
                 <p class="text-gray-400 text-sm">Choose from the dropdowns above to get started</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Student Task Modal -->
+<div id="studentTaskModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-90vh overflow-y-auto">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="studentTaskModalTitle" class="text-xl font-bold text-blue-600">Student Tasks</h3>
+                <button onclick="closeStudentTaskModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            <div id="studentTaskModalContent" class="space-y-4">
+                <!-- Student tasks will be loaded here -->
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button onclick="closeStudentTaskModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
+                    Cancel
+                </button>
+                <button onclick="submitSelectedStudentTasks()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    <i class="fas fa-save mr-2"></i>Update Tasks
+                </button>
             </div>
         </div>
     </div>
@@ -879,5 +874,6 @@
     <script src="app.js"></script>
 </body>
 </html>
+
 
 
