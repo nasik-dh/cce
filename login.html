@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon_32x32.png">
+    <!-- Primary Meta Tags -->
+<title>CCE MARKS DHDC MANOOR</title>
+<meta name="title" content="CCE MARKS DHDC MANOOR">
+<meta name="description" content="CCE MARKS DHDC MANOOR">
+
+
+    
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-50 islamic-pattern">
+    <!-- Login Page -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+            <div class="text-center mb-8">
+                
+                <div class="mb-4">
+                    <h1 class="text-3xl font-bold text-green-600 mb-2">Darul Hidaya Da'wa College</h1>
+                </div>
+                <p class="text-gray-600">CCE MARKS</p>
+            </div>
+
+            <!-- Login Form Section -->
+            <div id="loginSection">
+                <div id="loginError" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"></div>
+                <form id="loginForm" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                        <input type="text" id="username" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <input type="password" id="password" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-300">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Sign In
+                    </button>
+                </form>
+                
+            </div>
+
+            <!-- Signup Form Section -->
+            <div id="signupSection" class="hidden">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-green-600">Create Account</h2>
+                    <p class="text-gray-600">Join Darul Hidaya Da'wa College</p>
+                </div>
+                <div id="signupError" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"></div>
+                <div id="signupSuccess" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4"></div>
+                <form id="signupForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                        <input type="text" id="signupName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                        <input type="tel" id="signupPhone" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Gmail (Optional)</label>
+                        <input type="email" id="signupGmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">State *</label>
+                        <input type="text" id="signupState" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">District *</label>
+                        <input type="text" id="signupDistrict" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Place *</label>
+                        <input type="text" id="signupPlace" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">P.O *</label>
+                        <input type="text" id="signupPO" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pin Code *</label>
+                        <input type="text" id="signupPinCode" required pattern="[0-9]{6}" maxlength="6" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="6-digit pin code">
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-300">
+                        <i class="fas fa-user-plus mr-2"></i>Create Account
+                    </button>
+                </form>
+                <div class="text-center mt-4">
+                    <p class="text-sm text-gray-600">
+                        Already have an account? 
+                        <a href="#login" onclick="showLogin()" class="text-green-600 hover:text-green-700 font-medium">Sign in here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboardContainer" class="hidden">
+        <!-- Header -->
+        <header class="bg-green-600 text-white shadow-lg">
+            <div class="container mx-auto px-2 sm:px-4 py-3 sm:py-4 flex flex-col sm:flex-row justify-between items-center">
+                <div class="header-logo-container flex items-center mb-2 sm:mb-0">
+                    <div class="brand-container">
+                        <h1 class="brand-title text-lg sm:text-xl font-bold leading-tight">CCE MARKS/DHDC MANOOR</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <span id="welcomeUser" class="font-medium text-sm sm:text-base"></span>
+                    <button onclick="logout()" class="bg-green-700 hover:bg-green-800 px-2 sm:px-3 py-1 sm:py-2 rounded transition duration-300 text-sm sm:text-base">
+                        <i class="fas fa-sign-out-alt"></i> <span class="hidden sm:inline">Logout</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+<nav class="bg-white shadow-md">
+    <div class="container mx-auto px-2 sm:px-4">
+        <!-- Student Navigation -->
+        <div id="studentNav" class="flex space-x-2 sm:space-x-8 touch-scroll">
+            <button onclick="showPage('tasks')" class="nav-btn py-3 sm:py-4 px-2 sm:px-2 border-b-2 border-transparent hover:border-green-500 transition duration-300 prevent-zoom">
+                <i class="fas fa-tasks mr-0 sm:mr-2"></i><span class="text-sm sm:text-base">Works</span>
+            </button>
+            <button onclick="showPage('courses')" class="nav-btn py-3 sm:py-4 px-2 sm:px-2 border-b-2 border-transparent hover:border-green-500 transition duration-300 prevent-zoom">
+                <i class="fas fa-book mr-0 sm:mr-2"></i><span class="text-sm sm:text-base">Practice</span>
+            </button>
+            <button onclick="showPage('events')" class="nav-btn py-3 sm:py-4 px-2 sm:px-2 border-b-2 border-transparent hover:border-green-500 transition duration-300 prevent-zoom">
+                <i class="fas fa-calendar mr-0 sm:mr-2"></i><span class="text-sm sm:text-base">Calender</span>
+            </button>
+            
+            <button onclick="showPage('status')" class="nav-btn py-3 sm:py-4 px-2 sm:px-2 border-b-2 border-transparent hover:border-green-500 transition duration-300 prevent-zoom">
+                <i class="fas fa-chart-pie mr-0 sm:mr-2"></i><span class="text-sm sm:text-base">Status</span>
+            </button>
+        </div>
+        
+        <!-- Admin Navigation -->
+        <div id="adminNav" class="hidden flex space-x-2 sm:space-x-8 touch-scroll">
+            <button onclick="showPage('adminUsers')" class="nav-btn py-3 sm:py-4 px-2 sm:px-2 border-b-2 border-transparent hover:border-blue-500 transition duration-300 prevent-zoom">
+                <i class="fas fa-users mr-0 sm:mr-2"></i><span class="text-sm sm:text-base">Users</span>
+            </button>
+            
+            <button onclick="showPage('adminEvents')" class="nav-btn py-3 sm:py-4 px-2 sm:px-2 border-b-2 border-transparent hover:border-blue-500 transition duration-300 prevent-zoom">
+                <i class="fas fa-calendar-plus mr-0 sm:mr-2"></i><span class="text-sm sm:text-base">Calender</span>
+            </button>
+            <button onclick="showPage('adminTasks')" class="nav-btn py-3 sm:py-4 px-2 sm:px-2 border-b-2 border-transparent hover:border-blue-500 transition duration-300 prevent-zoom">
+                <i class="fas fa-tasks mr-0 sm:mr-2"></i><span class="text-sm sm:text-base">Works</span>
+            </button>
+            <button onclick="showPage('adminCourses')" class="nav-btn py-3 sm:py-4 px-2 sm:px-2 border-b-2 border-transparent hover:border-blue-500 transition duration-300 prevent-zoom">
+                <i class="fas fa-book-open mr-0 sm:mr-2"></i><span class="text-sm sm:text-base">Practice</span>
+            </button>
+            <button onclick="showPage('adminStatus')" class="nav-btn py-3 sm:py-4 px-2 sm:px-2 border-b-2 border-transparent hover:border-blue-500 transition duration-300 prevent-zoom">
+                <i class="fas fa-chart-bar mr-0 sm:mr-2"></i><span class="text-sm sm:text-base">All Status</span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+
+        <!-- Main Content -->
+        <main class="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+            
+            <!-- Tasks Page -->
+<div id="tasksPage" class="page-content">
+    <div class="bg-white rounded-lg shadow-lg p-3 sm:p-6">
+        <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-green-600">
+            <i class="fas fa-tasks mr-2"></i>My Tasks
+        </h2>
+        <div id="tasksList" class="space-y-3 sm:space-y-4">
+            <!-- Tasks will be loaded dynamically -->
+        </div>
+        <!-- Submit button removed for students -->
+        <div class="mt-4 sm:mt-6 p-3 bg-blue-50 rounded-lg">
+            <p class="text-sm text-blue-600">
+                <i class="fas fa-info-circle mr-2"></i>
+                Tasks are managed by administrators. Contact your instructor if you have completed any pending tasks.
+            </p>
+        </div>
+    </div>
+</div>
+
+
+            <!-- Courses Page -->
+            <div id="coursesPage" class="page-content hidden">
+                <div class="bg-white rounded-lg shadow-lg p-3 sm:p-6">
+                    <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-green-600">
+                        <i class="fas fa-book mr-2"></i>Islamic Courses
+                    </h2>
+                    <div id="coursesList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+                        <!-- Courses will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Course Modal -->
+                <div id="courseModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+                    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-2 sm:mx-4 max-h-90vh overflow-hidden flex flex-col">
+                        <div class="p-4 sm:p-6 flex-1 overflow-y-auto">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 id="courseTitle" class="text-lg sm:text-xl font-bold text-green-600 flex-1 pr-4"></h3>
+                                <button onclick="closeCourseModal()" class="text-gray-500 hover:text-gray-700 flex-shrink-0">
+                                    <i class="fas fa-times text-lg"></i>
+                                </button>
+                            </div>
+                            <div id="courseContent" class="mb-6 overflow-hidden">
+                                <!-- Course steps will be loaded here -->
+                            </div>
+                        </div>
+                        <div class="p-4 sm:p-6 border-t bg-gray-50 flex justify-between items-center flex-shrink-0">
+                            <button id="prevBtn" onclick="prevStep()" class="bg-gray-300 text-gray-700 px-3 sm:px-4 py-2 rounded hover:bg-gray-400 transition duration-300 text-sm sm:text-base">
+                                <i class="fas fa-chevron-left mr-1 sm:mr-2"></i>Previous
+                            </button>
+                            <span id="stepIndicator" class="text-gray-600 text-sm sm:text-base font-medium"></span>
+                            <button id="nextBtn" onclick="nextStep()" class="bg-green-600 text-white px-3 sm:px-4 py-2 rounded hover:bg-green-700 transition duration-300 text-sm sm:text-base">
+                                Next<i class="fas fa-chevron-right ml-1 sm:ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Events Page -->
+            <div id="eventsPage" class="page-content hidden">
+                <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+                    <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-green-600">
+                        <i class="fas fa-calendar mr-2"></i>Events & Programs
+                    </h2>
+                    <div class="mb-4 sm:mb-6 flex items-center justify-between">
+                        <div class="flex items-center space-x-2 sm:space-x-4">
+                            <button onclick="changeMonth(-1)" class="bg-green-600 text-white px-2 sm:px-3 py-1 sm:py-2 rounded hover:bg-green-700 text-sm sm:text-base">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <h3 id="currentMonth" class="text-base sm:text-lg font-semibold min-w-32 text-center"></h3>
+                            <button onclick="changeMonth(1)" class="bg-green-600 text-white px-2 sm:px-3 py-1 sm:py-2 rounded hover:bg-green-700 text-sm sm:text-base">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="calendar" class="grid grid-cols-7 gap-1 sm:gap-2">
+                        <!-- Calendar will be generated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Event Modal -->
+                <div id="eventModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-90vh overflow-y-auto">
+                        <div class="p-4 sm:p-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="flex-1 pr-4">
+                                    <h3 id="eventTitle" class="text-lg sm:text-xl font-bold text-green-600 mb-2"></h3>
+                                    <div id="eventDateTime" class="text-sm text-gray-600 mb-3"></div>
+                                </div>
+                                <button onclick="closeEventModal()" class="text-gray-500 hover:text-gray-700 flex-shrink-0">
+                                    <i class="fas fa-times text-lg"></i>
+                                </button>
+                            </div>
+                            <div id="eventDetails" class="space-y-3">
+                                <!-- Event details will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Table Page -->
+            <div id="timetablePage" class="page-content hidden">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-2xl font-bold mb-6 text-green-600">
+                        <i class="fas fa-calendar-alt mr-2"></i>Weekly Time Table
+                    </h2>
+                    
+                    <!-- Time slots header -->
+                    <div class="mb-4 text-sm text-gray-600 flex items-center justify-between">
+                        <span class="font-medium">School Hours: 8:00 AM - 5:00 PM</span>
+                        <span class="font-medium">Period Duration: 45 minutes</span>
+                    </div>
+                    
+                    <!-- Responsive timetable container -->
+                    <div class="overflow-x-auto bg-gray-50 rounded-lg">
+                        <table class="w-full min-w-full border-collapse">
+                            <thead>
+                                <tr class="bg-green-600 text-white">
+                                    <th class="border border-green-500 p-2 text-xs sm:text-sm font-semibold min-w-20 sticky left-0 bg-green-600 z-10">Day</th>
+                                    <th class="border border-green-500 p-2 text-xs sm:text-sm font-semibold min-w-24">
+                                        <div>Period 1</div>
+                                        <div class="text-xs opacity-75">8:00-8:45</div>
+                                    </th>
+                                    <th class="border border-green-500 p-2 text-xs sm:text-sm font-semibold min-w-24">
+                                        <div>Period 2</div>
+                                        <div class="text-xs opacity-75">8:45-9:30</div>
+                                    </th>
+                                    <th class="border border-green-500 p-2 text-xs sm:text-sm font-semibold min-w-24">
+                                        <div>Period 3</div>
+                                        <div class="text-xs opacity-75">9:30-10:15</div>
+                                    </th>
+                                    <th class="border border-green-500 p-2 text-xs sm:text-sm font-semibold min-w-24">
+                                        <div>Period 4</div>
+                                        <div class="text-xs opacity-75">10:15-11:00</div>
+                                    </th>
+                                    <th class="border border-green-500 p-2 text-xs sm:text-sm font-semibold min-w-24">
+                                        <div>Period 5</div>
+                                        <div class="text-xs opacity-75">11:00-11:45</div>
+                                    </th>
+                                    <th class="border border-green-500 p-2 text-xs sm:text-sm font-semibold min-w-24 bg-orange-500">
+                                        <div>Break</div>
+                                        <div class="text-xs opacity-75">11:45-12:30</div>
+                                    </th>
+                                    <th class="border border-green-500 p-2 text-xs sm:text-sm font-semibold min-w-24">
+                                        <div>Period 7</div>
+                                        <div class="text-xs opacity-75">12:30-1:15</div>
+                                    </th>
+                                    <th class="border border-green-500 p-2 text-xs sm:text-sm font-semibold min-w-24">
+                                        <div>Period 8</div>
+                                        <div class="text-xs opacity-75">1:15-2:00</div>
+                                    </th>
+                                    <th class="border border-green-500 p-2 text-xs sm:text-sm font-semibold min-w-24">
+                                        <div>Period 9</div>
+                                        <div class="text-xs opacity-75">2:00-2:45</div>
+                                    </th>
+                                    <th class="border border-green-500 p-2 text-xs sm:text-sm font-semibold min-w-24">
+                                        <div>Period 10</div>
+                                        <div class="text-xs opacity-75">2:45-3:30</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="timetableBody">
+                                <!-- Timetable rows will be loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Legend -->
+                    <div class="mt-6 flex flex-wrap gap-4 text-sm">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-blue-500 rounded mr-2"></div>
+                            <span>Islamic Studies</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-green-500 rounded mr-2"></div>
+                            <span>Languages</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-purple-500 rounded mr-2"></div>
+                            <span>Sciences</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-orange-500 rounded mr-2"></div>
+                            <span>Break/Activities</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-gray-400 rounded mr-2"></div>
+                            <span>Free Study</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Page -->
+            <div id="statusPage" class="page-content hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow-lg p-6 status-card">
+                        <h3 class="text-lg font-bold mb-4 text-green-600">Work Progress</h3>
+                        <div class="chart-container">
+                            <canvas id="taskChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-lg p-6 status-card">
+                        <h3 class="text-lg font-bold mb-4 text-green-600">Practice Progress</h3>
+                        <div class="chart-container">
+                            <canvas id="courseChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-lg p-6 status-card">
+                        <h3 class="text-lg font-bold mb-4 text-green-600">Daily Activity (This Week)</h3>
+                        <div class="chart-container">
+                            <canvas id="activityChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-lg p-6 status-card">
+                        <h3 class="text-lg font-bold mb-4 text-green-600">Overall Progress</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                    <span>Works Completed</span>
+                                    <span id="taskProgress">0%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="taskProgressBar" class="bg-green-600 h-2 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                    <span>Practices Completed</span>
+                                    <span id="courseProgressText">0%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="courseProgressBar" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                    <span>Events Attended</span>
+                                    <span id="eventProgress">0%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="eventProgressBar" class="bg-purple-600 h-2 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Admin Users Page -->
+<div id="adminUsersPage" class="page-content hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-blue-600">
+                <i class="fas fa-users mr-2"></i>User Management
+            </h2>
+            <button onclick="showAddUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300">
+                <i class="fas fa-user-plus mr-2"></i>Add User
+            </button>
+        </div>
+        <div id="usersList" class="overflow-x-auto">
+            <!-- Users table will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Admin Response Page -->
+<div id="adminResponsePage" class="page-content hidden">
+    <div class="bg-white rounded-lg shadow-lg p-3 sm:p-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+            <h2 class="text-xl sm:text-2xl font-bold text-blue-600">
+                <i class="fas fa-clipboard-list mr-2"></i>Registration Responses
+            </h2>
+            <div class="flex items-center space-x-2 text-sm text-gray-600">
+                <i class="fas fa-info-circle"></i>
+                <span>Total Responses: <span id="responseCount">0</span></span>
+            </div>
+        </div>
+        <div id="responsesList" class="overflow-x-auto">
+            <!-- Responses will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Admin Events Page -->
+<div id="adminEventsPage" class="page-content hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-blue-600">
+                <i class="fas fa-calendar-plus mr-2"></i>Event Management
+            </h2>
+            <button onclick="showAddEventModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300">
+                <i class="fas fa-plus mr-2"></i>Add Event
+            </button>
+        </div>
+        <div id="adminEventsList" class="space-y-4">
+            <!-- Events list will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Admin Tasks Page -->
+<div id="adminTasksPage" class="page-content hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-blue-600">
+                <i class="fas fa-tasks mr-2"></i>Works Management
+            </h2>
+            <div class="flex space-x-4">
+                <select id="adminTaskUserSelect" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">-- Select Student --</option>
+                </select>
+                <button onclick="showAddTaskModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300">
+                    <i class="fas fa-plus mr-2"></i>Add Task
+                </button>
+            </div>
+        </div>
+        
+        <!-- Admin Task Assignment View -->
+        <div id="adminTaskAssignmentView" class="hidden">
+            <div class="mb-4 p-4 bg-blue-50 rounded-lg">
+                <h3 id="selectedStudentInfo" class="text-lg font-semibold text-blue-800"></h3>
+            </div>
+            <div id="adminTasksList" class="space-y-3">
+                <!-- Tasks will be loaded here -->
+            </div>
+            <button onclick="submitTasksForStudent()" class="mt-6 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition duration-300 w-full">
+                <i class="fas fa-save mr-2"></i>Submit Works for Student
+            </button>
+        </div>
+        
+        <!-- Default Admin Task List -->
+        <div id="adminTasksDefaultList" class="space-y-4">
+            <!-- Default tasks list will be loaded here -->
+        </div>
+    </div>
+</div>
+
+
+<!-- Admin Courses Page -->
+<div id="adminCoursesPage" class="page-content hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-blue-600">
+                <i class="fas fa-book-open mr-2"></i>Practice Management
+            </h2>
+            <button onclick="showAddCourseModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300">
+                <i class="fas fa-plus mr-2"></i>Add Course
+            </button>
+        </div>
+        <div id="adminCoursesList" class="space-y-4">
+            <!-- Courses list will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Admin Status Page -->
+<!-- Admin Status Page -->
+<div id="adminStatusPage" class="page-content hidden">
+    <div class="bg-white rounded-lg shadow-lg p-3 sm:p-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+            <h2 class="text-xl sm:text-2xl font-bold text-blue-600">
+                <i class="fas fa-chart-bar mr-2"></i>User Status Dashboard
+            </h2>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+                <label for="userSelect" class="text-sm font-medium text-gray-700 whitespace-nowrap">Select User:</label>
+                <select id="userSelect" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:min-w-48">
+                    <option value="">-- Select a User --</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- User Status Content -->
+        <div id="selectedUserStatus" class="hidden">
+            <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-blue-50 rounded-lg">
+                <h3 id="selectedUserName" class="text-base sm:text-lg font-semibold text-blue-800"></h3>
+                <p id="selectedUserInfo" class="text-xs sm:text-sm text-blue-600 mt-1"></p>
+            </div>
+            
+            <!-- Charts Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-6">
+                <div class="bg-white rounded-lg shadow p-3 sm:p-6 border">
+                    <h4 class="text-sm sm:text-lg font-bold mb-3 sm:mb-4 text-blue-600">Works Progress</h4>
+                    <div class="chart-container">
+                        <canvas id="adminTaskChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-3 sm:p-6 border">
+                    <h4 class="text-sm sm:text-lg font-bold mb-3 sm:mb-4 text-blue-600">Practice Progress</h4>
+                    <div class="chart-container">
+                        <canvas id="adminCourseChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress Bars -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-6">
+                <div class="bg-white rounded-lg shadow p-3 sm:p-6 border">
+                    <h4 class="text-sm sm:text-lg font-bold mb-3 sm:mb-4 text-blue-600">Overall Progress</h4>
+                    <div class="space-y-3 sm:space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs sm:text-sm text-gray-600 mb-1">
+                                <span>Works Completed</span>
+                                <span id="adminTaskProgress">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2 sm:h-3">
+                                <div id="adminTaskProgressBar" class="bg-green-600 h-2 sm:h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span id="adminTaskStats">0 / 0</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs sm:text-sm text-gray-600 mb-1">
+                                <span>Practices Completed</span>
+                                <span id="adminCourseProgress">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2 sm:h-3">
+                                <div id="adminCourseProgressBar" class="bg-blue-600 h-2 sm:h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span id="adminCourseStats">0 / 0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-3 sm:p-6 border">
+                    <h4 class="text-sm sm:text-lg font-bold mb-3 sm:mb-4 text-blue-600">Daily Activity (This Week)</h4>
+                    <div class="chart-container">
+                        <canvas id="adminActivityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- No User Selected Message -->
+        <div id="noUserSelected" class="text-center py-8 sm:py-12">
+            <i class="fas fa-user-friends text-4xl sm:text-6xl text-gray-300 mb-3 sm:mb-4"></i>
+            <p class="text-gray-500 text-sm sm:text-lg px-4">Select a user from the dropdown to view their progress</p>
+        </div>
+    </div>
+</div>
+
+
+<!-- Admin Modals -->
+<!-- Add User Modal -->
+<div id="addUserModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-90vh overflow-y-auto">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-blue-600">Add New User</h3>
+                <button onclick="closeAddUserModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            <form id="addUserForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Username *</label>
+                    <input type="text" id="newUsername" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password *</label>
+                    <input type="password" id="newPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                    <input type="text" id="newFullName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Role *</label>
+                    <select id="newRole" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="student">Student</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300">
+                    <i class="fas fa-user-plus mr-2"></i>Add User
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Event Modal -->
+<div id="addEventModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-90vh overflow-y-auto">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-blue-600">Add New Event</h3>
+                <button onclick="closeAddEventModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            <form id="addEventForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                    <input type="text" id="eventTitle" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date *</label>
+                    <input type="date" id="eventDate" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Time</label>
+                    <input type="time" id="eventTime" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea id="eventDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Place</label>
+                    <input type="text" id="eventPlace" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300">
+                    <i class="fas fa-plus mr-2"></i>Add Event
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Task Modal -->
+<div id="addTaskModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-90vh overflow-y-auto">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-blue-600">Add New Task</h3>
+                <button onclick="closeAddTaskModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            <form id="addTaskForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Task ID *</label>
+                    <input type="text" id="taskId" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., TASK001">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                    <input type="text" id="taskTitle" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                    <textarea id="taskDescription" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Due Date *</label>
+                    <input type="date" id="taskDueDate" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300">
+                    <i class="fas fa-plus mr-2"></i>Add Task
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Course Modal -->
+<div id="addCourseModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-90vh overflow-y-auto">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-blue-600">Add New Course</h3>
+                <button onclick="closeAddCourseModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            <form id="addCourseForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Course ID *</label>
+                    <input type="text" id="courseId" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., COURSE001">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                    <input type="text" id="courseTitle" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                    <textarea id="courseDescription" required rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Step 1 Content *</label>
+                        <textarea id="courseStep1" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Step 2 Content *</label>
+                        <textarea id="courseStep2" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Step 3 Content *</label>
+                        <textarea id="courseStep3" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Step 4 Content *</label>
+                        <textarea id="courseStep4" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Step 5 Content *</label>
+                        <textarea id="courseStep5" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300">
+                    <i class="fas fa-plus mr-2"></i>Add Course
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
