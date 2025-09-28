@@ -119,7 +119,8 @@ class GoogleSheetsAPI {
         
         const sheetsToTest = [
             'user_credentials',
-            'tasks_master', 
+            '1_tasks_master', '2_tasks_master', '3_tasks_master', '4_tasks_master', '5_tasks_master',
+            '6_tasks_master', '7_tasks_master', '8_tasks_master', '9_tasks_master', '10_tasks_master',
             'courses_master',
             'events_master',
             'registration',
@@ -248,7 +249,7 @@ window.debugAdminStatus = async function() {
         if (Array.isArray(users)) {
             console.log('User count:', users.length);
             users.forEach((user, index) => {
-                console.log(`${index + 1}. ${user.username} - ${user.full_name} (${user.role})`);
+                console.log(`${index + 1}. ${user.username} - ${user.full_name} (${user.role}) - Class: ${user.class || 'N/A'} - Subjects: ${user.subjects || 'N/A'}`);
             });
         }
         
@@ -273,26 +274,25 @@ window.debugSheets = async function() {
             console.log('Users count:', users.length);
             console.log('First user:', users[0]);
             
-            // Show all usernames
-            console.log('All usernames:', users.map(u => u.username));
+            // Show all usernames with class info
+            console.log('All users:', users.map(u => `${u.username} (Class: ${u.class || 'N/A'}, Subjects: ${u.subjects || 'N/A'})`));
         }
         
-        // Test individual user progress sheets
-        const testUsers = ['user1', 'user2', 'user3', 'nasik', 'sufiyan'];
-        for (const testUser of testUsers) {
+        // Test class-based task sheets
+        for (let classNumber = 1; classNumber <= 10; classNumber++) {
             try {
-                console.log(`\n--- Testing ${testUser}_progress ---`);
-                const progress = await api.getSheet(`${testUser}_progress`, false);
-                if (progress && !progress.error) {
-                    console.log(`✅ ${testUser}_progress: Found ${Array.isArray(progress) ? progress.length + ' records' : 'data'}`);
-                    if (Array.isArray(progress) && progress.length > 0) {
-                        console.log(`Sample record:`, progress[0]);
+                console.log(`\n--- Testing ${classNumber}_tasks_master ---`);
+                const tasks = await api.getSheet(`${classNumber}_tasks_master`, false);
+                if (tasks && !tasks.error) {
+                    console.log(`✅ ${classNumber}_tasks_master: Found ${Array.isArray(tasks) ? tasks.length + ' records' : 'data'}`);
+                    if (Array.isArray(tasks) && tasks.length > 0) {
+                        console.log(`Sample record:`, tasks[0]);
                     }
                 } else {
-                    console.log(`❌ ${testUser}_progress: ${progress?.error || 'Not found'}`);
+                    console.log(`❌ ${classNumber}_tasks_master: ${tasks?.error || 'Not found'}`);
                 }
             } catch (e) {
-                console.log(`❌ ${testUser}_progress: Exception -`, e.message);
+                console.log(`❌ ${classNumber}_tasks_master: Exception -`, e.message);
             }
         }
         
@@ -332,7 +332,7 @@ window.testAPI = async function() {
         if (Array.isArray(users) && users.length > 0) {
             console.log('Available users:');
             users.forEach((user, index) => {
-                console.log(`  ${index + 1}. ${user.username} (${user.full_name || 'No name'}) - Role: ${user.role || 'student'}`);
+                console.log(`  ${index + 1}. ${user.username} (${user.full_name || 'No name'}) - Role: ${user.role || 'student'} - Class: ${user.class || 'N/A'} - Subjects: ${user.subjects || 'N/A'}`);
             });
         }
     } catch (error) {
@@ -385,6 +385,8 @@ async function login() {
                 username: user.username,
                 name: user.full_name || user.username,
                 role: user.role || 'student',
+                class: user.class || null,
+                subjects: user.subjects || null,
                 userId: user.username
             };
 
@@ -606,9 +608,9 @@ async function showPage(page) {
 }
 
 // =============================
-// ✅ Optimized Tasks
+// ✅ Optimized Tasks (UPDATED FOR CLASS-BASED SYSTEM)
 // =============================
-// Updated loadTasks function (remove submit functionality for students)
+// Updated loadTasks function for class-based task system
 async function loadTasks() {
     const tasksContainer = document.getElementById('tasksList');
     
@@ -616,88 +618,146 @@ async function loadTasks() {
     tasksContainer.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading tasks...</div>';
 
     try {
-        const [tasks, progress] = await Promise.all([
-            api.getSheet("tasks_master"),
-            api.getSheet(`${currentUser.username}_progress`)
-        ]);
-        
-        tasksContainer.innerHTML = '';
-
-        if (!tasks || tasks.length === 0) {
-            tasksContainer.innerHTML = '<p class="text-gray-500">No tasks found.</p>';
-            return;
-        }
-
-        const fragment = document.createDocumentFragment();
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        tasks.forEach(task => {
-            const userTask = progress.find(p => 
-                String(p.item_id) === String(task.task_id) && 
-                p.item_type === "task" && 
-                p.status === "complete"
-            );
-            const completed = !!userTask;
-            
-            // Check if task is overdue
-            const dueDate = new Date(task.due_date);
-            dueDate.setHours(23, 59, 59, 999);
-            const isOverdue = !completed && dueDate < today;
-            const isDueToday = !completed && dueDate.toDateString() === today.toDateString();
-            const isDueSoon = !completed && dueDate > today && dueDate <= new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000));
-
-            const taskElement = document.createElement('div');
-            let containerClass = 'flex items-start space-x-3 p-4 border rounded-lg';
-            let statusIndicator = '';
-            
-            if (completed) {
-                containerClass += ' bg-green-50 border-green-200';
-                statusIndicator = '<span class="text-xs text-green-600 font-medium">✓ Completed</span>';
-            } else if (isOverdue) {
-                containerClass += ' bg-red-50 border-red-300';
-                statusIndicator = '<span class="text-xs text-red-600 font-medium">⚠ Overdue</span>';
-            } else if (isDueToday) {
-                containerClass += ' bg-yellow-50 border-yellow-300';
-                statusIndicator = '<span class="text-xs text-yellow-600 font-medium">Due Today</span>';
-            } else if (isDueSoon) {
-                containerClass += ' bg-blue-50 border-blue-200';
-                statusIndicator = '<span class="text-xs text-blue-600 font-medium">Due Soon</span>';
-            } else {
-                containerClass += ' bg-gray-50';
+        // For students, load tasks based on their class
+        if (currentUser.role === 'student') {
+            if (!currentUser.class) {
+                tasksContainer.innerHTML = '<p class="text-gray-500">No class assigned. Please contact administrator.</p>';
+                return;
             }
             
-            taskElement.className = containerClass;
+            const tasksSheetName = `${currentUser.class}_tasks_master`;
+            const [tasks, progress] = await Promise.all([
+                api.getSheet(tasksSheetName),
+                api.getSheet(`${currentUser.username}_progress`)
+            ]);
             
-            const dueDateFormatted = new Date(task.due_date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
-            
-            // Remove checkbox for students - display only
-            taskElement.innerHTML = `
-                <div class="flex-shrink-0 mt-1">
-                    ${completed ? 
-                        '<i class="fas fa-check-circle text-green-600 text-xl"></i>' : 
-                        '<i class="fas fa-clock text-gray-400 text-xl"></i>'
-                    }
-                </div>
-                <div class="flex-1">
-                    <h4 class="font-semibold ${completed ? 'line-through text-gray-500' : isOverdue ? 'text-red-700' : ''}">${task.title}</h4>
-                    <p class="text-gray-600 text-sm ${completed ? 'line-through' : isOverdue ? 'text-red-600' : ''}">${task.description}</p>
-                    <p class="text-xs ${isOverdue ? 'text-red-500 font-medium' : isDueToday ? 'text-yellow-600 font-medium' : 'text-gray-400'}">
-                        Due: ${dueDateFormatted}
-                        ${isOverdue ? ' (OVERDUE)' : isDueToday ? ' (TODAY)' : ''}
-                    </p>
-                    ${statusIndicator}
-                    ${isOverdue ? '<p class="text-xs text-red-500 mt-1 italic">This task is overdue</p>' : ''}
-                </div>
-            `;
-            fragment.appendChild(taskElement);
-        });
+            tasksContainer.innerHTML = '';
 
-        tasksContainer.appendChild(fragment);
+            if (!tasks || tasks.length === 0) {
+                tasksContainer.innerHTML = '<p class="text-gray-500">No tasks found for your class.</p>';
+                return;
+            }
+
+            // Group tasks by subject
+            const tasksBySubject = {};
+            tasks.forEach(task => {
+                const subject = task.subject || 'General';
+                if (!tasksBySubject[subject]) {
+                    tasksBySubject[subject] = [];
+                }
+                tasksBySubject[subject].push(task);
+            });
+
+            const fragment = document.createDocumentFragment();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Create subject cards
+            Object.entries(tasksBySubject).forEach(([subject, subjectTasks]) => {
+                const completedCount = subjectTasks.filter(task => {
+                    const userTask = progress.find(p => 
+                        String(p.item_id) === String(task.task_id) && 
+                        p.item_type === "task" && 
+                        p.status === "complete"
+                    );
+                    return !!userTask;
+                }).length;
+
+                const subjectCard = document.createElement('div');
+                subjectCard.className = 'bg-white rounded-lg shadow-lg border border-gray-200 mb-4';
+                
+                subjectCard.innerHTML = `
+                    <div class="p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" 
+                         onclick="toggleSubjectTasks('${subject}')">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-book text-green-600 text-lg"></i>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800">${subject}</h3>
+                                    <p class="text-sm text-gray-600">${subjectTasks.length} task${subjectTasks.length !== 1 ? 's' : ''} • ${completedCount} completed</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                                    <span class="text-sm font-semibold text-green-700">${Math.round((completedCount / subjectTasks.length) * 100)}%</span>
+                                </div>
+                                <i class="fas fa-chevron-down text-gray-400 transform transition-transform subject-arrow-${subject.replace(/\s+/g, '-')}" id="arrow-${subject.replace(/\s+/g, '-')}"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subject-tasks-container hidden" id="tasks-${subject.replace(/\s+/g, '-')}">
+                        <div class="p-4 space-y-3">
+                            ${subjectTasks.map(task => {
+                                const userTask = progress.find(p => 
+                                    String(p.item_id) === String(task.task_id) && 
+                                    p.item_type === "task" && 
+                                    p.status === "complete"
+                                );
+                                const completed = !!userTask;
+                                
+                                const dueDate = new Date(task.due_date);
+                                dueDate.setHours(23, 59, 59, 999);
+                                const isOverdue = !completed && dueDate < today;
+                                const isDueToday = !completed && dueDate.toDateString() === today.toDateString();
+                                const isDueSoon = !completed && dueDate > today && dueDate <= new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000));
+
+                                let containerClass = 'flex items-start space-x-3 p-3 border rounded-lg';
+                                let statusIndicator = '';
+                                
+                                if (completed) {
+                                    containerClass += ' bg-green-50 border-green-200';
+                                    statusIndicator = '<span class="text-xs text-green-600 font-medium">✓ Completed</span>';
+                                } else if (isOverdue) {
+                                    containerClass += ' bg-red-50 border-red-300';
+                                    statusIndicator = '<span class="text-xs text-red-600 font-medium">⚠ Overdue</span>';
+                                } else if (isDueToday) {
+                                    containerClass += ' bg-yellow-50 border-yellow-300';
+                                    statusIndicator = '<span class="text-xs text-yellow-600 font-medium">Due Today</span>';
+                                } else if (isDueSoon) {
+                                    containerClass += ' bg-blue-50 border-blue-200';
+                                    statusIndicator = '<span class="text-xs text-blue-600 font-medium">Due Soon</span>';
+                                } else {
+                                    containerClass += ' bg-gray-50';
+                                }
+                                
+                                const dueDateFormatted = new Date(task.due_date).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                });
+                                
+                                return `
+                                    <div class="${containerClass}">
+                                        <div class="flex-shrink-0 mt-1">
+                                            ${completed ? 
+                                                '<i class="fas fa-check-circle text-green-600 text-lg"></i>' : 
+                                                '<i class="fas fa-clock text-gray-400 text-lg"></i>'
+                                            }
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-start mb-1">
+                                                <h5 class="font-medium ${completed ? 'line-through text-gray-500' : isOverdue ? 'text-red-700' : ''}">${task.title}</h5>
+                                                <span class="text-xs text-gray-500 ml-2">${task.task_id}</span>
+                                            </div>
+                                            <p class="text-gray-600 text-sm ${completed ? 'line-through' : isOverdue ? 'text-red-600' : ''}">${task.description}</p>
+                                            <p class="text-xs ${isOverdue ? 'text-red-500 font-medium' : isDueToday ? 'text-yellow-600 font-medium' : 'text-gray-400'} mt-1">
+                                                Due: ${dueDateFormatted}
+                                                ${isOverdue ? ' (OVERDUE)' : isDueToday ? ' (TODAY)' : ''}
+                                            </p>
+                                            ${statusIndicator}
+                                            ${isOverdue ? '<p class="text-xs text-red-500 mt-1 italic">This task is overdue</p>' : ''}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+                fragment.appendChild(subjectCard);
+            });
+
+            tasksContainer.appendChild(fragment);
+        }
         
     } catch (error) {
         console.error('Error loading tasks:', error);
@@ -705,6 +765,19 @@ async function loadTasks() {
     }
 }
 
+// Function to toggle subject task visibility
+function toggleSubjectTasks(subject) {
+    const tasksContainer = document.getElementById(`tasks-${subject.replace(/\s+/g, '-')}`);
+    const arrow = document.getElementById(`arrow-${subject.replace(/\s+/g, '-')}`);
+    
+    if (tasksContainer.classList.contains('hidden')) {
+        tasksContainer.classList.remove('hidden');
+        arrow.classList.add('rotate-180');
+    } else {
+        tasksContainer.classList.add('hidden');
+        arrow.classList.remove('rotate-180');
+    }
+}
 
 async function submitTasks() {
     const submitBtn = event.target;
@@ -741,8 +814,9 @@ async function submitTasks() {
             return;
         }
 
+        const tasksSheetName = `${currentUser.class}_tasks_master`;
         const [tasks, progress] = await Promise.all([
-            api.getSheet("tasks_master"),
+            api.getSheet(tasksSheetName),
             api.getSheet(`${currentUser.username}_progress`)
         ]);
         
@@ -818,8 +892,11 @@ async function submitTasks() {
 
 async function checkOverdueTasks() {
     try {
+        if (!currentUser.class) return [];
+        
+        const tasksSheetName = `${currentUser.class}_tasks_master`;
         const [tasks, progress] = await Promise.all([
-            api.getSheet("tasks_master"),
+            api.getSheet(tasksSheetName),
             api.getSheet(`${currentUser.username}_progress`)
         ]);
         
@@ -1779,7 +1856,7 @@ document.getElementById('eventModal').addEventListener('click', function(e) {
 });
 
 // =============================
-// 📊 Optimized Charts & Progress
+// 📊 Optimized Charts & Progress (UPDATED FOR CLASS-BASED SYSTEM)
 // =============================
 async function loadStatusCharts() {
     const progressSheetName = `${currentUser.username}_progress`;
@@ -1794,9 +1871,12 @@ async function loadStatusCharts() {
 }
 
 async function loadTaskChart(progress) {
-    const tasks = await api.getSheet("tasks_master");
+    if (!currentUser.class) return;
+    
+    const tasksSheetName = `${currentUser.class}_tasks_master`;
+    const tasks = await api.getSheet(tasksSheetName);
     const completedTasks = progress.filter(p => p.item_type === "task" && p.status === "complete").length;
-    const totalTasks = tasks.length;
+    const totalTasks = Array.isArray(tasks) ? tasks.length : 0;
     const pendingTasks = totalTasks - completedTasks;
 
     const ctx = document.getElementById('taskChart');
@@ -1948,8 +2028,11 @@ async function loadActivityChart(progress) {
 
 async function updateProgressBars(progress) {
     try {
+        if (!currentUser.class) return;
+        
+        const tasksSheetName = `${currentUser.class}_tasks_master`;
         const [tasks, courses] = await Promise.all([
-            api.getSheet("tasks_master"),
+            api.getSheet(tasksSheetName),
             api.getSheet("courses_master")
         ]);
         
@@ -2209,14 +2292,14 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // =============================
-// 👨‍💼 Admin Functions
+// 👨‍💼 Admin Functions (UPDATED FOR CLASS-BASED SYSTEM)
 // =============================
 
 async function loadAdminData() {
     try {
         await Promise.all([
             loadAdminUsers(),
-            loadAdminResponse(),  // ADD THIS LINE
+            loadAdminResponse(),
             loadAdminEvents(),
             loadAdminTasks(),
             loadAdminCourses()
@@ -2246,6 +2329,8 @@ async function loadAdminUsers() {
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subjects</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
@@ -2258,6 +2343,12 @@ async function loadAdminUsers() {
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
                                     ${user.role || 'student'}
                                 </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                ${user.role === 'student' ? (user.class || 'N/A') : '-'}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                ${user.role === 'admin' ? (user.subjects || 'N/A') : '-'}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 <button onclick="editUser('${user.username}')" class="text-blue-600 hover:text-blue-900 mr-3">
@@ -2318,39 +2409,111 @@ async function loadAdminEvents() {
     }
 }
 
-// Admin Tasks Management
+// Admin Tasks Management (UPDATED FOR ADMIN TEACHING SUBJECTS)
 async function loadAdminTasks() {
-    const container = document.getElementById('adminTasksList');
+    const container = document.getElementById('adminTasksDefaultList');
     container.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading tasks...</div>';
 
     try {
-        const tasks = await api.getSheet("tasks_master");
+        // Load students dropdown
+        await loadTaskStudentsDropdown();
         
-        if (!tasks || tasks.length === 0) {
-            container.innerHTML = '<p class="text-gray-500">No tasks found.</p>';
-            return;
-        }
+        // For admin users, show tasks based on their subjects and classes
+        if (currentUser.role === 'admin' && currentUser.subjects) {
+            const adminSubjects = currentUser.subjects.split(',').map(s => s.trim());
+            
+            // Load all class-based task sheets to find relevant tasks
+            let allRelevantTasks = [];
+            
+            for (let classNumber = 1; classNumber <= 10; classNumber++) {
+                try {
+                    const tasksSheetName = `${classNumber}_tasks_master`;
+                    const classTasks = await api.getSheet(tasksSheetName);
+                    
+                    if (Array.isArray(classTasks)) {
+                        // Filter tasks by admin's subjects
+                        const relevantTasks = classTasks.filter(task => 
+                            adminSubjects.some(subject => 
+                                task.subject && task.subject.toLowerCase().includes(subject.toLowerCase())
+                            )
+                        );
+                        
+                        // Add class info to each task
+                        relevantTasks.forEach(task => {
+                            task.class = classNumber;
+                        });
+                        
+                        allRelevantTasks = allRelevantTasks.concat(relevantTasks);
+                    }
+                } catch (error) {
+                    console.log(`Error loading ${classNumber}_tasks_master:`, error.message);
+                }
+            }
+            
+            if (allRelevantTasks.length === 0) {
+                container.innerHTML = '<p class="text-gray-500">No tasks found for your subjects.</p>';
+                return;
+            }
 
-        container.innerHTML = tasks.map(task => `
-            <div class="bg-gray-50 rounded-lg p-4 flex justify-between items-start">
-                <div class="flex-1">
-                    <h4 class="font-semibold text-gray-800">${task.title}</h4>
-                    <p class="text-sm text-gray-600">${task.description}</p>
-                    <div class="mt-2">
-                        <p class="text-xs text-gray-500"><i class="fas fa-calendar-alt mr-1"></i>Due: ${new Date(task.due_date).toLocaleDateString()}</p>
-                        <p class="text-xs text-gray-500"><i class="fas fa-tag mr-1"></i>ID: ${task.task_id}</p>
+            // Group tasks by class and subject
+            const tasksByClass = {};
+            allRelevantTasks.forEach(task => {
+                const classKey = `Class ${task.class}`;
+                if (!tasksByClass[classKey]) {
+                    tasksByClass[classKey] = {};
+                }
+                
+                const subject = task.subject || 'General';
+                if (!tasksByClass[classKey][subject]) {
+                    tasksByClass[classKey][subject] = [];
+                }
+                
+                tasksByClass[classKey][subject].push(task);
+            });
+
+            let htmlContent = '';
+            Object.entries(tasksByClass).forEach(([className, subjects]) => {
+                htmlContent += `
+                    <div class="mb-6">
+                        <h3 class="text-lg font-bold text-blue-600 mb-4">${className}</h3>
+                        ${Object.entries(subjects).map(([subject, tasks]) => `
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                <h4 class="font-semibold text-gray-800 mb-3">${subject} (${tasks.length} task${tasks.length !== 1 ? 's' : ''})</h4>
+                                <div class="space-y-2">
+                                    ${tasks.map(task => `
+                                        <div class="bg-white rounded p-3 border">
+                                            <div class="flex justify-between items-start">
+                                                <div class="flex-1">
+                                                    <h5 class="font-medium text-gray-800">${task.title}</h5>
+                                                    <p class="text-sm text-gray-600">${task.description}</p>
+                                                    <div class="mt-2 flex items-center space-x-4 text-xs text-gray-500">
+                                                        <span><i class="fas fa-tag mr-1"></i>ID: ${task.task_id}</span>
+                                                        <span><i class="fas fa-calendar-alt mr-1"></i>Due: ${new Date(task.due_date).toLocaleDateString()}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex space-x-2 ml-4">
+                                                    <button onclick="editTask('${task.task_id}')" class="text-blue-600 hover:text-blue-800">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button onclick="deleteTask('${task.task_id}')" class="text-red-600 hover:text-red-800">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
-                </div>
-                <div class="flex space-x-2 ml-4">
-                    <button onclick="editTask('${task.task_id}')" class="text-blue-600 hover:text-blue-800">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button onclick="deleteTask('${task.task_id}')" class="text-red-600 hover:text-red-800">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `).join('');
+                `;
+            });
+
+            container.innerHTML = htmlContent;
+        } else {
+            container.innerHTML = '<p class="text-gray-500">No subjects assigned to admin user.</p>';
+        }
+        
     } catch (error) {
         console.error('Error loading tasks:', error);
         container.innerHTML = '<p class="text-red-500">Error loading tasks.</p>';
@@ -2649,7 +2812,6 @@ function contactApplicant(phone, gmail) {
     }
 }
 
-
 // Admin Status - All Users (FIXED VERSION)
 async function loadAllUsersStatus() {
     console.log('Loading all users status page...');
@@ -2714,16 +2876,17 @@ async function loadUsersDropdown() {
                 const username = user.username.trim();
                 const role = (user.role || 'student').toLowerCase();
                 const displayName = user.full_name || username;
+                const userClass = user.class || 'N/A';
                 
                 const option = document.createElement('option');
                 option.value = username;
-                option.textContent = `${displayName} (@${username}) - ${role}`;
+                option.textContent = `${displayName} (@${username}) - ${role} - Class: ${userClass}`;
                 userSelect.appendChild(option);
                 console.log('Added user to dropdown:', username);
             }
         });
         
-        // Add event listener for user selection
+       // Add event listener for user selection
         userSelect.onchange = handleUserSelection;
         
         console.log(`Loaded ${userSelect.options.length - 1} users in dropdown`);
