@@ -21,7 +21,7 @@ let dataCache = {
 // =============================
 class GoogleSheetsAPI {
     constructor() {
-        this.apiUrl = "https://script.google.com/macros/s/AKfycbwHNUdKLXepN8RsY-53R_97rJ4T1-hCMa2jiv07gYKbMP9Mohh5hMN0Ndlnx1Kc2b9n/exec";
+        this.apiUrl = "https://script.google.com/macros/s/AKfycbw0jNeTVwrG8wVloSCtsqPf76yAy4_LP4JrZa9OGoIOivBQ2B0OaEBr5XHyhCUjvh_cXg/exec";
         this.cache = new Map();
         this.cacheTimeout = 2 * 60 * 1000; // 2 minutes cache
     }
