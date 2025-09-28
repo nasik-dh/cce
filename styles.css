@@ -1,426 +1,536 @@
 .islamic-pattern {
-            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23059669' fill-opacity='0.05'%3E%3Cpath d='M30 30c0-16.569 13.431-30 30-30v60c-16.569 0-30-13.431-30-30z'/%3E%3Cpath d='M0 30c0-16.569 13.431-30 30-30v60C13.431 60 0 46.569 0 30z'/%3E%3Cpath d='M15 0h30v30H15z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        }
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .course-step {
-            display: none;
-        }
-        .course-step.active {
-            display: block;
-        }
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23059669' fill-opacity='0.05'%3E%3Cpath d='M30 30c0-16.569 13.431-30 30-30v60c-16.569 0-30-13.431-30-30z'/%3E%3Cpath d='M0 30c0-16.569 13.431-30 30-30v60C13.431 60 0 46.569 0 30z'/%3E%3Cpath d='M15 0h30v30H15z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
 
-        /* Mobile-first responsive design */
-        .container {
-            max-width: 100%;
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
 
-        /* Header responsive */
-        @media (max-width: 640px) {
-            .container {
-                padding-left: 0.5rem;
-                padding-right: 0.5rem;
-            }
-            
-            header .container {
-                flex-direction: column;
-                gap: 0.5rem;
-                text-align: center;
-            }
-            
-            header h1 {
-                font-size: 1.25rem;
-            }
-            
-            header .fas.fa-mosque {
-                font-size: 1.25rem;
-            }
-        }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-        /* Navigation responsive */
-        nav .container {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        nav .flex {
-            min-width: max-content;
-            padding-bottom: 0.5rem;
-        }
-        
-        @media (max-width: 640px) {
-            nav .flex {
-                space: 0.5rem;
-            }
-            
-            .nav-btn {
-                padding: 0.75rem 0.5rem;
-                font-size: 0.875rem;
-                white-space: nowrap;
-                min-width: max-content;
-            }
-            
-            .nav-btn i {
-                display: none;
-            }
-        }
+/* Subject Card Styles */
+.subject-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
 
-        /* Course modal responsive */
-        #courseModal .bg-white {
-            max-height: 95vh;
-            overflow-y: auto;
-            margin: 0.5rem;
-        }
+.subject-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #059669, #10b981);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
 
-        #courseContent {
-            max-width: 100%;
-            overflow-wrap: break-word;
-            word-wrap: break-word;
-            hyphens: auto;
-        }
+.subject-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border-color: #059669;
+}
 
-        #courseContent p {
-            white-space: pre-wrap;
-            word-break: break-word;
-            overflow-wrap: break-word;
-            line-height: 1.6;
-        }
+.subject-card:hover::before {
+    transform: scaleX(1);
+}
 
-        @media (max-width: 768px) {
-            #courseModal .max-w-2xl {
-                max-width: calc(100vw - 1rem);
-                margin: 0.5rem;
-            }
-            
-            #courseContent {
-                font-size: 0.9rem;
-            }
-            
-            #courseContent .p-6 {
-                padding: 1rem;
-            }
-        }
+.subject-card.expanded {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-color: #059669;
+    box-shadow: 0 8px 30px rgba(5, 150, 105, 0.12);
+}
 
-        @media (max-width: 480px) {
-            #courseModal .max-w-2xl {
-                max-width: calc(100vw - 0.5rem);
-                margin: 0.25rem;
-            }
-            
-            #courseContent {
-                font-size: 0.85rem;
-            }
-            
-            #courseContent .p-6 {
-                padding: 0.75rem;
-            }
-            
-            #courseContent h4 {
-                font-size: 1.1rem;
-            }
-            
-            #courseModal .p-4 {
-                padding: 0.75rem;
-            }
-            
-            #courseModal .p-6 {
-                padding: 1rem;
-            }
-        }
+.subject-card.expanded::before {
+    transform: scaleX(1);
+}
 
-        /* Calendar responsive */
-        .calendar-day {
-            min-height: 60px;
-            border: 1px solid #e5e7eb;
-            position: relative;
-            transition: all 0.2s ease;
-        }
+.subject-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
 
-        .calendar-day:hover {
-            background-color: #f0f9ff;
-            transform: scale(1.02);
-        }
+.subject-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
 
-        .event-indicator {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            width: 8px;
-            height: 8px;
-            background-color: #059669;
-            border-radius: 50%;
-            pointer-events: none;
-            transition: all 0.2s ease;
-        }
+.subject-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: linear-gradient(135deg, #059669, #10b981);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
 
-        .event-indicator.multiple {
-            background: linear-gradient(45deg, #059669 50%, #dc2626 50%);
-        }
+.task-count-badge {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
 
-        @media (max-width: 640px) {
-            .calendar-day {
-                min-height: 45px;
-                font-size: 0.75rem;
-                padding: 0.25rem;
-            }
-            
-            .event-indicator {
-                width: 6px;
-                height: 6px;
-                top: 1px;
-                right: 1px;
-            }
-        }
+.expand-indicator {
+    font-size: 1.25rem;
+    color: #6b7280;
+    transition: transform 0.3s ease;
+}
 
-        @media (max-width: 480px) {
-            .calendar-day {
-                min-height: 40px;
-                font-size: 0.7rem;
-                padding: 0.125rem;
-            }
-            
-            .event-indicator {
-                width: 5px;
-                height: 5px;
-            }
-        }
+.subject-card.expanded .expand-indicator {
+    transform: rotate(180deg);
+}
 
-        /* Chart containers responsive */
-        .chart-container {
-            position: relative;
-            height: 250px !important;
-            width: 100% !important;
-        }
+.subject-description {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    font-style: italic;
+}
 
-        @media (max-width: 768px) {
-            .chart-container {
-                height: 200px !important;
-            }
-        }
+/* Task List within Subject Cards */
+.subject-tasks {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+    animation: slideDown 0.3s ease-out;
+}
 
-        @media (max-width: 480px) {
-            .chart-container {
-                height: 180px !important;
-            }
-        }
+.subject-card.expanded .subject-tasks {
+    display: block;
+}
 
-        #taskChart, #courseChart, #activityChart {
-            height: 100% !important;
-            max-height: 100% !important;
-        }
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
-        .status-card {
-            min-height: 300px;
-        }
+.task-item {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s ease;
+    position: relative;
+}
 
-        @media (max-width: 768px) {
-            .status-card {
-                min-height: 250px;
-            }
-        }
+.task-item:hover {
+    border-color: #059669;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transform: translateX(4px);
+}
 
-        /* Timetable responsive */
-        .timetable-cell {
-            min-height: 60px;
-            transition: all 0.3s ease;
-            padding: 0.5rem 0.25rem;
-        }
+.task-item.completed {
+    background: #f0fdf4;
+    border-color: #22c55e;
+    opacity: 0.8;
+}
 
-        .timetable-cell:hover {
-            background-color: #f0f9ff;
-            transform: scale(1.02);
-        }
+.task-item.overdue {
+    background: #fef2f2;
+    border-color: #ef4444;
+    position: relative;
+}
 
-        .subject-islamic { background-color: #dbeafe; color: #1e40af; }
-        .subject-language { background-color: #dcfce7; color: #166534; }
-        .subject-science { background-color: #f3e8ff; color: #7c3aed; }
-        .subject-break { background-color: #fed7aa; color: #ea580c; }
-        .subject-free { background-color: #f3f4f6; color: #6b7280; }
-        .subject-rest { background-color: #fef3c7; color: #d97706; }
+.task-item.overdue::after {
+    content: '⚠️ OVERDUE';
+    position: absolute;
+    top: -8px;
+    right: 8px;
+    background: #ef4444;
+    color: white;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+}
 
-        @media (max-width: 768px) {
-            .timetable-cell {
-                min-height: 45px;
-                font-size: 0.7rem;
-                padding: 0.25rem 0.125rem;
-            }
-            
-            .timetable-cell div {
-                line-height: 1.1;
-            }
-            
-            .timetable-cell .font-medium {
-                font-size: 0.65rem;
-            }
-            
-            .timetable-cell i {
-                font-size: 0.5rem;
-            }
-        }
+.task-id {
+    display: inline-block;
+    background: #f3f4f6;
+    color: #374151;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
 
-        @media (max-width: 640px) {
-            .timetable-cell {
-                min-height: 40px;
-                font-size: 0.65rem;
-                padding: 0.125rem;
-            }
-            
-            .timetable-cell .font-medium {
-                font-size: 0.6rem;
-            }
-        }
+.task-title {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
 
-        @media (max-width: 480px) {
-            .timetable-cell {
-                min-height: 35px;
-                font-size: 0.6rem;
-                padding: 0.125rem 0.05rem;
-            }
-            
-            .timetable-cell div {
-                line-height: 1;
-            }
-            
-            .timetable-cell i {
-                display: none;
-            }
-        }
+.task-description {
+    color: #6b7280;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
+}
 
-        /* Tasks page responsive */
-        @media (max-width: 640px) {
-            .space-y-4 > * + * {
-                margin-top: 0.75rem;
-            }
-            
-            .p-4 {
-                padding: 0.75rem;
-            }
-            
-            .space-x-3 > * + * {
-                margin-left: 0.75rem;
-            }
-        }
+.task-due-date {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
 
-        /* Courses grid responsive */
-        @media (max-width: 1024px) {
-            .lg\\:grid-cols-3 {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
+.task-due-date.due-today {
+    color: #f59e0b;
+    font-weight: 600;
+}
 
-        @media (max-width: 768px) {
-            .md\\:grid-cols-2 {
-                grid-template-columns: repeat(1, minmax(0, 1fr));
-            }
-        }
+.task-due-date.overdue {
+    color: #ef4444;
+    font-weight: 600;
+}
 
-        /* Button responsive */
-        @media (max-width: 640px) {
-            .px-6 {
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-            
-            .py-2 {
-                padding-top: 0.5rem;
-                padding-bottom: 0.5rem;
-            }
-        }
+.task-status {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    font-size: 1.25rem;
+}
 
-        /* Main content responsive */
-        @media (max-width: 640px) {
-            main {
-                padding: 1rem 0.5rem;
-            }
-            
-            .bg-white.rounded-lg.shadow-lg {
-                margin: 0.25rem;
-                padding: 1rem;
-            }
-            
-            .text-2xl {
-                font-size: 1.25rem;
-            }
-            
-            .text-xl {
-                font-size: 1.125rem;
-            }
-        }
+.task-status.completed {
+    color: #22c55e;
+}
 
-        /* Event modal responsive */
-        @media (max-width: 640px) {
-            #eventModal .max-w-md {
-                max-width: calc(100vw - 1rem);
-                margin: 0.5rem;
-            }
-            
-            #eventModal .p-6 {
-                padding: 1rem;
-            }
-            
-            #eventModal .p-4 {
-                padding: 0.75rem;
-            }
-        }
+.task-status.pending {
+    color: #6b7280;
+}
 
-        /* Login page responsive */
-        @media (max-width: 640px) {
-            .max-w-md {
-                max-width: calc(100vw - 2rem);
-                margin: 1rem;
-            }
-            
-            .p-8 {
-                padding: 1.5rem;
-            }
-            
-            .w-16.h-16 {
-                width: 3rem;
-                height: 3rem;
-            }
-            
-            .text-3xl {
-                font-size: 1.5rem;
-            }
-        }
+/* Admin Task Management Styles */
+.admin-subject-filter {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
 
-        /* Status page grid responsive */
-        @media (max-width: 768px) {
-            .md\\:grid-cols-2 {
-                grid-template-columns: repeat(1, minmax(0, 1fr));
-            }
-        }
+.filter-row {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+    flex-wrap: wrap;
+}
 
-        /* Utility classes for better mobile experience */
-        .touch-scroll {
-            -webkit-overflow-scrolling: touch;
-            overflow-x: auto;
-        }
+.filter-group {
+    flex: 1;
+    min-width: 200px;
+}
 
-        .prevent-zoom {
-            touch-action: manipulation;
-        }
+.filter-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
 
-        /* Hide scrollbars on mobile while keeping functionality */
-        @media (max-width: 768px) {
-            .touch-scroll::-webkit-scrollbar {
-                display: none;
-            }
-            
-            .touch-scroll {
-                -ms-overflow-style: none;
-                scrollbar-width: none;
-            }
-        }
-        
-        /* Video course styling */
+.filter-select, .filter-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: border-color 0.2s ease;
+}
+
+.filter-select:focus, .filter-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    ring: 2px solid rgba(59, 130, 246, 0.2);
+}
+
+.filter-button {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-button:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+    transform: translateY(-1px);
+}
+
+/* Admin Class Badge */
+.class-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.subject-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: #f3f4f6;
+    color: #374151;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin: 0.125rem;
+}
+
+/* Subject Icons by Type */
+.subject-icon.mathematics { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.subject-icon.english { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.subject-icon.urdu { background: linear-gradient(135deg, #059669, #047857); }
+.subject-icon.arabic { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.subject-icon.science { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+.subject-icon.islamic { background: linear-gradient(135deg, #10b981, #059669); }
+.subject-icon.computer { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+.subject-icon.social { background: linear-gradient(135deg, #ec4899, #db2777); }
+.subject-icon.physics { background: linear-gradient(135deg, #84cc16, #65a30d); }
+.subject-icon.chemistry { background: linear-gradient(135deg, #f97316, #ea580c); }
+.subject-icon.biology { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.subject-icon.history { background: linear-gradient(135deg, #a855f7, #9333ea); }
+.subject-icon.geography { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+
+/* Progress Indicators */
+.subject-progress {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.progress-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #059669, #10b981);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #374151;
+    min-width: 3rem;
+    text-align: right;
+}
+
+/* Class Header Styles */
+.class-header {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.class-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+    animation: float 20s linear infinite;
+}
+
+@keyframes float {
+    0% { transform: translate(-50px, -50px); }
+    100% { transform: translate(50px, 50px); }
+}
+
+.class-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.class-subtitle {
+    font-size: 1rem;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+}
+
+/* Admin Task Assignment Interface */
+.task-assignment-interface {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.assignment-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.selected-student-info {
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #3b82f6;
+}
+
+.student-name {
+    font-weight: 700;
+    color: #1e40af;
+    font-size: 1.125rem;
+}
+
+.student-details {
+    font-size: 0.875rem;
+    color: #1e40af;
+    opacity: 0.8;
+    margin-top: 0.25rem;
+}
+
+/* Task Assignment Cards */
+.assignment-task-card {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.assignment-task-card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.assignment-task-card.selected {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.assignment-task-card.completed {
+    border-color: #22c55e;
+    background: #f0fdf4;
+    opacity: 0.7;
+}
+
+.task-checkbox {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: #3b82f6;
+}
+
+.assignment-submit-btn {
+    background: linear-gradient(135deg, #059669, #047857);
+    color: white;
+    border: none;
+    padding: 0.875rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    margin-top: 1.5rem;
+}
+
+.assignment-submit-btn:hover {
+    background: linear-gradient(135deg, #047857, #065f46);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.assignment-submit-btn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Course step and video course styling */
+.course-step {
+    display: none;
+}
+
+.course-step.active {
+    display: block;
+}
+
+/* Video course styling */
 .video-container iframe {
     border-radius: 8px;
 }
@@ -437,7 +547,7 @@
     }
 }
 
-/* Add these styles to your existing CSS file */
+/* Overdue task styles */
 .overdue-task {
     position: relative;
 }
@@ -474,6 +584,474 @@ input[type="checkbox"]:disabled + div {
 .task-overdue-text {
     text-decoration: line-through;
     opacity: 0.7;
+}
+
+/* Mobile-first responsive design */
+.container {
+    max-width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Header responsive */
+@media (max-width: 640px) {
+    .container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    header .container {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+    
+    header h1 {
+        font-size: 1.25rem;
+    }
+    
+    header .fas.fa-mosque {
+        font-size: 1.25rem;
+    }
+    
+    /* Subject Cards Mobile */
+    .subject-card {
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .subject-name {
+        font-size: 1rem;
+    }
+    
+    .subject-icon {
+        width: 2rem;
+        height: 2rem;
+        font-size: 0.875rem;
+    }
+    
+    .task-count-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .class-title {
+        font-size: 1.5rem;
+    }
+    
+    .class-subtitle {
+        font-size: 0.875rem;
+    }
+    
+    /* Admin Filter Mobile */
+    .filter-row {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .filter-group {
+        min-width: 100%;
+    }
+}
+
+/* Navigation responsive */
+nav .container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+nav .flex {
+    min-width: max-content;
+    padding-bottom: 0.5rem;
+}
+
+@media (max-width: 640px) {
+    nav .flex {
+        space: 0.5rem;
+    }
+    
+    .nav-btn {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.875rem;
+        white-space: nowrap;
+        min-width: max-content;
+    }
+    
+    .nav-btn i {
+        display: none;
+    }
+}
+
+/* Course modal responsive */
+#courseModal .bg-white {
+    max-height: 95vh;
+    overflow-y: auto;
+    margin: 0.5rem;
+}
+
+#courseContent {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
+}
+
+#courseContent p {
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    #courseModal .max-w-2xl {
+        max-width: calc(100vw - 1rem);
+        margin: 0.5rem;
+    }
+    
+    #courseContent {
+        font-size: 0.9rem;
+    }
+    
+    #courseContent .p-6 {
+        padding: 1rem;
+    }
+    
+    /* Task Items Mobile */
+    .task-item {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .task-title {
+        font-size: 0.875rem;
+    }
+    
+    .task-description {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #courseModal .max-w-2xl {
+        max-width: calc(100vw - 0.5rem);
+        margin: 0.25rem;
+    }
+    
+    #courseContent {
+        font-size: 0.85rem;
+    }
+    
+    #courseContent .p-6 {
+        padding: 0.75rem;
+    }
+    
+    #courseContent h4 {
+        font-size: 1.1rem;
+    }
+    
+    #courseModal .p-4 {
+        padding: 0.75rem;
+    }
+    
+    #courseModal .p-6 {
+        padding: 1rem;
+    }
+    
+    /* Task Assignment Mobile */
+    .task-assignment-interface {
+        padding: 1rem;
+    }
+    
+    .assignment-task-card {
+        padding: 0.75rem;
+        padding-right: 3rem;
+    }
+}
+
+/* Calendar responsive */
+.calendar-day {
+    min-height: 60px;
+    border: 1px solid #e5e7eb;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.calendar-day:hover {
+    background-color: #f0f9ff;
+    transform: scale(1.02);
+}
+
+.event-indicator {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    background-color: #059669;
+    border-radius: 50%;
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+.event-indicator.multiple {
+    background: linear-gradient(45deg, #059669 50%, #dc2626 50%);
+}
+
+@media (max-width: 640px) {
+    .calendar-day {
+        min-height: 45px;
+        font-size: 0.75rem;
+        padding: 0.25rem;
+    }
+    
+    .event-indicator {
+        width: 6px;
+        height: 6px;
+        top: 1px;
+        right: 1px;
+    }
+}
+
+@media (max-width: 480px) {
+    .calendar-day {
+        min-height: 40px;
+        font-size: 0.7rem;
+        padding: 0.125rem;
+    }
+    
+    .event-indicator {
+        width: 5px;
+        height: 5px;
+    }
+}
+
+/* Chart containers responsive */
+.chart-container {
+    position: relative;
+    height: 250px !important;
+    width: 100% !important;
+}
+
+@media (max-width: 768px) {
+    .chart-container {
+        height: 200px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .chart-container {
+        height: 180px !important;
+    }
+}
+
+#taskChart, #courseChart, #activityChart {
+    height: 100% !important;
+    max-height: 100% !important;
+}
+
+.status-card {
+    min-height: 300px;
+}
+
+@media (max-width: 768px) {
+    .status-card {
+        min-height: 250px;
+    }
+}
+
+/* Timetable responsive */
+.timetable-cell {
+    min-height: 60px;
+    transition: all 0.3s ease;
+    padding: 0.5rem 0.25rem;
+}
+
+.timetable-cell:hover {
+    background-color: #f0f9ff;
+    transform: scale(1.02);
+}
+
+.subject-islamic { background-color: #dbeafe; color: #1e40af; }
+.subject-language { background-color: #dcfce7; color: #166534; }
+.subject-science { background-color: #f3e8ff; color: #7c3aed; }
+.subject-break { background-color: #fed7aa; color: #ea580c; }
+.subject-free { background-color: #f3f4f6; color: #6b7280; }
+.subject-rest { background-color: #fef3c7; color: #d97706; }
+
+@media (max-width: 768px) {
+    .timetable-cell {
+        min-height: 45px;
+        font-size: 0.7rem;
+        padding: 0.25rem 0.125rem;
+    }
+    
+    .timetable-cell div {
+        line-height: 1.1;
+    }
+    
+    .timetable-cell .font-medium {
+        font-size: 0.65rem;
+    }
+    
+    .timetable-cell i {
+        font-size: 0.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .timetable-cell {
+        min-height: 40px;
+        font-size: 0.65rem;
+        padding: 0.125rem;
+    }
+    
+    .timetable-cell .font-medium {
+        font-size: 0.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .timetable-cell {
+        min-height: 35px;
+        font-size: 0.6rem;
+        padding: 0.125rem 0.05rem;
+    }
+    
+    .timetable-cell div {
+        line-height: 1;
+    }
+    
+    .timetable-cell i {
+        display: none;
+    }
+}
+
+/* Tasks page responsive */
+@media (max-width: 640px) {
+    .space-y-4 > * + * {
+        margin-top: 0.75rem;
+    }
+    
+    .p-4 {
+        padding: 0.75rem;
+    }
+    
+    .space-x-3 > * + * {
+        margin-left: 0.75rem;
+    }
+}
+
+/* Courses grid responsive */
+@media (max-width: 1024px) {
+    .lg\\:grid-cols-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .md\\:grid-cols-2 {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+}
+
+/* Button responsive */
+@media (max-width: 640px) {
+    .px-6 {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .py-2 {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+}
+
+/* Main content responsive */
+@media (max-width: 640px) {
+    main {
+        padding: 1rem 0.5rem;
+    }
+    
+    .bg-white.rounded-lg.shadow-lg {
+        margin: 0.25rem;
+        padding: 1rem;
+    }
+    
+    .text-2xl {
+        font-size: 1.25rem;
+    }
+    
+    .text-xl {
+        font-size: 1.125rem;
+    }
+}
+
+/* Event modal responsive */
+@media (max-width: 640px) {
+    #eventModal .max-w-md {
+        max-width: calc(100vw - 1rem);
+        margin: 0.5rem;
+    }
+    
+    #eventModal .p-6 {
+        padding: 1rem;
+    }
+    
+    #eventModal .p-4 {
+        padding: 0.75rem;
+    }
+}
+
+/* Login page responsive */
+@media (max-width: 640px) {
+    .max-w-md {
+        max-width: calc(100vw - 2rem);
+        margin: 1rem;
+    }
+    
+    .p-8 {
+        padding: 1.5rem;
+    }
+    
+    .w-16.h-16 {
+        width: 3rem;
+        height: 3rem;
+    }
+    
+    .text-3xl {
+        font-size: 1.5rem;
+    }
+}
+
+/* Status page grid responsive */
+@media (max-width: 768px) {
+    .md\\:grid-cols-2 {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+}
+
+/* Utility classes for better mobile experience */
+.touch-scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+}
+
+.prevent-zoom {
+    touch-action: manipulation;
+}
+
+/* Hide scrollbars on mobile while keeping functionality */
+@media (max-width: 768px) {
+    .touch-scroll::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .touch-scroll {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
 }
 
 /* Admin Status Page Responsive */
@@ -800,4 +1378,3 @@ input[type="checkbox"]:disabled + div {
     align-items: center;
     gap: 12px;
 }
-
