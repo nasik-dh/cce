@@ -1436,3 +1436,45 @@ nav .flex {
         min-width: 100%;
     }
 }
+
+/* Add these styles to your CSS file */
+
+/* Student Card Styles */
+.student-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.student-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Task Assignment Card Styles */
+.task-assignment-card {
+    transition: all 0.2s ease;
+}
+
+.task-assignment-card:hover {
+    background-color: #f8fafc;
+}
+
+.task-assignment-card.completed {
+    background-color: #f0fdf4;
+    border-color: #22c55e;
+}
+
+.task-assignment-card.overdue {
+    background-color: #fef2f2;
+    border-color: #ef4444;
+}
+
+/* Modal Styles */
+#studentTaskModal .max-h-90vh {
+    max-height: 90vh;
+}
+
+#studentTaskModalContent {
+    max-height: 60vh;
+    overflow-y: auto;
+}
