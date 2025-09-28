@@ -811,19 +811,36 @@ function getSubjectIcon(subject) {
 }
 
 // Replace the existing toggleSubjectTasks function
+// Function to toggle subject task visibility - UPDATED
 function toggleSubjectTasks(subject) {
-    const tasksContainer = document.getElementById(`tasks-${subject}`);
-    const arrow = document.getElementById(`arrow-${subject}`);
-    const subjectCard = tasksContainer.closest('.subject-card');
+    const subjectId = subject.replace(/\s+/g, '-').toLowerCase();
+    const subjectCard = document.querySelector(`[data-subject="${subject}"]`);
+    const tasksContainer = document.getElementById(`tasks-${subjectId}`);
+    const arrow = document.getElementById(`arrow-${subjectId}`);
     
-    if (tasksContainer.classList.contains('hidden')) {
-        tasksContainer.classList.remove('hidden');
-        subjectCard.classList.add('expanded');
-        arrow.classList.add('rotate-180');
-    } else {
-        tasksContainer.classList.add('hidden');
+    if (!subjectCard || !tasksContainer) return;
+    
+    // Close all other expanded cards first
+    document.querySelectorAll('.subject-card.expanded').forEach(card => {
+        if (card !== subjectCard) {
+            card.classList.remove('expanded');
+            const otherSubject = card.getAttribute('data-subject');
+            const otherTasks = document.getElementById(`tasks-${otherSubject.replace(/\s+/g, '-')}`);
+            const otherArrow = document.getElementById(`arrow-${otherSubject.replace(/\s+/g, '-')}`);
+            if (otherTasks) otherTasks.style.display = 'none';
+            if (otherArrow) otherArrow.classList.remove('rotate-180');
+        }
+    });
+    
+    // Toggle current card
+    if (subjectCard.classList.contains('expanded')) {
         subjectCard.classList.remove('expanded');
-        arrow.classList.remove('rotate-180');
+        tasksContainer.style.display = 'none';
+        if (arrow) arrow.classList.remove('rotate-180');
+    } else {
+        subjectCard.classList.add('expanded');
+        tasksContainer.style.display = 'block';
+        if (arrow) arrow.classList.add('rotate-180');
     }
 }
 
@@ -2585,18 +2602,30 @@ async function loadAdminEvents() {
 }
 
 // Admin Tasks Management (UPDATED FOR ADMIN TEACHING SUBJECTS)
+// Admin Tasks Management (UPDATED FOR ADMIN TEACHING SUBJECTS)
 async function loadAdminTasks() {
     try {
+        // Parse admin's classes and subjects
+        const adminClasses = parseAdminClasses(currentUser.class);
+        const adminSubjects = parseAdminSubjects(currentUser.subjects);
+        
+        console.log('Admin teaching data:', {
+            classes: adminClasses,
+            subjects: adminSubjects,
+            rawClass: currentUser.class,
+            rawSubjects: currentUser.subjects
+        });
+        
         // Update admin teaching info
         const teachingInfo = document.getElementById('teachingSubjects');
         if (currentUser.subjects) {
-            teachingInfo.textContent = `Teaching: ${currentUser.subjects}`;
+            teachingInfo.textContent = `Teaching: Classes ${adminClasses.join(', ')} - Subjects: ${Object.values(adminSubjects).flat().join(', ')}`;
         } else {
             teachingInfo.textContent = 'No subjects assigned';
         }
         
-        // Load class dropdown
-        await loadAdminClassDropdown();
+        // Load class dropdown with admin's classes only
+        await loadAdminClassDropdown(adminClasses);
         
         // Reset view
         document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
@@ -2607,18 +2636,50 @@ async function loadAdminTasks() {
     }
 }
 
+// Parse admin classes from string like "1,2,3"
+function parseAdminClasses(classString) {
+    if (!classString) return [];
+    return classString.split(',').map(c => c.trim()).filter(c => c);
+}
+
+// Parse admin subjects from string like "(1-english),(2-mathematics),(3-urdu)"
+function parseAdminSubjects(subjectsString) {
+    if (!subjectsString) return {};
+    
+    const subjectsByClass = {};
+    
+    // Remove spaces and split by commas between parentheses
+    const cleanString = subjectsString.replace(/\s/g, '');
+    const matches = cleanString.match(/\((\d+)-([^)]+)\)/g);
+    
+    if (matches) {
+        matches.forEach(match => {
+            const [_, classNum, subject] = match.match(/\((\d+)-([^)]+)\)/);
+            if (!subjectsByClass[classNum]) {
+                subjectsByClass[classNum] = [];
+            }
+            subjectsByClass[classNum].push(subject.toLowerCase());
+        });
+    }
+    
+    return subjectsByClass;
+}
+
 // Load class dropdown for admin
-async function loadAdminClassDropdown() {
+// Load class dropdown for admin (UPDATED - only show admin's classes)
+async function loadAdminClassDropdown(adminClasses = []) {
     const classSelect = document.getElementById('adminTaskClassSelect');
     classSelect.innerHTML = '<option value="">-- Select Class --</option>';
     
-    // Add classes 1-10
-    for (let i = 1; i <= 10; i++) {
+    // If no specific classes assigned, show all classes 1-10
+    const classesToShow = adminClasses.length > 0 ? adminClasses : ['1','2','3','4','5','6','7','8','9','10'];
+    
+    classesToShow.forEach(classNum => {
         const option = document.createElement('option');
-        option.value = i;
-        option.textContent = `Class ${i}`;
+        option.value = classNum;
+        option.textContent = `Class ${classNum}`;
         classSelect.appendChild(option);
-    }
+    });
     
     // Add event listener for class selection
     classSelect.onchange = handleAdminClassSelection;
@@ -2642,58 +2703,59 @@ async function handleAdminClassSelection(event) {
     await loadAdminClassSubjects(classNumber);
 }
 
-// Replace the loadAdminClassSubjects function
+// Load subjects for selected class (UPDATED - only show admin's subjects for that class)
 async function loadAdminClassSubjects(classNumber) {
     const subjectSelect = document.getElementById('adminTaskSubjectSelect');
     subjectSelect.innerHTML = '<option value="">-- Loading Subjects... --</option>';
     subjectSelect.disabled = true;
     
     try {
-        // Parse admin's subjects based on format: (1-english),(2-mathematics),(3-urdu)
-        if (!currentUser.subjects) {
-            subjectSelect.innerHTML = '<option value="">-- No subjects assigned --</option>';
-            return;
-        }
-        
-        console.log('Admin subjects:', currentUser.subjects);
-        console.log('Selected class:', classNumber);
-        
-        // Parse subjects string: "(1-english),(2-mathematics),(3-urdu)"
-        const subjectRegex = /\((\d+)-([^)]+)\)/g;
-        const adminSubjects = [];
-        let match;
-        
-        while ((match = subjectRegex.exec(currentUser.subjects)) !== null) {
-            adminSubjects.push({
-                class: match[1],
-                subject: match[2].trim()
-            });
-        }
-        
-        console.log('Parsed admin subjects:', adminSubjects);
-        
-        // Filter subjects for the selected class
-        const classSubjects = adminSubjects.filter(item => item.class === classNumber);
-        
-        console.log('Subjects for class', classNumber, ':', classSubjects);
+        // Get admin's subjects for this class
+        const adminSubjects = parseAdminSubjects(currentUser.subjects);
+        const subjectsForThisClass = adminSubjects[classNumber] || [];
         
         subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
         
-        if (classSubjects.length === 0) {
-            const option = document.createElement('option');
-            option.value = '';
-            option.textContent = `No subjects found for Class ${classNumber}`;
-            subjectSelect.appendChild(option);
-            return;
+        if (subjectsForThisClass.length === 0) {
+            // If no specific subjects assigned for this class, load from tasks sheet
+            const tasksSheetName = `${classNumber}_tasks_master`;
+            const tasks = await api.getSheet(tasksSheetName);
+            
+            if (!tasks || tasks.error || !Array.isArray(tasks) || tasks.length === 0) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'No subjects found';
+                subjectSelect.appendChild(option);
+                return;
+            }
+            
+            // Get unique subjects from tasks
+            const subjects = [...new Set(tasks.map(task => task.subject).filter(Boolean))];
+            
+            if (subjects.length === 0) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'No subjects found';
+                subjectSelect.appendChild(option);
+                return;
+            }
+            
+            // Add all subjects to dropdown
+            subjects.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject;
+                option.textContent = subject;
+                subjectSelect.appendChild(option);
+            });
+        } else {
+            // Add only admin's assigned subjects for this class
+            subjectsForThisClass.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject;
+                option.textContent = subject.charAt(0).toUpperCase() + subject.slice(1);
+                subjectSelect.appendChild(option);
+            });
         }
-        
-        // Add subjects to dropdown
-        classSubjects.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item.subject;
-            option.textContent = item.subject.charAt(0).toUpperCase() + item.subject.slice(1);
-            subjectSelect.appendChild(option);
-        });
         
         subjectSelect.disabled = false;
         subjectSelect.onchange = () => handleAdminSubjectSelection(classNumber, subjectSelect.value);
@@ -2705,6 +2767,7 @@ async function loadAdminClassSubjects(classNumber) {
 }
 
 // Handle subject selection
+// Handle subject selection (UPDATED)
 async function handleAdminSubjectSelection(classNumber, subject) {
     if (!classNumber || !subject) {
         document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
@@ -4391,6 +4454,21 @@ async function submitSelectedStudentTasks() {
     }
 }
 
+// Debug function to check admin subjects parsing
+window.debugAdminSubjects = function() {
+    console.log('=== DEBUG: Admin Subjects ===');
+    console.log('Raw class string:', currentUser.class);
+    console.log('Raw subjects string:', currentUser.subjects);
+    
+    const adminClasses = parseAdminClasses(currentUser.class);
+    const adminSubjects = parseAdminSubjects(currentUser.subjects);
+    
+    console.log('Parsed classes:', adminClasses);
+    console.log('Parsed subjects:', adminSubjects);
+    
+    // Test the class dropdown
+    loadAdminClassDropdown(adminClasses);
+};
 
 // Disable right-click
 document.addEventListener("contextmenu", function (e) {
