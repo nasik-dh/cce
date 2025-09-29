@@ -2602,7 +2602,6 @@ async function loadAdminEvents() {
 }
 
 // Admin Tasks Management (UPDATED FOR ADMIN TEACHING SUBJECTS)
-// Admin Tasks Management (UPDATED FOR ADMIN TEACHING SUBJECTS)
 async function loadAdminTasks() {
     try {
         // Parse admin's classes and subjects
@@ -2704,6 +2703,7 @@ async function handleAdminClassSelection(event) {
 }
 
 // Load subjects for selected class (UPDATED - only show admin's subjects for that class)
+// Load subjects for selected class (UPDATED - only show admin's subjects for that class)
 async function loadAdminClassSubjects(classNumber) {
     const subjectSelect = document.getElementById('adminTaskSubjectSelect');
     subjectSelect.innerHTML = '<option value="">-- Loading Subjects... --</option>';
@@ -2804,7 +2804,7 @@ async function loadAdminClassSubjectTasks(classNumber, subject) {
         }
         
         // Filter tasks by subject
-        const subjectTasks = tasks.filter(task => task.subject === subject);
+        const subjectTasks = tasks.filter(task => task.subject && task.subject.toLowerCase() === subject.toLowerCase());
         
         if (subjectTasks.length === 0) {
             container.innerHTML = '<p class="text-gray-500 text-center py-4">No tasks found for this subject.</p>';
@@ -2852,6 +2852,7 @@ async function loadAdminClassSubjectTasks(classNumber, subject) {
                             <p class="text-sm text-gray-600 mb-2">${task.description}</p>
                             <div class="flex items-center space-x-4 text-xs text-gray-500">
                                 <span><i class="fas fa-calendar-alt mr-1"></i>Due: ${dueDateFormatted}</span>
+                                <span><i class="fas fa-book mr-1"></i>${task.subject}</span>
                             </div>
                         </div>
                     </div>
@@ -2865,7 +2866,7 @@ async function loadAdminClassSubjectTasks(classNumber, subject) {
     }
 }
 
-// Replace the existing loadAdminClassStudents function
+// Load students for selected class
 async function loadAdminClassStudents(classNumber) {
     const container = document.getElementById('adminClassStudentsList');
     container.innerHTML = '<div class="col-span-3 text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading students...</div>';
@@ -4268,8 +4269,7 @@ async function submitTasksForStudent() {
     }
 }
 
-// Add these new functions at the end of app.js
-
+// Student Task Modal Functions
 let currentStudentUsername = '';
 let currentStudentClass = '';
 let currentStudentSubject = '';
@@ -4288,7 +4288,7 @@ async function openStudentTaskModal(username, classNumber, subject) {
     const users = await api.getSheet("user_credentials");
     const student = users.find(u => u.username === username);
     
-    title.textContent = `Tasks for ${student?.full_name || username} - ${subject.charAt(0).toUpperCase() + subject.slice(1)}`;
+    title.textContent = `Tasks for ${student?.full_name || username} - Class ${classNumber} - ${subject.charAt(0).toUpperCase() + subject.slice(1)}`;
     content.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading tasks...</div>';
     
     modal.classList.remove('hidden');
@@ -4352,7 +4352,7 @@ async function loadStudentTasksInModal(username, classNumber, subject) {
             });
             
             return `
-                <div class="task-assignment-card ${completed ? 'completed' : ''} ${isOverdue ? 'overdue' : ''} border rounded-lg p-4">
+                <div class="task-assignment-card ${completed ? 'completed' : ''} ${isOverdue ? 'overdue' : ''} border rounded-lg p-4 mb-3">
                     <div class="flex items-start space-x-3">
                         <input type="checkbox" id="modal-task-${task.task_id}" 
                                ${completed ? 'checked disabled' : ''}
@@ -4469,6 +4469,8 @@ window.debugAdminSubjects = function() {
     // Test the class dropdown
     loadAdminClassDropdown(adminClasses);
 };
+
+
 
 // Disable right-click
 document.addEventListener("contextmenu", function (e) {
