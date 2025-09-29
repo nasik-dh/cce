@@ -503,7 +503,6 @@ function toggleSubjectTasks(subject) {
     }
 }
 
-
 // Helper functions for subject icons
 function getSubjectIcon(subject) {
     const subjectLower = subject.toLowerCase();
@@ -519,102 +518,6 @@ function getSubjectIcon(subject) {
     if (subjectLower.includes('malayalam')) return 'fas fa-language';
     if (subjectLower.includes('social')) return 'fas fa-users';
     return 'fas fa-book';
-}
-
-// Function to toggle subject task visibility
-function toggleSubjectTasks(subject) {
-    const tasksContainer = document.getElementById(`tasks-${subject}`);
-    const arrow = document.getElementById(`arrow-${subject}`);
-    
-    if (tasksContainer && arrow) {
-        if (tasksContainer.classList.contains('hidden')) {
-            // Close all other expanded subjects first
-            document.querySelectorAll('[id^="tasks-"]').forEach(container => {
-                if (container !== tasksContainer) {
-                    container.classList.add('hidden');
-                }
-            });
-            document.querySelectorAll('[id^="arrow-"]').forEach(arrowIcon => {
-                if (arrowIcon !== arrow) {
-                    arrowIcon.classList.remove('rotate-180');
-                }
-            });
-            
-            // Open this subject
-            tasksContainer.classList.remove('hidden');
-            arrow.classList.add('rotate-180');
-        } else {
-            // Close this subject
-            tasksContainer.classList.add('hidden');
-            arrow.classList.remove('rotate-180');
-        }
-    }
-}
-
-// Submit tasks function
-async function submitTasks() {
-    const submitBtn = event.target;
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Updating...';
-    submitBtn.disabled = true;
-
-    try {
-        // Get selected tasks - only non-disabled checkboxes
-        const selectedTasks = [];
-        document.querySelectorAll('input[type="checkbox"]:checked:not(:disabled)').forEach(checkbox => {
-            const taskId = checkbox.id.replace('task-', '');
-            selectedTasks.push(taskId);
-        });
-
-        if (selectedTasks.length === 0) {
-            alert('No valid tasks were selected for submission.');
-            return;
-        }
-
-        const tasksSheetName = `${currentUser.class}_tasks_master`;
-        const progress = await api.getSheet(`${currentUser.username}_progress`);
-        
-        const promises = [];
-        let updatedCount = 0;
-
-        for (let taskId of selectedTasks) {
-            const existingTask = progress.find(p => 
-                String(p.item_id) === String(taskId) && 
-                p.item_type === "task" && 
-                p.status === "complete"
-            );
-            
-            if (!existingTask) {
-                const rowData = [
-                    taskId,
-                    "task",
-                    "complete",
-                    new Date().toISOString().split('T')[0],
-                    "100"
-                ];
-                
-                promises.push(api.addRow(`${currentUser.username}_progress`, rowData));
-                updatedCount++;
-            }
-        }
-
-        if (promises.length > 0) {
-            await Promise.all(promises);
-            alert(`${updatedCount} task(s) submitted successfully!`);
-            await loadTasks();
-            if (currentPage === 'status') {
-                await loadStatusCharts();
-            }
-        } else {
-            alert('All selected tasks are already completed.');
-        }
-    } catch (error) {
-        console.error('Error submitting tasks:', error);
-        alert('Error updating tasks. Please try again.');
-    } finally {
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-    }
 }
 
 // =============================
@@ -702,7 +605,6 @@ async function loadSubjectPointsSummary(progress) {
     }
 }
 
-
 async function loadTaskChart(progress) {
     if (!currentUser.class) return;
     
@@ -743,180 +645,6 @@ async function loadTaskChart(progress) {
         });
     } catch (error) {
         console.error('Error loading task chart:', error);
-    }
-}
-
-async function loadCourseChart(progress) {
-    try {
-        const courses = await api.getSheet("courses_master");
-        
-        const totalCourses = courses && Array.isArray(courses) ? courses.length : 0;
-        const completedCourses = Array.isArray(progress) ? 
-            progress.filter(p => p.item_type === "course" && p.status === "complete").length : 0;
-        const inProgressCourses = Math.max(0, totalCourses - completedCourses);
-
-        const ctx = document.getElementById('courseChart');
-        if (!ctx) return;
-        
-        if (chartInstances.courseChart) {
-            chartInstances.courseChart.destroy();
-        }
-        
-        chartInstances.courseChart = new Chart(ctx.getContext('2d'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Completed', 'In Progress'],
-                datasets: [{
-                    data: [completedCourses, inProgressCourses],
-                    backgroundColor: ['#3b82f6', '#e5e7eb'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error('Error loading course chart:', error);
-    }
-}
-
-async function loadActivityChart(progress) {
-    try {
-        const progressArray = Array.isArray(progress) ? progress : [];
-        
-        const now = new Date();
-        const startOfWeek = new Date(now);
-        
-        // Get Monday of current week
-        const dayOfWeek = now.getDay();
-        const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-        startOfWeek.setDate(diff);
-        startOfWeek.setHours(0, 0, 0, 0);
-        
-        const dailyData = [];
-        const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        
-        for (let i = 0; i < 7; i++) {
-            const currentDay = new Date(startOfWeek);
-            currentDay.setDate(startOfWeek.getDate() + i);
-            
-            const nextDay = new Date(currentDay);
-            nextDay.setDate(currentDay.getDate() + 1);
-            
-            // Count completions for this specific day
-            const dayCompletions = progressArray.filter(p => {
-                if (!p.completion_date) return false;
-                try {
-                    const completionDate = new Date(p.completion_date);
-                    return completionDate >= currentDay && completionDate < nextDay && p.status === "complete";
-                } catch (e) {
-                    return false;
-                }
-            }).length;
-            
-            dailyData.push(dayCompletions);
-        }
-
-        const ctx = document.getElementById('activityChart');
-        if (!ctx) return;
-        
-        if (chartInstances.activityChart) {
-            chartInstances.activityChart.destroy();
-        }
-        
-        chartInstances.activityChart = new Chart(ctx.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: dayLabels,
-                datasets: [{
-                    label: 'Items Completed',
-                    data: dailyData,
-                    backgroundColor: 'rgba(5, 150, 105, 0.8)',
-                    borderColor: '#059669',
-                    borderWidth: 1,
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error('Error loading activity chart:', error);
-    }
-}
-
-async function updateProgressBars(progress) {
-    try {
-        if (!currentUser.class) return;
-        
-        const tasksSheetName = `${currentUser.class}_tasks_master`;
-        const [tasks, courses] = await Promise.all([
-            api.getSheet(tasksSheetName),
-            api.getSheet("courses_master")
-        ]);
-        
-        // Ensure progress is an array
-        const progressArray = Array.isArray(progress) ? progress : [];
-        
-        // Tasks progress
-        const completedTasks = progressArray.filter(p => p.item_type === "task" && p.status === "complete").length;
-        const totalTasks = Array.isArray(tasks) ? tasks.length : 0;
-        const taskProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-        
-        const taskProgressElement = document.getElementById('taskProgress');
-        const taskProgressBarElement = document.getElementById('taskProgressBar');
-        
-        if (taskProgressElement) taskProgressElement.textContent = `${taskProgress}%`;
-        if (taskProgressBarElement) taskProgressBarElement.style.width = `${taskProgress}%`;
-
-        // Courses progress
-        const totalCourses = Array.isArray(courses) ? courses.length : 0;
-        const completedCourses = progressArray.filter(p => p.item_type === "course" && p.status === "complete").length;
-        const courseProgress = totalCourses > 0 ? Math.round((completedCourses / totalCourses) * 100) : 0;
-        
-        const courseProgressTextElement = document.getElementById('courseProgressText');
-        const courseProgressBarElement = document.getElementById('courseProgressBar');
-        
-        if (courseProgressTextElement) courseProgressTextElement.textContent = `${courseProgress}%`;
-        if (courseProgressBarElement) courseProgressBarElement.style.width = `${courseProgress}%`;
-
-        // Events progress (placeholder)
-        const eventProgress = 40;
-        const eventProgressElement = document.getElementById('eventProgress');
-        const eventProgressBarElement = document.getElementById('eventProgressBar');
-        
-        if (eventProgressElement) eventProgressElement.textContent = `${eventProgress}%`;
-        if (eventProgressBarElement) eventProgressBarElement.style.width = `${eventProgress}%`;
-        
-    } catch (error) {
-        console.error('Error updating progress bars:', error);
     }
 }
 
@@ -1066,7 +794,7 @@ async function loadAdminClassSubjectData(classNum, subject) {
                     let statusText = 'Active';
                     
                     if (isOverdue) {
-                        statusClass = 'status-overdue';
+                        statusClass = 'status-pending'; // Use existing class
                         statusText = 'Overdue';
                     } else if (isDueToday) {
                         statusClass = 'status-pending';
@@ -1078,7 +806,7 @@ async function loadAdminClassSubjectData(classNum, subject) {
                             <div class="flex items-start justify-between">
                                 <div class="flex-1">
                                     <div class="flex items-center justify-between mb-2">
-                                        <span class="task-id">${task.task_id}</span>
+                                        <span class="task-id-badge">${task.task_id}</span>
                                         <span class="task-status ${statusClass}">${statusText}</span>
                                     </div>
                                     <h4 class="task-title">${task.title}</h4>
@@ -1308,61 +1036,6 @@ async function submitSelectedStudentTasks() {
 
 function closeStudentTaskModal() {
     document.getElementById('studentTaskModal').classList.add('hidden');
-}
-
-
-async function submitSelectedStudentTasks() {
-    const submitBtn = event.target;
-    const originalText = submitBtn.innerHTML;
-    
-    try {
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting...';
-        submitBtn.disabled = true;
-        
-        const selectedCheckboxes = document.querySelectorAll('#studentTaskModalContent input[type="checkbox"]:checked:not(:disabled)');
-        
-        if (selectedCheckboxes.length === 0) {
-            alert('No tasks selected for submission.');
-            return;
-        }
-        
-        const promises = [];
-        let updatedCount = 0;
-        
-        for (let checkbox of selectedCheckboxes) {
-            const taskId = checkbox.getAttribute('data-task-id');
-            const username = checkbox.getAttribute('data-username');
-            
-            const rowData = [
-                taskId,
-                "task",
-                "complete",
-                new Date().toISOString().split('T')[0],
-                "100"
-            ];
-            
-            promises.push(api.addRow(`${username}_progress`, rowData));
-            updatedCount++;
-        }
-        
-        await Promise.all(promises);
-        alert(`${updatedCount} task(s) marked as completed successfully!`);
-        closeStudentTaskModal();
-        
-        // Refresh the current view
-        const selectedClass = document.getElementById('adminTaskClassSelect').value;
-        const selectedSubject = document.getElementById('adminTaskSubjectSelect').value;
-        if (selectedClass && selectedSubject) {
-            await loadAdminClassSubjectData(selectedClass, selectedSubject);
-        }
-        
-    } catch (error) {
-        console.error('Error submitting selected student tasks:', error);
-        alert('Error submitting tasks. Please try again.');
-    } finally {
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-    }
 }
 
 // Clear admin task filters
