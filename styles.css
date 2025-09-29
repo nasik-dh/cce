@@ -1515,3 +1515,12 @@ nav .flex {
     transform: translateY(-2px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
+
+/* Student Task Modal Styles */
+.max-h-90vh {
+    max-height: 90vh;
+}
+
+.max-h-60vh {
+    max-height: 60vh;
+}
