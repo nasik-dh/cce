@@ -360,7 +360,6 @@ async function loadTasks() {
     tasksContainer.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin mr-2"></i>Loading your tasks...</div>';
 
     try {
-        // For students, load tasks based on their class
         if (currentUser.role === 'student') {
             if (!currentUser.class) {
                 tasksContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No class assigned. Please contact administrator.</p>';
@@ -395,90 +394,48 @@ async function loadTasks() {
             });
 
             const fragment = document.createDocumentFragment();
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
 
             // Create subject cards
             Object.entries(tasksBySubject).forEach(([subject, subjectTasks]) => {
                 const completedCount = subjectTasks.filter(task => {
-                    const userTask = progress.find(p => 
+                    const userTask = Array.isArray(progress) ? progress.find(p => 
                         String(p.item_id) === String(task.task_id) && 
                         p.item_type === "task" && 
                         p.status === "complete"
-                    );
+                    ) : null;
                     return !!userTask;
                 }).length;
 
-                const progressPercentage = subjectTasks.length > 0 ? Math.round((completedCount / subjectTasks.length) * 100) : 0;
-
                 const subjectCard = document.createElement('div');
-                subjectCard.className = 'subject-card bg-white rounded-lg shadow-md border-2 border-gray-200 hover:border-green-400 transition-all duration-300 p-6 mb-4';
+                subjectCard.className = 'subject-card';
                 subjectCard.setAttribute('data-subject', subject);
                 
                 subjectCard.innerHTML = `
-                    <div class="flex justify-between items-center cursor-pointer" onclick="toggleSubjectTasks('${subject}')">
-                        <div class="flex items-center space-x-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white">
+                    <div class="subject-header" onclick="toggleSubjectTasks('${subject}')">
+                        <div class="flex items-center">
+                            <div class="subject-icon">
                                 <i class="${getSubjectIcon(subject)}"></i>
                             </div>
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-800">${subject}</h3>
-                                <p class="text-sm text-gray-600">${subjectTasks.length} tasks • ${completedCount} completed</p>
+                            <div class="subject-info">
+                                <h3>${subject}</h3>
+                                <p>${subjectTasks.length} tasks • ${completedCount} completed</p>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-3">
-                            <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
-                                ${subjectTasks.length} tasks
-                            </div>
-                            <i class="fas fa-chevron-down text-gray-400 transform transition-transform duration-300" id="arrow-${subject}"></i>
+                        <div class="flex items-center">
+                            <span class="task-count-badge">${subjectTasks.length} tasks</span>
+                            <i class="fas fa-chevron-down expand-arrow" id="arrow-${subject}"></i>
                         </div>
                     </div>
                     
-                    <div class="mt-4">
-                        <div class="flex justify-between text-sm text-gray-600 mb-2">
-                            <span>Progress</span>
-                            <span>${progressPercentage}%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: ${progressPercentage}%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="hidden mt-6 space-y-3" id="tasks-${subject}">
+                    <div class="tasks-container" id="tasks-${subject}">
                         ${subjectTasks.map(task => {
-                            const userTask = progress.find(p => 
+                            const userTask = Array.isArray(progress) ? progress.find(p => 
                                 String(p.item_id) === String(task.task_id) && 
                                 p.item_type === "task" && 
                                 p.status === "complete"
-                            );
+                            ) : null;
                             const completed = !!userTask;
                             
-                            const dueDate = new Date(task.due_date);
-                            dueDate.setHours(23, 59, 59, 999);
-                            const isOverdue = !completed && dueDate < today;
-                            const isDueToday = !completed && dueDate.toDateString() === today.toDateString();
-
-                            let taskClass = 'task-item bg-gray-50 border border-gray-200 rounded-lg p-4 transition-all duration-200';
-                            let statusIcon = '';
-                            let statusClass = '';
-                            
-                            if (completed) {
-                                taskClass += ' opacity-75';
-                                statusIcon = '<i class="fas fa-check-circle text-green-500"></i>';
-                                statusClass = 'text-green-600';
-                            } else if (isOverdue) {
-                                taskClass += ' border-red-300 bg-red-50';
-                                statusIcon = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
-                                statusClass = 'text-red-600';
-                            } else if (isDueToday) {
-                                taskClass += ' border-yellow-300 bg-yellow-50';
-                                statusIcon = '<i class="fas fa-clock text-yellow-500"></i>';
-                                statusClass = 'text-yellow-600';
-                            } else {
-                                statusIcon = '<i class="fas fa-clock text-gray-400"></i>';
-                                statusClass = 'text-gray-600';
-                            }
-
                             const dueDateFormatted = new Date(task.due_date).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'short',
@@ -486,31 +443,19 @@ async function loadTasks() {
                             });
                             
                             return `
-                                <div class="${taskClass}">
-                                    <div class="flex items-start space-x-3">
-                                        <input type="checkbox" id="task-${task.task_id}" 
-                                               ${completed ? 'checked disabled' : ''}
-                                               ${isOverdue ? 'disabled title="This task is overdue and cannot be submitted"' : ''}
-                                               class="mt-1 w-5 h-5 text-green-600 rounded focus:ring-green-500">
-                                        <div class="flex-1">
-                                            <div class="flex items-center justify-between mb-2">
-                                                <span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded font-mono">${task.task_id}</span>
-                                                <div class="flex items-center space-x-2">
-                                                    ${statusIcon}
-                                                    <span class="text-xs ${statusClass} font-medium">
-                                                        ${completed ? 'Completed' : isOverdue ? 'Overdue' : isDueToday ? 'Due Today' : 'Pending'}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <h4 class="font-semibold text-gray-800 ${completed ? 'line-through' : ''} ${isOverdue ? 'text-gray-500' : ''}">${task.title}</h4>
-                                            <p class="text-sm text-gray-600 mt-1 ${completed ? 'line-through' : ''} ${isOverdue ? 'text-gray-400' : ''}">${task.description}</p>
-                                            <p class="text-xs ${statusClass} mt-2">
-                                                <i class="fas fa-calendar-alt mr-1"></i>
-                                                Due: ${dueDateFormatted}
-                                                ${isOverdue ? ' (OVERDUE)' : isDueToday ? ' (TODAY)' : ''}
-                                            </p>
-                                        </div>
+                                <div class="task-item">
+                                    <div class="task-header">
+                                        <span class="task-id-badge">${task.task_id}</span>
+                                        <span class="task-status ${completed ? 'status-completed' : 'status-pending'}">
+                                            ${completed ? 'Completed' : 'Pending'}
+                                        </span>
                                     </div>
+                                    <h4 class="task-title">${task.title}</h4>
+                                    <p class="task-description">${task.description}</p>
+                                    <p class="task-due-date">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        Due: ${dueDateFormatted}
+                                    </p>
                                 </div>
                             `;
                         }).join('')}
@@ -527,6 +472,37 @@ async function loadTasks() {
         tasksContainer.innerHTML = '<p class="text-red-500 text-center py-8">Error loading tasks. Please try again.</p>';
     }
 }
+
+// Function to toggle subject task visibility
+function toggleSubjectTasks(subject) {
+    const tasksContainer = document.getElementById(`tasks-${subject}`);
+    const arrow = document.getElementById(`arrow-${subject}`);
+    
+    if (tasksContainer && arrow) {
+        if (!tasksContainer.classList.contains('expanded')) {
+            // Close all other expanded subjects first
+            document.querySelectorAll('.tasks-container.expanded').forEach(container => {
+                if (container !== tasksContainer) {
+                    container.classList.remove('expanded');
+                }
+            });
+            document.querySelectorAll('.expand-arrow.expanded').forEach(arrowIcon => {
+                if (arrowIcon !== arrow) {
+                    arrowIcon.classList.remove('expanded');
+                }
+            });
+            
+            // Open this subject
+            tasksContainer.classList.add('expanded');
+            arrow.classList.add('expanded');
+        } else {
+            // Close this subject
+            tasksContainer.classList.remove('expanded');
+            arrow.classList.remove('expanded');
+        }
+    }
+}
+
 
 // Helper functions for subject icons
 function getSubjectIcon(subject) {
@@ -651,14 +627,81 @@ async function loadStatusCharts() {
         
         await Promise.all([
             loadTaskChart(progress),
-            loadCourseChart(progress),
-            loadActivityChart(progress),
-            updateProgressBars(progress)
+            loadSubjectPointsSummary(progress)
         ]);
     } catch (error) {
         console.error('Error loading status charts:', error);
     }
 }
+
+async function loadSubjectPointsSummary(progress) {
+    try {
+        if (!currentUser.class) return;
+        
+        const tasksSheetName = `${currentUser.class}_tasks_master`;
+        const tasks = await api.getSheet(tasksSheetName);
+        
+        if (!tasks || tasks.error || tasks.length === 0) return;
+        
+        // Group tasks by subject and calculate points
+        const subjectStats = {};
+        
+        tasks.forEach(task => {
+            const subject = task.subject || 'General';
+            if (!subjectStats[subject]) {
+                subjectStats[subject] = {
+                    totalTasks: 0,
+                    completedTasks: 0,
+                    totalPoints: 0,
+                    earnedPoints: 0
+                };
+            }
+            
+            subjectStats[subject].totalTasks++;
+            subjectStats[subject].totalPoints += 100; // Each task worth 100 points
+            
+            // Check if task is completed
+            const userTask = Array.isArray(progress) ? progress.find(p => 
+                String(p.item_id) === String(task.task_id) && 
+                p.item_type === "task" && 
+                p.status === "complete"
+            ) : null;
+            
+            if (userTask) {
+                subjectStats[subject].completedTasks++;
+                subjectStats[subject].earnedPoints += parseInt(userTask.grade || 100);
+            }
+        });
+        
+        // Generate subject points grid
+        const subjectPointsGrid = document.getElementById('subjectPointsGrid');
+        if (!subjectPointsGrid) return;
+        
+        const subjectCardsHtml = Object.entries(subjectStats).map(([subject, stats]) => {
+            return `
+                <div class="subject-points-card">
+                    <div class="flex items-center justify-center mb-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white mr-2">
+                            <i class="${getSubjectIcon(subject)} text-sm"></i>
+                        </div>
+                        <h4>${subject}</h4>
+                    </div>
+                    <div class="points-display">${stats.earnedPoints}</div>
+                    <div class="points-label">of ${stats.totalPoints} points</div>
+                    <div class="text-xs text-gray-500 mt-2">
+                        ${stats.completedTasks}/${stats.totalTasks} tasks completed
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        subjectPointsGrid.innerHTML = subjectCardsHtml;
+        
+    } catch (error) {
+        console.error('Error loading subject points summary:', error);
+    }
+}
+
 
 async function loadTaskChart(progress) {
     if (!currentUser.class) return;
@@ -1145,9 +1188,8 @@ async function openStudentTaskModal(username, fullName, classNum) {
             const completed = !!userTask;
             const dueDate = new Date(task.due_date);
             const isOverdue = !completed && dueDate < today;
-            const isDueToday = !completed && dueDate.toDateString() === today.toDateString();
             
-            let taskClass = 'task-item';
+            let taskClass = 'admin-task-item';
             let statusIcon = '';
             let statusText = '';
             
@@ -1156,12 +1198,8 @@ async function openStudentTaskModal(username, fullName, classNum) {
                 statusIcon = '<i class="fas fa-check-circle text-green-500"></i>';
                 statusText = 'Completed';
             } else if (isOverdue) {
-                taskClass += ' overdue';
                 statusIcon = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
                 statusText = 'Overdue';
-            } else if (isDueToday) {
-                statusIcon = '<i class="fas fa-clock text-yellow-500"></i>';
-                statusText = 'Due Today';
             } else {
                 statusIcon = '<i class="fas fa-clock text-gray-400"></i>';
                 statusText = 'Pending';
@@ -1174,11 +1212,11 @@ async function openStudentTaskModal(username, fullName, classNum) {
                                data-task-id="${task.task_id}"
                                data-username="${username}"
                                ${completed ? 'checked disabled' : ''}
-                               ${isOverdue || completed ? 'disabled' : ''}
+                               ${completed ? 'disabled' : ''}
                                class="task-checkbox">
                         <div class="flex-1">
                             <div class="flex items-center justify-between mb-2">
-                                <span class="task-id">${task.task_id}</span>
+                                <span class="task-id-badge">${task.task_id}</span>
                                 <div class="flex items-center space-x-2">
                                     ${statusIcon}
                                     <span class="text-xs font-medium">${statusText}</span>
@@ -1186,15 +1224,19 @@ async function openStudentTaskModal(username, fullName, classNum) {
                             </div>
                             <h4 class="task-title">${task.title}</h4>
                             <p class="task-description">${task.description}</p>
-                            <p class="task-due-date">
-                                <i class="fas fa-calendar-alt mr-1"></i>
-                                Due: ${new Date(task.due_date).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric'
-                                })}
-                                ${completed ? ' ✓ Completed' : isOverdue ? ' (OVERDUE)' : isDueToday ? ' (TODAY)' : ''}
-                            </p>
+                            <div class="flex items-center justify-between mt-2">
+                                <p class="task-due-date">
+                                    <i class="fas fa-calendar-alt mr-1"></i>
+                                    Due: ${new Date(task.due_date).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric'
+                                    })}
+                                </p>
+                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                    ${task.subject}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1210,9 +1252,64 @@ async function openStudentTaskModal(username, fullName, classNum) {
     }
 }
 
+async function submitSelectedStudentTasks() {
+    const submitBtn = event.target;
+    const originalText = submitBtn.innerHTML;
+    
+    try {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting...';
+        submitBtn.disabled = true;
+        
+        const selectedCheckboxes = document.querySelectorAll('#studentTaskModalContent input[type="checkbox"]:checked:not(:disabled)');
+        
+        if (selectedCheckboxes.length === 0) {
+            alert('No tasks selected for submission.');
+            return;
+        }
+        
+        const promises = [];
+        let updatedCount = 0;
+        
+        for (let checkbox of selectedCheckboxes) {
+            const taskId = checkbox.getAttribute('data-task-id');
+            const username = checkbox.getAttribute('data-username');
+            
+            const rowData = [
+                taskId,
+                "task",
+                "complete",
+                new Date().toISOString().split('T')[0],
+                "100"
+            ];
+            
+            promises.push(api.addRow(`${username}_progress`, rowData));
+            updatedCount++;
+        }
+        
+        await Promise.all(promises);
+        alert(`${updatedCount} task(s) marked as completed successfully!`);
+        closeStudentTaskModal();
+        
+        // Refresh the current view
+        const selectedClass = document.getElementById('adminTaskClassSelect').value;
+        const selectedSubject = document.getElementById('adminTaskSubjectSelect').value;
+        if (selectedClass && selectedSubject) {
+            await loadAdminClassSubjectData(selectedClass, selectedSubject);
+        }
+        
+    } catch (error) {
+        console.error('Error submitting selected student tasks:', error);
+        alert('Error submitting tasks. Please try again.');
+    } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
 function closeStudentTaskModal() {
     document.getElementById('studentTaskModal').classList.add('hidden');
 }
+
 
 async function submitSelectedStudentTasks() {
     const submitBtn = event.target;
