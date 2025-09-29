@@ -744,92 +744,48 @@
             </div>
 
             <!-- Admin Status Page -->
-            <div id="adminStatusPage" class="page-content hidden">
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <h2 class="text-2xl font-bold text-blue-600 mb-6">All Users Status</h2>
-                    
-                    <!-- User Selection -->
-                    <div class="mb-6 p-4 bg-blue-50 rounded-lg">
-                        <div class="flex items-center space-x-4">
-                            <div class="flex-1">
-                                <label for="userSelect" class="block text-sm font-medium text-blue-700 mb-2">Select User to View Status:</label>
-                                <select id="userSelect" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                    <option value="">-- Loading Users... --</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- No User Selected Message -->
-                    <div id="noUserSelected" class="text-center py-12">
-                        <i class="fas fa-user-friends text-6xl text-gray-300 mb-4"></i>
-                        <h3 class="text-xl font-semibold text-gray-500 mb-2">Select a User</h3>
-                        <p class="text-gray-500 text-lg">Choose a user from the dropdown above to view their progress and statistics</p>
-                    </div>
-
-                    <!-- Selected User Status -->
-                    <div id="selectedUserStatus" class="hidden">
-                        <!-- User Info -->
-                        <div class="mb-6 p-4 bg-blue-50 rounded-lg">
-                            <h3 class="text-xl font-bold text-blue-800" id="selectedUserName">-</h3>
-                            <p class="text-blue-700" id="selectedUserInfo">-</p>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                            <!-- Task Progress Chart -->
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <h3 class="text-lg font-bold mb-4 text-blue-600">Task Progress</h3>
-                                <div class="chart-container" style="height: 250px;">
-                                    <canvas id="adminTaskChart"></canvas>
-                                </div>
-                            </div>
-
-                            <!-- Course Progress Chart -->
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <h3 class="text-lg font-bold mb-4 text-blue-600">Course Progress</h3>
-                                <div class="chart-container" style="height: 250px;">
-                                    <canvas id="adminCourseChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Activity Chart -->
-                        <div class="bg-gray-50 rounded-lg p-4 mb-8">
-                            <h3 class="text-lg font-bold mb-4 text-blue-600">Weekly Activity</h3>
-                            <div class="chart-container" style="height: 250px;">
-                                <canvas id="adminActivityChart"></canvas>
-                            </div>
-                        </div>
-
-                        <!-- Progress Bars -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="space-y-4">
-                                <div class="bg-green-50 rounded-lg p-4 border border-green-200">
-                                    <div class="flex justify-between items-center mb-2">
-                                        <h4 class="font-semibold text-green-800">Tasks Progress</h4>
-                                        <span class="text-sm text-green-600" id="adminTaskStats">0 / 0</span>
-                                    </div>
-                                    <div class="w-full bg-green-200 rounded-full h-3 mb-2">
-                                        <div id="adminTaskProgressBar" class="bg-green-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
-                                    </div>
-                                    <p class="text-sm text-green-700" id="adminTaskProgress">0%</p>
-                                </div>
-
-                                <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                                    <div class="flex justify-between items-center mb-2">
-                                        <h4 class="font-semibold text-blue-800">Courses Progress</h4>
-                                        <span class="text-sm text-blue-600" id="adminCourseStats">0 / 0</span>
-                                    </div>
-                                    <div class="w-full bg-blue-200 rounded-full h-3 mb-2">
-                                        <div id="adminCourseProgressBar" class="bg-blue-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
-                                    </div>
-                                    <p class="text-sm text-blue-700" id="adminCourseProgress">0%</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+<div id="adminStatusPage" class="page-content hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold text-blue-600 mb-6">All Users Status</h2>
+        
+        <!-- User Selection -->
+        <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+            <div class="flex items-center space-x-4">
+                <div class="flex-1">
+                    <label for="userSelect" class="block text-sm font-medium text-blue-700 mb-2">Select User to View Status:</label>
+                    <select id="userSelect" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">-- Loading Users... --</option>
+                    </select>
                 </div>
             </div>
+        </div>
+
+        <!-- No User Selected Message -->
+        <div id="noUserSelected" class="text-center py-12">
+            <i class="fas fa-user-friends text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-500 mb-2">Select a User</h3>
+            <p class="text-gray-500 text-lg">Choose a user from the dropdown above to view their progress and statistics</p>
+        </div>
+
+        <!-- Selected User Status -->
+        <div id="selectedUserStatus" class="hidden">
+            <!-- User Info -->
+            <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+                <h3 class="text-xl font-bold text-blue-800" id="selectedUserName">-</h3>
+                <p class="text-blue-700" id="selectedUserInfo">-</p>
+            </div>
+
+            <!-- Task Progress Chart -->
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <h3 class="text-lg font-bold mb-4 text-blue-600">Task Progress</h3>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="adminTaskChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
         </main>
     </div>
@@ -921,4 +877,5 @@
     </script>
 </body>
 </html>
+
 
