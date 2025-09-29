@@ -1,10 +1,8 @@
 // 🌐 Global Variables
 let currentUser = null;
 let currentPage = 'tasks';
-let currentCourse = null;
-let currentStep = 0;
-let currentDate = new Date();
 let chartInstances = {};
+let adminChartInstances = {};
 
 // Cache for better performance
 let dataCache = {
@@ -170,12 +168,7 @@ async function login() {
                 document.getElementById('studentNav').classList.remove('hidden');
                 document.getElementById('adminNav').classList.add('hidden');
                 showPage('tasks');
-                await Promise.all([
-                    loadTasks(),
-                    loadCourses(),
-                    loadEvents(),
-                    loadTimeTable()
-                ]);
+                await loadTasks();
             }
             
             hideError();
@@ -334,7 +327,6 @@ async function showPage(page) {
     const clickedBtn = Array.from(document.querySelectorAll('.nav-btn')).find(btn => {
         const btnText = btn.textContent.toLowerCase();
         return btnText.includes(page.replace('admin', '').toLowerCase()) || 
-               (page === 'timetable' && btnText.includes('schedule')) ||
                (page === 'adminStatus' && btnText.includes('all status'));
     });
     
@@ -349,25 +341,12 @@ async function showPage(page) {
     currentPage = page;
 
     // Load page-specific data
-    if (page === 'events') {
-        currentDate = new Date();
-        loadCalendar();
-    } else if (page === 'status') {
+    if (page === 'status') {
         loadStatusCharts();
-    } else if (page === 'timetable') {
-        loadTimeTable();
-    } else if (page === 'adminUsers') {
-        loadAdminUsers();
-    } else if (page === 'adminEvents') {
-        loadAdminEvents();
     } else if (page === 'adminTasks') {
         loadAdminTasks();
-    } else if (page === 'adminCourses') {
-        loadAdminCourses();
     } else if (page === 'adminStatus') {
         await loadAllUsersStatus();
-    } else if (page === 'adminResponse') {
-        loadAdminResponse();
     }
 }
 
@@ -663,410 +642,7 @@ async function submitTasks() {
 }
 
 // =============================
-// 📚 Courses
-// =============================
-const videoCourses = [
-    {
-        course_id: 'video_course_1',
-        title: 'Course Videos - Set 1',
-        description: 'Islamic learning videos collection - Part 1',
-        videos: [
-            {
-                title: 'Video 1',
-                url: 'https://www.youtube.com/embed/zalLv2NY98k'
-            },
-            {
-                title: 'Video 2', 
-                url: 'https://www.youtube.com/embed/VIDEO_ID_2'
-            }
-        ]
-    }
-];
-
-const quizCourses = [
-    {
-        course_id: 'quiz_course_1',
-        title: 'Course Practical - 1',
-        description: 'Islamic knowledge quiz - Assessment 1',
-        questions: [
-            {
-                question: "What is the first pillar of Islam?",
-                options: ["Salah", "Shahada", "Zakat"],
-                correct: 1
-            },
-            {
-                question: "How many times a day do Muslims pray?",
-                options: ["3 times", "5 times", "7 times"],
-                correct: 1
-            }
-        ]
-    }
-];
-
-async function loadCourses() {
-    const container = document.getElementById('coursesList');
-    
-    // Show loading state
-    container.innerHTML = '<div class="col-span-3 text-center py-8"><i class="fas fa-spinner fa-spin mr-2"></i>Loading courses...</div>';
-
-    try {
-        const [courses, progress] = await Promise.all([
-            api.getSheet("courses_master"),
-            api.getSheet(`${currentUser.username}_progress`)
-        ]);
-        
-        container.innerHTML = '';
-
-        const fragment = document.createDocumentFragment();
-
-        // Add regular courses first
-        if (courses && courses.length > 0) {
-            courses.forEach(course => {
-                const userCourse = progress.find(p => 
-                    String(p.item_id) === String(course.course_id) && 
-                    p.item_type === "course" && 
-                    p.status === "complete"
-                );
-                const completed = !!userCourse;
-
-                const courseElement = document.createElement('div');
-                courseElement.className = `bg-gray-50 rounded-lg p-6 hover:shadow-md transition duration-300 ${completed ? 'opacity-75' : 'cursor-pointer'}`;
-                
-                if (!completed) {
-                    courseElement.onclick = () => openCourse(course);
-                }
-
-                courseElement.innerHTML = `
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-lg font-semibold ${completed ? 'text-gray-500 line-through' : 'text-green-600'}">${course.title}</h3>
-                        ${completed ? 
-                            '<i class="fas fa-check-circle text-green-600 text-xl"></i>' : 
-                            '<i class="fas fa-play-circle text-gray-400"></i>'
-                        }
-                    </div>
-                    <p class="text-gray-600 text-sm ${completed ? 'line-through' : ''}">${course.description}</p>
-                    <div class="mt-4 text-sm ${completed ? 'text-green-600' : 'text-gray-500'}">
-                        <i class="fas fa-book-open mr-1"></i>
-                        ${completed ? '✓ Completed Course' : 'Islamic Studies Course'}
-                    </div>
-                `;
-                fragment.appendChild(courseElement);
-            });
-        }
-
-        container.appendChild(fragment);
-    } catch (error) {
-        console.error('Error loading courses:', error);
-        container.innerHTML = '<p class="text-red-500 col-span-3">Error loading courses.</p>';
-    }
-}
-
-// Course modal functions
-async function openCourse(course) {
-    try {
-        // Check if course is already completed
-        const progress = await api.getSheet(`${currentUser.username}_progress`);
-        const isCompleted = progress.find(p => 
-            String(p.item_id) === String(course.course_id) && 
-            p.item_type === "course" && 
-            p.status === "complete"
-        );
-        
-        if (isCompleted) {
-            alert('This course is already completed!');
-            return;
-        }
-        
-        currentCourse = course;
-        currentStep = 0;
-        document.getElementById('courseTitle').textContent = course.title;
-        document.getElementById('courseModal').classList.remove('hidden');
-        loadCourseStep();
-    } catch (error) {
-        console.error('Error opening course:', error);
-        alert('Error loading course. Please try again.');
-    }
-}
-
-function closeCourseModal() {
-    document.getElementById('courseModal').classList.add('hidden');
-    currentCourse = null;
-    currentStep = 0;
-}
-
-function loadCourseStep() {
-    if (!currentCourse) return;
-    
-    const content = document.getElementById('courseContent');
-    const stepIndicator = document.getElementById('stepIndicator');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-
-    // Get the current step content from the course data
-    const stepKey = `step${currentStep + 1}`;
-    const stepContent = currentCourse[stepKey] || `Step ${currentStep + 1} content`;
-    
-    content.innerHTML = `
-        <div class="bg-green-50 p-6 rounded-lg">
-            <h4 class="font-semibold text-green-600 mb-3">Step ${currentStep + 1}: ${currentCourse.title}</h4>
-            <div class="text-gray-700 leading-relaxed">
-                <p class="whitespace-pre-wrap">${stepContent}</p>
-            </div>
-        </div>
-    `;
-    
-    const totalSteps = 5;
-    stepIndicator.textContent = `Step ${currentStep + 1} of ${totalSteps}`;
-
-    prevBtn.disabled = currentStep === 0;
-    prevBtn.className = `px-4 py-2 rounded transition duration-300 ${currentStep === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-300 text-gray-700 hover:bg-gray-400'}`;
-    
-    if (currentStep === totalSteps - 1) {
-        nextBtn.innerHTML = 'Complete<i class="fas fa-check ml-2"></i>';
-        nextBtn.onclick = completeCourse;
-    } else {
-        nextBtn.innerHTML = 'Next<i class="fas fa-chevron-right ml-2"></i>';
-        nextBtn.onclick = nextStep;
-    }
-}
-
-function nextStep() {
-    const totalSteps = 5;
-    if (currentStep < totalSteps - 1) {
-        currentStep++;
-        loadCourseStep();
-    }
-}
-
-function prevStep() {
-    if (currentStep > 0) {
-        currentStep--;
-        loadCourseStep();
-    }
-}
-
-async function completeCourse() {
-    const completeBtn = document.getElementById('nextBtn');
-    const originalText = completeBtn.innerHTML;
-    completeBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Completing...';
-    completeBtn.disabled = true;
-
-    try {
-        const progress = await api.getSheet(`${currentUser.username}_progress`);
-        
-        // Check if course is already completed
-        const existingCourse = progress.find(p => 
-            String(p.item_id) === String(currentCourse.course_id) && 
-            p.item_type === "course" && 
-            p.status === "complete"
-        );
-        
-        if (existingCourse) {
-            alert('This course is already completed!');
-            closeCourseModal();
-            return;
-        }
-
-        const progressSheetName = `${currentUser.username}_progress`;
-        const rowData = [
-            currentCourse.course_id,
-            "course",
-            "complete",
-            new Date().toISOString().split('T')[0],
-            "100"
-        ];
-        
-        const result = await api.addRow(progressSheetName, rowData);
-
-        if (result && (result.success || result.includes?.('Success'))) {
-            alert('Congratulations! Course completed successfully!');
-            closeCourseModal();
-            await loadCourses();
-            if (currentPage === 'status') {
-                await loadStatusCharts();
-            }
-        } else {
-            throw new Error(result?.error || 'Unknown error occurred');
-        }
-    } catch (error) {
-        console.error('Error completing course:', error);
-        alert('Error completing course: ' + error.message);
-    } finally {
-        completeBtn.innerHTML = originalText;
-        completeBtn.disabled = false;
-    }
-}
-
-// =============================
-// 📅 Events
-// =============================
-async function loadEvents() {
-    try {
-        window.eventsData = await api.getSheet("events_master");
-    } catch (error) {
-        console.error('Error loading events:', error);
-        window.eventsData = [];
-    }
-}
-
-function changeMonth(direction) {
-    currentDate.setMonth(currentDate.getMonth() + direction);
-    loadCalendar();
-}
-
-async function loadCalendar() {
-    const events = window.eventsData || await api.getSheet("events_master");
-    const calendar = document.getElementById('calendar');
-    const monthTitle = document.getElementById('currentMonth');
-
-    const monthNames = ['January','February','March','April','May','June',
-                      'July','August','September','October','November','December'];
-    monthTitle.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-    calendar.innerHTML = '';
-
-    // Add day headers
-    const dayHeaders = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    const fragment = document.createDocumentFragment();
-    
-    dayHeaders.forEach(day => {
-        const dayHeader = document.createElement('div');
-        dayHeader.className = 'text-center font-semibold text-gray-600 py-2 text-sm';
-        dayHeader.textContent = day;
-        fragment.appendChild(dayHeader);
-    });
-
-        // Calculate calendar days
-    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-    const startDate = new Date(firstDay);
-    startDate.setDate(startDate.getDate() - firstDay.getDay());
-
-    for (let i = 0; i < 42; i++) {
-        const day = new Date(startDate);
-        day.setDate(startDate.getDate() + i);
-        const dayElement = document.createElement('div');
-        dayElement.className = 'min-h-[60px] p-2 border border-gray-200 hover:bg-green-50 cursor-pointer transition-colors text-xs sm:text-sm';
-
-        if (day.getMonth() !== currentDate.getMonth()) {
-            dayElement.classList.add('text-gray-300', 'bg-gray-50');
-        }
-
-        const dayEvents = events.filter(event => {
-            if (!event.date) return false;
-            const eventDate = new Date(event.date);
-            return eventDate.toDateString() === day.toDateString();
-        });
-
-        if (dayEvents.length > 0) {
-            dayElement.onclick = () => openEventModal(day.toISOString().split('T')[0]);
-        }
-
-        dayElement.innerHTML = `
-            <div class="font-medium">${day.getDate()}</div>
-            ${dayEvents.length > 0 ? `
-                <div class="w-2 h-2 bg-green-500 rounded-full mt-1"></div>
-                ${dayEvents.length > 1 ? `<div class="text-xs text-green-600 mt-1">${dayEvents.length} events</div>` : ''}
-            ` : ''}
-        `;
-        
-        fragment.appendChild(dayElement);
-    }
-    
-    calendar.appendChild(fragment);
-}
-
-function openEventModal(dateString) {
-    const events = window.eventsData || [];
-    const dayEvents = events.filter(event => {
-        if (!event.date) return false;
-        const eventDate = new Date(event.date);
-        return eventDate.toISOString().split('T')[0] === dateString;
-    });
-
-    if (dayEvents.length === 0) return;
-
-    const modal = document.getElementById('eventModal');
-    const titleElement = document.getElementById('eventTitle');
-    const dateTimeElement = document.getElementById('eventDateTime');
-    const detailsElement = document.getElementById('eventDetails');
-
-    if (dayEvents.length === 1) {
-        const event = dayEvents[0];
-        titleElement.textContent = event.title || 'Event';
-        
-        const eventDate = new Date(event.date);
-        const formattedDate = eventDate.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-        
-        dateTimeElement.innerHTML = `
-            <i class="fas fa-calendar-day mr-2"></i>${formattedDate}
-            ${event.time ? `<br><i class="fas fa-clock mr-2"></i>${event.time}` : ''}
-        `;
-
-        detailsElement.innerHTML = `
-            ${event.description ? `
-                <div class="bg-green-50 p-3 rounded-lg mb-3">
-                    <h4 class="font-semibold text-green-800 mb-2">Description</h4>
-                    <p class="text-gray-700">${event.description}</p>
-                </div>
-            ` : ''}
-            ${event.place ? `
-                <div class="flex items-start space-x-2 mb-2">
-                    <i class="fas fa-map-marker-alt text-green-600 mt-1"></i>
-                    <div>
-                        <span class="font-semibold text-gray-800">Location:</span>
-                        <span class="text-gray-700 ml-1">${event.place}</span>
-                    </div>
-                </div>
-            ` : ''}
-            ${event.details ? `
-                <div class="flex items-start space-x-2">
-                    <i class="fas fa-info-circle text-green-600 mt-1"></i>
-                    <div>
-                        <span class="font-semibold text-gray-800">Details:</span>
-                        <span class="text-gray-700 ml-1">${event.details}</span>
-                    </div>
-                </div>
-            ` : ''}
-        `;
-    } else {
-        // Multiple events on same day
-        titleElement.textContent = `${dayEvents.length} Events`;
-        
-        const eventDate = new Date(dayEvents[0].date);
-        const formattedDate = eventDate.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-        
-        dateTimeElement.innerHTML = `<i class="fas fa-calendar-day mr-2"></i>${formattedDate}`;
-
-        detailsElement.innerHTML = dayEvents.map(event => `
-            <div class="border-l-4 border-green-500 pl-4 mb-4 last:mb-0">
-                <h4 class="font-semibold text-green-600 mb-1">${event.title || 'Event'}</h4>
-                ${event.time ? `<p class="text-sm text-gray-600 mb-2"><i class="fas fa-clock mr-1"></i>${event.time}</p>` : ''}
-                ${event.description ? `<p class="text-gray-700 text-sm mb-2">${event.description}</p>` : ''}
-                ${event.place ? `<p class="text-sm text-gray-600"><i class="fas fa-map-marker-alt mr-1"></i>${event.place}</p>` : ''}
-                ${event.details ? `<p class="text-sm text-gray-600"><i class="fas fa-info-circle mr-1"></i>${event.details}</p>` : ''}
-            </div>
-        `).join('');
-    }
-
-    modal.classList.remove('hidden');
-}
-
-function closeEventModal() {
-    document.getElementById('eventModal').classList.add('hidden');
-}
-
-// =============================
-// 📊 Status Charts & Progress (COMPLETED)
+// 📊 Status Charts & Progress
 // =============================
 async function loadStatusCharts() {
     try {
@@ -1131,13 +707,7 @@ async function loadCourseChart(progress) {
     try {
         const courses = await api.getSheet("courses_master");
         
-        // Calculate total courses including video courses and quiz courses
-        const totalRegularCourses = courses && Array.isArray(courses) ? courses.length : 0;
-        const totalVideoCourses = videoCourses.length;
-        const totalQuizCourses = quizCourses.length;
-        const totalCourses = totalRegularCourses + totalVideoCourses + totalQuizCourses;
-        
-        // Calculate completed courses
+        const totalCourses = courses && Array.isArray(courses) ? courses.length : 0;
         const completedCourses = Array.isArray(progress) ? 
             progress.filter(p => p.item_type === "course" && p.status === "complete").length : 0;
         const inProgressCourses = Math.max(0, totalCourses - completedCourses);
@@ -1283,12 +853,8 @@ async function updateProgressBars(progress) {
         if (taskProgressElement) taskProgressElement.textContent = `${taskProgress}%`;
         if (taskProgressBarElement) taskProgressBarElement.style.width = `${taskProgress}%`;
 
-        // Courses progress (including video courses and quiz courses)
-        const totalRegularCourses = Array.isArray(courses) ? courses.length : 0;
-        const totalVideoCourses = videoCourses.length;
-        const totalQuizCourses = quizCourses.length;
-        const totalCourses = totalRegularCourses + totalVideoCourses + totalQuizCourses;
-        
+        // Courses progress
+        const totalCourses = Array.isArray(courses) ? courses.length : 0;
         const completedCourses = progressArray.filter(p => p.item_type === "course" && p.status === "complete").length;
         const courseProgress = totalCourses > 0 ? Math.round((completedCourses / totalCourses) * 100) : 0;
         
@@ -1312,182 +878,398 @@ async function updateProgressBars(progress) {
 }
 
 // =============================
-// 📅 Time Table Functions (COMPLETED)
+// 👨‍💼 Admin Functions
 // =============================
-async function loadTimeTable() {
+async function loadAdminData() {
     try {
-        const scheduleSheetName = `${currentUser.username}_schedule`;
-        console.log('Loading schedule for:', scheduleSheetName);
-        const schedule = await api.getSheet(scheduleSheetName);
-        console.log('Schedule data received:', schedule);
-        
-        const timetableBody = document.getElementById('timetableBody');
-        if (!timetableBody) return;
-        
-        timetableBody.innerHTML = '';
+        if (currentUser.role === 'admin') {
+            // Parse admin's subjects
+            let adminClasses = [];
+            let adminSubjects = {};
+            
+            if (currentUser.subjects) {
+                const subjectsStr = currentUser.subjects;
+                
+                // Extract classes (format: "1,2,3")
+                const classMatch = subjectsStr.match(/^[\d,]+/);
+                if (classMatch) {
+                    adminClasses = classMatch[0].split(',').map(c => c.trim()).filter(c => c);
+                }
+                
+                // Extract subjects (format: "(1-english),(2-mathematics)")
+                const subjectMatches = subjectsStr.match(/\((\d+)-([^)]+)\)/g);
+                if (subjectMatches) {
+                    subjectMatches.forEach(match => {
+                        const [, classNum, subject] = match.match(/\((\d+)-([^)]+)\)/);
+                        if (!adminSubjects[classNum]) {
+                            adminSubjects[classNum] = [];
+                        }
+                        adminSubjects[classNum].push(subject.trim());
+                    });
+                }
+            }
+            
+            currentUser.adminClasses = adminClasses;
+            currentUser.adminSubjects = adminSubjects;
+            
+            // Update teaching info display
+            const teachingInfo = document.getElementById('teachingSubjects');
+            if (teachingInfo) {
+                const classText = adminClasses.length > 0 ? `Classes: ${adminClasses.join(', ')}` : 'No classes assigned';
+                const subjectText = Object.keys(adminSubjects).length > 0 ? 
+                    Object.entries(adminSubjects).map(([cls, subjs]) => `Class ${cls}: ${subjs.join(', ')}`).join(' | ') : 
+                    'No subjects assigned';
+                teachingInfo.textContent = `${classText} | ${subjectText}`;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading admin data:', error);
+    }
+}
 
-        if (!schedule || schedule.error || schedule.length === 0) {
-            timetableBody.innerHTML = `
-                <tr>
-                    <td colspan="11" class="text-center py-8 text-gray-500">
-                        No schedule found. Please contact administrator.
-                        <br><small>Looking for: ${scheduleSheetName}</small>
-                    </td>
-                </tr>
-            `;
+async function loadAdminTasks() {
+    const adminTaskClassSelect = document.getElementById('adminTaskClassSelect');
+    const adminTaskSubjectSelect = document.getElementById('adminTaskSubjectSelect');
+    
+    if (!adminTaskClassSelect || !adminTaskSubjectSelect) return;
+    
+    // Clear existing options
+    adminTaskClassSelect.innerHTML = '<option value="">-- Select Class --</option>';
+    adminTaskSubjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
+    adminTaskSubjectSelect.disabled = true;
+    
+    // Populate class dropdown with admin's assigned classes
+    if (currentUser.adminClasses && currentUser.adminClasses.length > 0) {
+        currentUser.adminClasses.forEach(classNum => {
+            const option = document.createElement('option');
+            option.value = classNum;
+            option.textContent = `Class ${classNum}`;
+            adminTaskClassSelect.appendChild(option);
+        });
+    }
+    
+    // Add event listener for class selection
+    adminTaskClassSelect.addEventListener('change', async function() {
+        const selectedClass = this.value;
+        adminTaskSubjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
+        
+        if (selectedClass && currentUser.adminSubjects[selectedClass]) {
+            adminTaskSubjectSelect.disabled = false;
+            currentUser.adminSubjects[selectedClass].forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject;
+                option.textContent = subject.charAt(0).toUpperCase() + subject.slice(1);
+                adminTaskSubjectSelect.appendChild(option);
+            });
+        } else {
+            adminTaskSubjectSelect.disabled = true;
+        }
+        
+        // Hide class subject view when class changes
+        document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
+        document.getElementById('adminTasksDefaultView').classList.remove('hidden');
+    });
+    
+    // Add event listener for subject selection
+    adminTaskSubjectSelect.addEventListener('change', async function() {
+        const selectedClass = adminTaskClassSelect.value;
+        const selectedSubject = this.value;
+        
+        if (selectedClass && selectedSubject) {
+            await loadAdminClassSubjectData(selectedClass, selectedSubject);
+        } else {
+            document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
+            document.getElementById('adminTasksDefaultView').classList.remove('hidden');
+        }
+    });
+}
+
+async function loadAdminClassSubjectData(classNum, subject) {
+    try {
+        // Show class subject view
+        document.getElementById('adminTasksDefaultView').classList.add('hidden');
+        document.getElementById('adminTasksClassSubjectView').classList.remove('hidden');
+        
+        // Update selected info
+        document.getElementById('selectedClassSubjectInfo').textContent = `Class ${classNum} - ${subject.charAt(0).toUpperCase() + subject.slice(1)}`;
+        
+        // Load tasks for this class and subject
+        const tasksSheetName = `${classNum}_tasks_master`;
+        const tasks = await api.getSheet(tasksSheetName);
+        
+        const adminClassSubjectTasksList = document.getElementById('adminClassSubjectTasksList');
+        adminClassSubjectTasksList.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading tasks...</div>';
+        
+        if (!tasks || tasks.error || tasks.length === 0) {
+            adminClassSubjectTasksList.innerHTML = '<p class="text-gray-500 text-center py-8">No tasks found for this class.</p>';
+        } else {
+            // Filter tasks by subject
+            const subjectTasks = tasks.filter(task => 
+                task.subject && task.subject.toLowerCase() === subject.toLowerCase()
+            );
+            
+            if (subjectTasks.length === 0) {
+                adminClassSubjectTasksList.innerHTML = `<p class="text-gray-500 text-center py-8">No tasks found for ${subject} in Class ${classNum}.</p>`;
+            } else {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                const tasksHtml = subjectTasks.map(task => {
+                    const dueDate = new Date(task.due_date);
+                    const isOverdue = dueDate < today;
+                    const isDueToday = dueDate.toDateString() === today.toDateString();
+                    
+                    let statusClass = 'status-pending';
+                    let statusText = 'Active';
+                    
+                    if (isOverdue) {
+                        statusClass = 'status-overdue';
+                        statusText = 'Overdue';
+                    } else if (isDueToday) {
+                        statusClass = 'status-pending';
+                        statusText = 'Due Today';
+                    }
+                    
+                    return `
+                        <div class="task-item">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="task-id">${task.task_id}</span>
+                                        <span class="task-status ${statusClass}">${statusText}</span>
+                                    </div>
+                                    <h4 class="task-title">${task.title}</h4>
+                                    <p class="task-description">${task.description}</p>
+                                    <p class="task-due-date">Due: ${new Date(task.due_date).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric'
+                                    })}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                adminClassSubjectTasksList.innerHTML = tasksHtml;
+            }
+        }
+        
+        // Load students in this class
+        await loadAdminClassStudents(classNum);
+        
+    } catch (error) {
+        console.error('Error loading admin class subject data:', error);
+        document.getElementById('adminClassSubjectTasksList').innerHTML = '<p class="text-red-500 text-center py-8">Error loading tasks. Please try again.</p>';
+    }
+}
+
+async function loadAdminClassStudents(classNum) {
+    try {
+        const users = await api.getSheet("user_credentials");
+        const adminClassStudentsList = document.getElementById('adminClassStudentsList');
+        
+        adminClassStudentsList.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading students...</div>';
+        
+        if (!users || users.error) {
+            adminClassStudentsList.innerHTML = '<p class="text-red-500 text-center py-8">Error loading students.</p>';
             return;
         }
-
-        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-        const fragment = document.createDocumentFragment();
-
-        days.forEach(dayName => {
-            const daySchedule = schedule.find(s => s.day && s.day.toLowerCase() === dayName);
-            const row = document.createElement('tr');
-            row.className = 'hover:bg-gray-50 transition-colors';
-
-            // Day cell
-            const dayCell = document.createElement('td');
-            dayCell.className = 'border border-gray-300 p-2 font-semibold bg-gray-100 sticky left-0 z-10 text-xs sm:text-sm';
-            dayCell.textContent = dayName.charAt(0).toUpperCase() + dayName.slice(1);
-            row.appendChild(dayCell);
-
-            // Period cells
-            for (let period = 1; period <= 10; period++) {
-                const periodCell = document.createElement('td');
-                const subject = daySchedule ? (daySchedule[`period_${period}`] || 'Free') : 'Free';
-                
-                periodCell.className = `border border-gray-300 p-1 text-center text-xs sm:text-sm ${getSubjectClass(subject)}`;
-                
-                if (period === 6) { // Break period
-                    periodCell.className += ' bg-orange-100 font-medium';
-                }
-
-                periodCell.innerHTML = `
-                    <div class="font-medium">${subject}</div>
-                    <div class="mt-1">${getSubjectIcon(subject)}</div>
-                `;
-                
-                row.appendChild(periodCell);
-            }
-
-            fragment.appendChild(row);
-        });
-
-        timetableBody.appendChild(fragment);
-    } catch (error) {
-        console.error('Error loading timetable:', error);
-        const timetableBody = document.getElementById('timetableBody');
-        if (timetableBody) {
-            timetableBody.innerHTML = `
-                <tr>
-                    <td colspan="11" class="text-center py-8 text-red-500">
-                        Error loading timetable: ${error.message}<br>
-                        Please check console for details.
-                    </td>
-                </tr>
+        
+        // Filter students by class
+        const classStudents = users.filter(user => 
+            user.role === 'student' && String(user.class) === String(classNum)
+        );
+        
+        if (classStudents.length === 0) {
+            adminClassStudentsList.innerHTML = `<p class="text-gray-500 text-center py-8">No students found in Class ${classNum}.</p>`;
+            return;
+        }
+        
+        const studentsHtml = classStudents.map(student => {
+            const initials = student.full_name ? 
+                student.full_name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 
+                student.username.substring(0, 2).toUpperCase();
+            
+            return `
+                <div class="student-card" onclick="openStudentTaskModal('${student.username}', '${student.full_name || student.username}', '${classNum}')">
+                    <div class="student-avatar">${initials}</div>
+                    <div class="student-name">${student.full_name || student.username}</div>
+                    <div class="student-username">@${student.username}</div>
+                    <div class="student-class">Class ${student.class}</div>
+                </div>
             `;
+        }).join('');
+        
+        adminClassStudentsList.innerHTML = studentsHtml;
+        
+    } catch (error) {
+        console.error('Error loading admin class students:', error);
+        const adminClassStudentsList = document.getElementById('adminClassStudentsList');
+        adminClassStudentsList.innerHTML = '<p class="text-red-500 text-center py-8">Error loading students. Please try again.</p>';
+    }
+}
+
+async function openStudentTaskModal(username, fullName, classNum) {
+    try {
+        const modal = document.getElementById('studentTaskModal');
+        const title = document.getElementById('studentTaskModalTitle');
+        const content = document.getElementById('studentTaskModalContent');
+        
+        title.textContent = `Tasks for ${fullName}`;
+        content.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading student tasks...</div>';
+        
+        modal.classList.remove('hidden');
+        
+        // Load student's progress and class tasks
+        const [progress, tasks] = await Promise.all([
+            api.getSheet(`${username}_progress`),
+            api.getSheet(`${classNum}_tasks_master`)
+        ]);
+        
+        if (!tasks || tasks.error || tasks.length === 0) {
+            content.innerHTML = '<p class="text-gray-500 text-center py-8">No tasks found for this class.</p>';
+            return;
         }
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const tasksHtml = tasks.map(task => {
+            const userTask = Array.isArray(progress) ? progress.find(p => 
+                String(p.item_id) === String(task.task_id) && 
+                p.item_type === "task" && 
+                p.status === "complete"
+            ) : null;
+            
+            const completed = !!userTask;
+            const dueDate = new Date(task.due_date);
+            const isOverdue = !completed && dueDate < today;
+            const isDueToday = !completed && dueDate.toDateString() === today.toDateString();
+            
+            let taskClass = 'task-item';
+            let statusIcon = '';
+            let statusText = '';
+            
+            if (completed) {
+                taskClass += ' completed';
+                statusIcon = '<i class="fas fa-check-circle text-green-500"></i>';
+                statusText = 'Completed';
+            } else if (isOverdue) {
+                taskClass += ' overdue';
+                statusIcon = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
+                statusText = 'Overdue';
+            } else if (isDueToday) {
+                statusIcon = '<i class="fas fa-clock text-yellow-500"></i>';
+                statusText = 'Due Today';
+            } else {
+                statusIcon = '<i class="fas fa-clock text-gray-400"></i>';
+                statusText = 'Pending';
+            }
+            
+            return `
+                <div class="${taskClass}">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" 
+                               data-task-id="${task.task_id}"
+                               data-username="${username}"
+                               ${completed ? 'checked disabled' : ''}
+                               ${isOverdue || completed ? 'disabled' : ''}
+                               class="task-checkbox">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="task-id">${task.task_id}</span>
+                                <div class="flex items-center space-x-2">
+                                    ${statusIcon}
+                                    <span class="text-xs font-medium">${statusText}</span>
+                                </div>
+                            </div>
+                            <h4 class="task-title">${task.title}</h4>
+                            <p class="task-description">${task.description}</p>
+                            <p class="task-due-date">
+                                <i class="fas fa-calendar-alt mr-1"></i>
+                                Due: ${new Date(task.due_date).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                })}
+                                ${completed ? ' ✓ Completed' : isOverdue ? ' (OVERDUE)' : isDueToday ? ' (TODAY)' : ''}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        content.innerHTML = tasksHtml;
+        
+    } catch (error) {
+        console.error('Error opening student task modal:', error);
+        const content = document.getElementById('studentTaskModalContent');
+        content.innerHTML = '<p class="text-red-500 text-center py-8">Error loading student tasks. Please try again.</p>';
     }
 }
 
-function getSubjectClass(subject) {
-    if (!subject || subject.toLowerCase() === 'free') return 'bg-gray-50 text-gray-500';
-    
-    const subjectLower = subject.toLowerCase();
-    
-    if (subjectLower.includes('qura') || subjectLower.includes('quran') || subjectLower.includes('islamic') ||
-        subjectLower.includes('hadith') || subjectLower.includes('fiqh') || subjectLower.includes('isl')) {
-        return 'bg-green-100 text-green-800';
-    } else if (subjectLower.includes('arb') || subjectLower.includes('arabic') ||
-               subjectLower.includes('eng') || subjectLower.includes('english') ||
-               subjectLower.includes('language') || subjectLower.includes('urdu')) {
-        return 'bg-blue-100 text-blue-800';
-    } else if (subjectLower.includes('mth') || subjectLower.includes('math') ||
-               subjectLower.includes('sci') || subjectLower.includes('science') ||
-               subjectLower.includes('computer') || subjectLower.includes('cop')) {
-        return 'bg-purple-100 text-purple-800';
-    } else if (subjectLower.includes('break') || subjectLower.includes('lunch') ||
-               subjectLower.includes('prayer') || subjectLower.includes('rest')) {
-        return 'bg-orange-100 text-orange-800';
-    } else if (subjectLower.includes('hds') || subjectLower.includes('history') ||
-               subjectLower.includes('eco') || subjectLower.includes('economy')) {
-        return 'bg-yellow-100 text-yellow-800';
-    }
-    
-    return 'bg-gray-100 text-gray-700';
+function closeStudentTaskModal() {
+    document.getElementById('studentTaskModal').classList.add('hidden');
 }
 
-function getSubjectIcon(subject) {
-    if (!subject || subject.toLowerCase() === 'free') {
-        return '<i class="fas fa-coffee text-xs opacity-60"></i>';
-    }
+async function submitSelectedStudentTasks() {
+    const submitBtn = event.target;
+    const originalText = submitBtn.innerHTML;
     
-    const subjectLower = subject.toLowerCase();
-    
-    if (subjectLower.includes('qura') || subjectLower.includes('quran') || subjectLower.includes('islamic')) {
-        return '<i class="fas fa-mosque text-xs opacity-60"></i>';
-    } else if (subjectLower.includes('arb') || subjectLower.includes('arabic') ||
-               subjectLower.includes('eng') || subjectLower.includes('english')) {
-        return '<i class="fas fa-language text-xs opacity-60"></i>';
-    } else if (subjectLower.includes('mth') || subjectLower.includes('math')) {
-        return '<i class="fas fa-calculator text-xs opacity-60"></i>';
-    } else if (subjectLower.includes('sci') || subjectLower.includes('science')) {
-        return '<i class="fas fa-flask text-xs opacity-60"></i>';
-    } else if (subjectLower.includes('cop') || subjectLower.includes('computer')) {
-        return '<i class="fas fa-laptop text-xs opacity-60"></i>';
-    } else if (subjectLower.includes('break') || subjectLower.includes('lunch')) {
-        return '<i class="fas fa-utensils text-xs opacity-60"></i>';
-    } else if (subjectLower.includes('prayer') || subjectLower.includes('rest')) {
-        return '<i class="fas fa-pray text-xs opacity-60"></i>';
-    } else if (subjectLower.includes('hds') || subjectLower.includes('history')) {
-        return '<i class="fas fa-scroll text-xs opacity-60"></i>';
-    } else if (subjectLower.includes('eco') || subjectLower.includes('economy')) {
-        return '<i class="fas fa-chart-line text-xs opacity-60"></i>';
-    } else if (subjectLower.includes('pe') || subjectLower.includes('physical')) {
-        return '<i class="fas fa-running text-xs opacity-60"></i>';
-    } else if (subjectLower.includes('art')) {
-        return '<i class="fas fa-palette text-xs opacity-60"></i>';
-    } else if (subjectLower.includes('music')) {
-        return '<i class="fas fa-music text-xs opacity-60"></i>';
-    } else if (subjectLower.includes('urdu')) {
-        return '<i class="fas fa-font text-xs opacity-60"></i>';
-    }
-    
-    return '<i class="fas fa-book text-xs opacity-60"></i>';
-}
-
-// =============================
-// 🔗 URL Hash Navigation Functions (COMPLETED)
-// =============================
-function handleHashNavigation() {
-    const hash = window.location.hash;
-    
-    if (hash === '#signup') {
-        if (!document.getElementById('loginPage').classList.contains('hidden')) {
-            showSignup();
+    try {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting...';
+        submitBtn.disabled = true;
+        
+        const selectedCheckboxes = document.querySelectorAll('#studentTaskModalContent input[type="checkbox"]:checked:not(:disabled)');
+        
+        if (selectedCheckboxes.length === 0) {
+            alert('No tasks selected for submission.');
+            return;
         }
-    } else if (hash === '#login') {
-        if (!document.getElementById('loginPage').classList.contains('hidden')) {
-            showLogin();
+        
+        const promises = [];
+        let updatedCount = 0;
+        
+        for (let checkbox of selectedCheckboxes) {
+            const taskId = checkbox.getAttribute('data-task-id');
+            const username = checkbox.getAttribute('data-username');
+            
+            const rowData = [
+                taskId,
+                "task",
+                "complete",
+                new Date().toISOString().split('T')[0],
+                "100"
+            ];
+            
+            promises.push(api.addRow(`${username}_progress`, rowData));
+            updatedCount++;
         }
+        
+        await Promise.all(promises);
+        alert(`${updatedCount} task(s) marked as completed successfully!`);
+        closeStudentTaskModal();
+        
+        // Refresh the current view
+        const selectedClass = document.getElementById('adminTaskClassSelect').value;
+        const selectedSubject = document.getElementById('adminTaskSubjectSelect').value;
+        if (selectedClass && selectedSubject) {
+            await loadAdminClassSubjectData(selectedClass, selectedSubject);
+        }
+        
+    } catch (error) {
+        console.error('Error submitting selected student tasks:', error);
+        alert('Error submitting tasks. Please try again.');
+    } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
     }
 }
 
-function updateUrlHash(section) {
-    if (section === 'signup') {
-        window.history.pushState(null, null, '#signup');
-    } else if (section === 'login') {
-        window.history.pushState(null, null, '#login');
-    } else {
-        window.history.pushState(null, null, window.location.pathname);
-    }
-}
-
-// =============================
-// 👨‍💼 Admin Functions (COMPLETED)
-// =============================
-async function clearAdminTaskFilters() {
+// Clear admin task filters
+function clearAdminTaskFilters() {
     document.getElementById('adminTaskClassSelect').value = '';
     document.getElementById('adminTaskSubjectSelect').value = '';
     document.getElementById('adminTaskSubjectSelect').disabled = true;
@@ -1497,39 +1279,313 @@ async function clearAdminTaskFilters() {
     document.getElementById('adminTasksDefaultView').classList.remove('hidden');
 }
 
-function toggleRoleFields() {
-    const role = document.getElementById('newRole').value;
-    const studentFields = document.getElementById('studentFields');
-    const adminFields = document.getElementById('adminFields');
+// =============================
+// 👨‍💼 Admin Status Functions
+// =============================
+async function loadAllUsersStatus() {
+    try {
+        const userSelect = document.getElementById('userSelect');
+        const noUserSelected = document.getElementById('noUserSelected');
+        const selectedUserStatus = document.getElementById('selectedUserStatus');
+        
+        // Show loading in user select
+        userSelect.innerHTML = '<option value="">-- Loading Users... --</option>';
+        
+        // Load all users
+        const users = await api.getSheet("user_credentials");
+        
+        // Clear and populate user select
+        userSelect.innerHTML = '<option value="">-- Select User --</option>';
+        
+        if (users && Array.isArray(users)) {
+            const students = users.filter(user => user.role === 'student');
+            students.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.username;
+                option.textContent = `${student.full_name || student.username} (Class ${student.class || 'N/A'})`;
+                userSelect.appendChild(option);
+            });
+        }
+        
+        // Add event listener for user selection
+        userSelect.addEventListener('change', async function() {
+            const selectedUsername = this.value;
+            
+            if (selectedUsername) {
+                noUserSelected.classList.add('hidden');
+                selectedUserStatus.classList.remove('hidden');
+                await loadSelectedUserStatus(selectedUsername);
+            } else {
+                noUserSelected.classList.remove('hidden');
+                selectedUserStatus.classList.add('hidden');
+            }
+        });
+        
+        // Show no user selected initially
+        noUserSelected.classList.remove('hidden');
+        selectedUserStatus.classList.add('hidden');
+        
+    } catch (error) {
+        console.error('Error loading all users status:', error);
+        const userSelect = document.getElementById('userSelect');
+        userSelect.innerHTML = '<option value="">-- Error Loading Users --</option>';
+    }
+}
+
+async function loadSelectedUserStatus(username) {
+    try {
+        // Load user data and progress
+        const users = await api.getSheet("user_credentials");
+        const user = users.find(u => u.username === username);
+        
+        if (!user) {
+            alert('User not found!');
+            return;
+        }
+        
+        // Update user info display
+        document.getElementById('selectedUserName').textContent = user.full_name || user.username;
+        document.getElementById('selectedUserInfo').textContent = `Username: ${user.username} | Class: ${user.class || 'Not Assigned'} | Role: ${user.role}`;
+        
+        // Load user's progress
+        const progress = await api.getSheet(`${username}_progress`);
+        
+        // Load user status charts
+        await Promise.all([
+            loadAdminTaskChart(progress, user.class),
+            loadAdminCourseChart(progress),
+            loadAdminActivityChart(progress),
+            updateAdminProgressBars(progress, user.class)
+        ]);
+        
+    } catch (error) {
+        console.error('Error loading selected user status:', error);
+        alert('Error loading user status. Please try again.');
+    }
+}
+
+async function loadAdminTaskChart(progress, userClass) {
+    if (!userClass) return;
     
-    if (role === 'admin') {
-        studentFields.classList.add('hidden');
-        adminFields.classList.remove('hidden');
-        document.getElementById('newSubjects').required = true;
-        document.getElementById('newClass').required = false;
-    } else {
-        studentFields.classList.remove('hidden');
-        adminFields.classList.add('hidden');
-        document.getElementById('newClass').required = true;
-        document.getElementById('newSubjects').required = false;
+    try {
+        const tasksSheetName = `${userClass}_tasks_master`;
+        const tasks = await api.getSheet(tasksSheetName);
+        const completedTasks = Array.isArray(progress) ? 
+            progress.filter(p => p.item_type === "task" && p.status === "complete").length : 0;
+        const totalTasks = Array.isArray(tasks) ? tasks.length : 0;
+        const pendingTasks = Math.max(0, totalTasks - completedTasks);
+
+        const ctx = document.getElementById('adminTaskChart');
+        if (!ctx) return;
+        
+        if (adminChartInstances.taskChart) {
+            adminChartInstances.taskChart.destroy();
+        }
+        
+        adminChartInstances.taskChart = new Chart(ctx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'Pending'],
+                datasets: [{
+                    data: [completedTasks, pendingTasks],
+                    backgroundColor: ['#059669', '#e5e7eb'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error loading admin task chart:', error);
+    }
+}
+
+async function loadAdminCourseChart(progress) {
+    try {
+        const courses = await api.getSheet("courses_master");
+        
+        const totalCourses = courses && Array.isArray(courses) ? courses.length : 0;
+        const completedCourses = Array.isArray(progress) ? 
+            progress.filter(p => p.item_type === "course" && p.status === "complete").length : 0;
+        const inProgressCourses = Math.max(0, totalCourses - completedCourses);
+
+        const ctx = document.getElementById('adminCourseChart');
+        if (!ctx) return;
+        
+        if (adminChartInstances.courseChart) {
+            adminChartInstances.courseChart.destroy();
+        }
+        
+        adminChartInstances.courseChart = new Chart(ctx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'In Progress'],
+                datasets: [{
+                    data: [completedCourses, inProgressCourses],
+                    backgroundColor: ['#3b82f6', '#e5e7eb'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error loading admin course chart:', error);
+    }
+}
+
+async function loadAdminActivityChart(progress) {
+    try {
+        const progressArray = Array.isArray(progress) ? progress : [];
+        
+        const now = new Date();
+        const startOfWeek = new Date(now);
+        
+        // Get Monday of current week
+        const dayOfWeek = now.getDay();
+        const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+        startOfWeek.setDate(diff);
+        startOfWeek.setHours(0, 0, 0, 0);
+        
+        const dailyData = [];
+        const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        
+        for (let i = 0; i < 7; i++) {
+            const currentDay = new Date(startOfWeek);
+            currentDay.setDate(startOfWeek.getDate() + i);
+            
+            const nextDay = new Date(currentDay);
+            nextDay.setDate(currentDay.getDate() + 1);
+            
+            // Count completions for this specific day
+            const dayCompletions = progressArray.filter(p => {
+                if (!p.completion_date) return false;
+                try {
+                    const completionDate = new Date(p.completion_date);
+                    return completionDate >= currentDay && completionDate < nextDay && p.status === "complete";
+                } catch (e) {
+                    return false;
+                }
+            }).length;
+            
+            dailyData.push(dayCompletions);
+        }
+
+        const ctx = document.getElementById('adminActivityChart');
+        if (!ctx) return;
+        
+        if (adminChartInstances.activityChart) {
+            adminChartInstances.activityChart.destroy();
+        }
+        
+        adminChartInstances.activityChart = new Chart(ctx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: dayLabels,
+                datasets: [{
+                    label: 'Items Completed',
+                    data: dailyData,
+                    backgroundColor: 'rgba(5, 150, 105, 0.8)',
+                    borderColor: '#059669',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error loading admin activity chart:', error);
+    }
+}
+
+async function updateAdminProgressBars(progress, userClass) {
+    try {
+        if (!userClass) return;
+        
+        const tasksSheetName = `${userClass}_tasks_master`;
+        const [tasks, courses] = await Promise.all([
+            api.getSheet(tasksSheetName),
+            api.getSheet("courses_master")
+        ]);
+        
+        // Ensure progress is an array
+        const progressArray = Array.isArray(progress) ? progress : [];
+        
+        // Tasks progress
+        const completedTasks = progressArray.filter(p => p.item_type === "task" && p.status === "complete").length;
+        const totalTasks = Array.isArray(tasks) ? tasks.length : 0;
+        const taskProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        
+        const adminTaskStatsElement = document.getElementById('adminTaskStats');
+        const adminTaskProgressElement = document.getElementById('adminTaskProgress');
+        const adminTaskProgressBarElement = document.getElementById('adminTaskProgressBar');
+        
+        if (adminTaskStatsElement) adminTaskStatsElement.textContent = `${completedTasks} / ${totalTasks}`;
+        if (adminTaskProgressElement) adminTaskProgressElement.textContent = `${taskProgress}%`;
+        if (adminTaskProgressBarElement) adminTaskProgressBarElement.style.width = `${taskProgress}%`;
+
+        // Courses progress
+        const totalCourses = Array.isArray(courses) ? courses.length : 0;
+        const completedCourses = progressArray.filter(p => p.item_type === "course" && p.status === "complete").length;
+        const courseProgress = totalCourses > 0 ? Math.round((completedCourses / totalCourses) * 100) : 0;
+        
+        const adminCourseStatsElement = document.getElementById('adminCourseStats');
+        const adminCourseProgressElement = document.getElementById('adminCourseProgress');
+        const adminCourseProgressBarElement = document.getElementById('adminCourseProgressBar');
+        
+        if (adminCourseStatsElement) adminCourseStatsElement.textContent = `${completedCourses} / ${totalCourses}`;
+        if (adminCourseProgressElement) adminCourseProgressElement.textContent = `${courseProgress}%`;
+        if (adminCourseProgressBarElement) adminCourseProgressBarElement.style.width = `${courseProgress}%`;
+        
+    } catch (error) {
+        console.error('Error updating admin progress bars:', error);
     }
 }
 
 // =============================
-// 🎯 Event Listeners & Initialization (COMPLETED)
+// 🎯 Event Listeners & Initialization
 // =============================
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize calendar
-    loadCalendar();
-    
     // Add signup form event listener
     document.getElementById('signupForm').addEventListener('submit', function(e) {
         e.preventDefault();
         submitSignup();
     });
-    
-    // Handle initial hash navigation
-    handleHashNavigation();
     
     // Add login form event listener
     document.getElementById('loginForm').addEventListener('submit', function(e) {
@@ -1538,46 +1594,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Modal close event listeners
-    document.getElementById('eventModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeEventModal();
-        }
-    });
-    
-    document.getElementById('courseModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeCourseModal();
-        }
-    });
-    
     document.getElementById('studentTaskModal').addEventListener('click', function(e) {
         if (e.target === this) {
             closeStudentTaskModal();
         }
     });
-    
-    document.getElementById('addUserModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeAddUserModal();
-        }
-    });
-    
-    document.getElementById('addEventModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeAddEventModal();
-        }
-    });
-    
-    document.getElementById('addCourseModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeAddCourseModal();
-        }
-    });
 });
-
-// Listen for hash changes
-window.addEventListener('hashchange', handleHashNavigation);
-window.addEventListener('load', handleHashNavigation);
 
 // Performance optimization: Debounce resize events
 let resizeTimeout;
@@ -1598,7 +1620,7 @@ window.addEventListener('resize', function() {
 });
 
 // =============================
-// 🔧 Utility Functions (COMPLETED)
+// 🔧 Utility Functions
 // =============================
 function formatDate(dateString) {
     try {
@@ -1613,41 +1635,6 @@ function formatDate(dateString) {
     }
 }
 
-function formatDateTime(dateString, timeString) {
-    try {
-        const date = new Date(dateString);
-        let result = date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-        
-        if (timeString) {
-            result += ` at ${timeString}`;
-        }
-        
-        return result;
-    } catch (e) {
-        return 'Invalid Date';
-    }
-}
-
-function generateTaskId() {
-    return 'TASK_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
-}
-
-function generateCourseId() {
-    return 'COURSE_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
-}
-
-function generateEventId() {
-    return 'EVENT_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
-}
-
-// =============================
-// 🎨 Theme and UI Functions (COMPLETED)
-// =============================
 function showNotification(message, type = 'info', duration = 5000) {
     const notification = document.createElement('div');
     let bgColor = 'bg-blue-500';
@@ -1689,20 +1676,8 @@ function showNotification(message, type = 'info', duration = 5000) {
     }, duration);
 }
 
-function showLoading(element, text = 'Loading...') {
-    if (element) {
-        element.innerHTML = `<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>${text}</div>`;
-    }
-}
-
-function hideLoading(element, content = '') {
-    if (element) {
-        element.innerHTML = content;
-    }
-}
-
 // =============================
-// 🔒 Security Functions (COMPLETED)
+// 🔒 Security Functions
 // =============================
 // Disable right-click
 document.addEventListener("contextmenu", function (e) {
@@ -1730,63 +1705,7 @@ document.addEventListener("keydown", function (e) {
 });
 
 // =============================
-// 🚀 Debug and Development Functions (COMPLETED)
-// =============================
-// Expose functions for debugging and development
-window.hudaAcademy = {
-    // Core functions
-    login,
-    logout,
-    showPage,
-    
-    // Task functions
-    submitTasks,
-    loadTasks,
-    checkOverdueTasks,
-    
-    // Course functions
-    openCourse,
-    completeCourse,
-    loadCourses,
-    
-    // Event functions
-    loadEvents,
-    loadCalendar,
-    openEventModal,
-    
-    // Admin functions
-    loadAdminData,
-    loadAdminUsers,
-    loadAdminTasks,
-    loadAdminEvents,
-    loadAdminCourses,
-    loadAllUsersStatus,
-    
-    // Utility functions
-    clearCache: () => api.clearCache(),
-    formatDate,
-    formatDateTime,
-    showNotification,
-    
-    // Debug functions
-    debugSheets: window.debugSheets,
-    debugUser: window.debugUser,
-    debugAllSheets: window.debugAllSheets,
-    testAPI: window.testAPI,
-    debugAdminStatus: window.debugAdminStatus,
-    debugAdminSubjects: window.debugAdminSubjects,
-    
-    // API instance
-    api
-};
-
-// Console welcome message
-console.log('%c🎓 DHDC MANOOR System Loaded Successfully! 🎓', 'color: #059669; font-size: 16px; font-weight: bold;');
-console.log('%cDarul Hidaya Da\'wa College Management System', 'color: #1e40af; font-size: 12px;');
-console.log('%cAvailable debug functions: hudaAcademy.debugSheets(), hudaAcademy.testAPI(), hudaAcademy.debugUser("username")', 'color: #6b7280; font-size: 10px;');
-
-// =============================
-// 🎯 Final Initialization (COMPLETED)
+// 🚀 Final Initialization
 // =============================
 // Initialize the application when DOM is ready
 if (document.readyState === 'loading') {
@@ -1801,22 +1720,9 @@ function initializeApp() {
     // Set default view to login
     showLogin();
     
-    // Initialize calendar with current date
-    currentDate = new Date();
-    
-    // Check for saved user session (optional enhancement)
-    // This could be implemented later for "Remember Me" functionality
-    
     console.log('System initialized successfully!');
 }
 
-// Export for potential module usage
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        api,
-        login,
-        logout,
-        showPage,
-        hudaAcademy: window.hudaAcademy
-    };
-}
+// Console welcome message
+console.log('%c🎓 DHDC MANOOR System Loaded Successfully! 🎓', 'color: #059669; font-size: 16px; font-weight: bold;');
+console.log('%cDarul Hidaya Da\'wa College Management System', 'color: #1e40af; font-size: 12px;');
