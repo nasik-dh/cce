@@ -479,57 +479,69 @@
     </div>
 </div>
 
-<!-- Replace the existing adminTasksPage div with this updated version -->
+<!-- Admin Tasks Page -->
 <div id="adminTasksPage" class="page-content hidden">
-    <div class="bg-white rounded-lg shadow-lg p-6">
-        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
-            <div>
-                <h2 class="text-2xl font-bold text-blue-600">
-                    <i class="fas fa-tasks mr-2"></i>Works Management
-                </h2>
-                <div id="adminTeachingInfo" class="text-sm text-gray-600 mt-2">
-                    <i class="fas fa-chalkboard-teacher mr-1"></i>
-                    <span id="teachingSubjects">Loading teaching subjects...</span>
-                </div>
-            </div>
-            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full lg:w-auto">
-                <select id="adminTaskClassSelect" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
-                    <option value="">-- Select Class --</option>
-                </select>
-                <select id="adminTaskSubjectSelect" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto" disabled>
-                    <option value="">-- Select Subject --</option>
-                </select>
-            </div>
+    <div class="container mx-auto px-4 py-6">
+        <h2 class="text-2xl font-bold text-blue-600 mb-6">Admin Tasks Management</h2>
+        
+        <!-- Admin Teaching Info -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <h3 class="font-semibold text-blue-800 mb-2">Your Teaching Assignment</h3>
+            <p id="teachingSubjects" class="text-blue-600">Loading teaching information...</p>
         </div>
         
-        <!-- Class and Subject Tasks Display -->
-        <div id="adminTasksClassSubjectView" class="hidden">
-            <div class="mb-6 p-4 bg-blue-50 rounded-lg">
-                <h3 id="selectedClassSubjectInfo" class="text-lg font-semibold text-blue-800"></h3>
-                <p class="text-sm text-blue-600 mt-1">Manage tasks for this class and subject</p>
-            </div>
-            
-            <!-- Students Grid -->
-            <div class="mb-6">
-                <h4 class="font-semibold text-gray-800 mb-4">
-                    <i class="fas fa-user-graduate mr-2"></i>Students in this class
-                </h4>
-                <div id="adminClassStudentsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Students will be loaded here -->
+        <!-- Class and Subject Selection -->
+        <div class="admin-subject-filter">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label" for="adminTaskClassSelect">Select Class</label>
+                    <select id="adminTaskClassSelect" class="filter-select">
+                        <option value="">-- Select Class --</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label" for="adminTaskSubjectSelect">Select Subject</label>
+                    <select id="adminTaskSubjectSelect" class="filter-select" disabled>
+                        <option value="">-- Select Subject --</option>
+                    </select>
                 </div>
             </div>
         </div>
         
-        <!-- Default Admin Task Overview -->
+        <!-- Default View (When no class/subject selected) -->
         <div id="adminTasksDefaultView">
             <div class="text-center py-12">
                 <i class="fas fa-chalkboard-teacher text-6xl text-gray-300 mb-4"></i>
-                <p class="text-gray-500 text-lg mb-2">Select a class and subject to manage tasks</p>
-                <p class="text-gray-400 text-sm">Choose from the dropdowns above to get started</p>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">Select Class and Subject</h3>
+                <p class="text-gray-500">Please select a class and subject from the dropdowns above to view tasks and students.</p>
+            </div>
+        </div>
+        
+        <!-- Class-Subject View (When class and subject selected) -->
+        <div id="adminTasksClassSubjectView" class="hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h3 id="selectedClassSubjectInfo" class="text-xl font-semibold text-blue-600 mb-4">Class - Subject</h3>
+                
+                <!-- Tasks Section -->
+                <div class="mb-8">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-4">Available Tasks</h4>
+                    <div id="adminClassSubjectTasksList" class="space-y-4">
+                        <!-- Tasks will be loaded here -->
+                    </div>
+                </div>
+                
+                <!-- Students Section -->
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-800 mb-4">Students in Class</h4>
+                    <div id="adminClassStudentsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Students will be loaded here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+        
 
 <!-- Student Task Modal -->
 <div id="studentTaskModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
@@ -875,6 +887,7 @@
     <script src="app.js"></script>
 </body>
 </html>
+
 
 
 
