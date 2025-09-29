@@ -55,561 +55,6 @@
             direction: rtl;
             text-align: center;
         }
-        
-        /* Header Styles */
-        .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            padding: 8px 0;
-        }
-        
-        .navbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 16px;
-        }
-        
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .logo-image {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            object-fit: cover;
-        }
-        
-        .brand-text {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        
-        .brand-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-dark);
-            line-height: 1.2;
-        }
-        
-        .brand-motto {
-            font-size: 10px;
-            color: var(--text-light);
-            font-family: 'Noto Sans Arabic', sans-serif;
-            direction: ltr;
-            text-align: left;
-        }
-        
-        /* Menu Button Styles */
-        .menu-toggle {
-            position: relative;
-            width: 44px;
-            height: 44px;
-            background: var(--primary-color);
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-soft);
-        }
-        
-        .menu-toggle:hover {
-            background: var(--secondary-color);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .menu-toggle:active {
-            transform: translateY(0);
-        }
-        
-        .hamburger {
-            display: flex;
-            flex-direction: column;
-            width: 20px;
-            height: 16px;
-            justify-content: space-between;
-            position: relative;
-        }
-        
-        .hamburger span {
-            width: 100%;
-            height: 2px;
-            background: white;
-            border-radius: 2px;
-            transition: all 0.3s ease;
-            transform-origin: center;
-        }
-        
-        .menu-toggle.active .hamburger span:nth-child(1) {
-            transform: rotate(45deg) translate(5px, 5px);
-        }
-        
-        .menu-toggle.active .hamburger span:nth-child(2) {
-            opacity: 0;
-            transform: scaleX(0);
-        }
-        
-        .menu-toggle.active .hamburger span:nth-child(3) {
-            transform: rotate(-45deg) translate(5px, -5px);
-        }
-        
-        /* Desktop Navigation */
-        .desktop-nav {
-            display: none;
-            align-items: center;
-            gap: 24px;
-        }
-        
-        .nav-link {
-            color: var(--text-light);
-            font-weight: 500;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-link:hover {
-            color: var(--primary-color);
-            background: rgba(30, 64, 175, 0.1);
-        }
-        
-        .login-btn {
-            background: var(--primary-color);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-soft);
-        }
-        
-        .login-btn:hover {
-            background: var(--secondary-color);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-medium);
-        }
-        
-        /* Mobile Menu */
-        .mobile-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border-top: 1px solid rgba(0, 0, 0, 0.1);
-            box-shadow: var(--shadow-medium);
-            transform: translateY(-100%);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .mobile-menu.active {
-            transform: translateY(0);
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .mobile-menu-content {
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .mobile-nav-link {
-            color: var(--text-dark);
-            font-weight: 500;
-            text-decoration: none;
-            padding: 12px 16px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            min-height: 44px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .mobile-nav-link:hover {
-            background: rgba(30, 64, 175, 0.1);
-            color: var(--primary-color);
-        }
-        
-        /* Main Content Styles */
-        .main-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 16px;
-        }
-        
-        /* Hero Section */
-        .hero-section {
-            background: linear-gradient(135deg, rgba(30, 64, 175, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
-            border-radius: 16px;
-            padding: 32px 24px;
-            text-align: center;
-            margin-bottom: 32px;
-        }
-        
-        .hero-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 8px;
-            line-height: 1.3;
-        }
-        
-        .hero-subtitle {
-            font-size: 16px;
-            color: var(--text-light);
-            margin-bottom: 24px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            line-height: 1.6;
-        }
-        
-        .cta-button {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: white;
-            padding: 14px 32px;
-            border-radius: 12px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-soft);
-            min-height: 48px;
-        }
-        
-        .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-medium);
-        }
-        
-        /* Features Section */
-        .features-section {
-            margin-bottom: 32px;
-        }
-        
-        .section-header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-        
-        .section-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 12px;
-        }
-        
-        .section-description {
-            font-size: 16px;
-            color: var(--text-light);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .features-grid {
-            display: grid;
-            gap: 20px;
-            grid-template-columns: 1fr;
-        }
-        
-        .feature-card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: var(--shadow-soft);
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .feature-icon {
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            margin-bottom: 16px;
-        }
-        
-        .feature-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 12px;
-        }
-        
-        .feature-description {
-            color: var(--text-light);
-            line-height: 1.6;
-        }
-        
-        /* CTA Section */
-        .cta-section {
-            background: linear-gradient(135deg, rgba(30, 64, 175, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%);
-            border-radius: 16px;
-            padding: 32px 24px;
-            text-align: center;
-            margin-bottom: 32px;
-        }
-        
-        .cta-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            align-items: center;
-            margin-top: 24px;
-        }
-        
-        .btn-secondary {
-            background: white;
-            color: var(--primary-color);
-            border: 2px solid var(--primary-color);
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            min-height: 48px;
-        }
-        
-        .btn-secondary:hover {
-            background: var(--primary-color);
-            color: white;
-            transform: translateY(-2px);
-        }
-        
-        /* Footer */
-        .footer {
-            background: var(--text-dark);
-            color: white;
-            padding: 32px 16px;
-            text-align: center;
-        }
-        
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .footer-logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-        
-        .footer-logo img {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-        }
-        
-        .footer-title {
-            font-size: 18px;
-            font-weight: 700;
-        }
-        
-        .footer-description {
-            color: #9ca3af;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-        
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-        
-        .social-link {
-            width: 44px;
-            height: 44px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #9ca3af;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        
-        .social-link:hover {
-            background: var(--primary-color);
-            color: white;
-            transform: translateY(-2px);
-        }
-        
-        .footer-copyright {
-            color: #6b7280;
-            font-size: 12px;
-        }
-        
-        /* Tablet Styles */
-        @media (min-width: 768px) {
-            .navbar {
-                padding: 0 24px;
-            }
-            
-            .brand-title {
-                font-size: 20px;
-            }
-            
-            .brand-motto {
-                font-size: 11px;
-            }
-            
-            .hero-title {
-                font-size: 36px;
-            }
-            
-            .hero-subtitle {
-                font-size: 18px;
-            }
-            
-            .section-title {
-                font-size: 32px;
-            }
-            
-            .features-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 24px;
-            }
-            
-            .cta-actions {
-                flex-direction: row;
-                justify-content: center;
-            }
-        }
-        
-        /* Desktop Styles */
-        @media (min-width: 1024px) {
-            .navbar {
-                padding: 0 32px;
-            }
-            
-            .menu-toggle {
-                display: none;
-            }
-            
-            .desktop-nav {
-                display: flex;
-            }
-            
-            .mobile-menu {
-                display: none;
-            }
-            
-            .brand-title {
-                font-size: 22px;
-            }
-            
-            .hero-title {
-                font-size: 42px;
-            }
-            
-            .hero-subtitle {
-                font-size: 20px;
-            }
-            
-            .section-title {
-                font-size: 36px;
-            }
-            
-            .features-grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 32px;
-            }
-        }
-        
-        /* Large Desktop */
-        @media (min-width: 1280px) {
-            .hero-section {
-                padding: 48px 32px;
-            }
-            
-            .hero-title {
-                font-size: 48px;
-            }
-        }
-        
-        /* Animation Classes */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.6s ease;
-        }
-        
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        /* Print/PDF Optimization */
-        @media print {
-            .header {
-                position: static;
-            }
-            
-            .mobile-menu {
-                display: none !important;
-            }
-            
-            .menu-toggle {
-                display: none !important;
-            }
-            
-            body {
-                background: white !important;
-            }
-            
-            .hero-section,
-            .cta-section {
-                background: rgba(30, 64, 175, 0.05) !important;
-            }
-            
-            .feature-card {
-                break-inside: avoid;
-            }
-        }
 
         /* Additional styles for the dashboard */
         .hidden {
@@ -632,28 +77,6 @@
 
         .page-content {
             padding: 2rem 0;
-        }
-
-        /* Modal styles */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 1rem;
-            max-width: 90vw;
-            max-height: 90vh;
-            overflow-y: auto;
         }
 
         /* Task assignment styles */
@@ -892,6 +315,28 @@
             box-shadow: none;
         }
 
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 1rem;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
         @media (max-width: 768px) {
             .filter-grid {
                 grid-template-columns: 1fr;
@@ -1057,17 +502,8 @@
                     <button onclick="showPage('tasks')" class="nav-btn text-gray-700 hover:text-green-600 whitespace-nowrap">
                         <i class="fas fa-tasks mr-2"></i>Tasks
                     </button>
-                    <button onclick="showPage('courses')" class="nav-btn text-gray-700 hover:text-green-600 whitespace-nowrap">
-                        <i class="fas fa-book mr-2"></i>Courses
-                    </button>
-                    <button onclick="showPage('events')" class="nav-btn text-gray-700 hover:text-green-600 whitespace-nowrap">
-                        <i class="fas fa-calendar-alt mr-2"></i>Events
-                    </button>
                     <button onclick="showPage('status')" class="nav-btn text-gray-700 hover:text-green-600 whitespace-nowrap">
                         <i class="fas fa-chart-line mr-2"></i>Status
-                    </button>
-                    <button onclick="showPage('timetable')" class="nav-btn text-gray-700 hover:text-green-600 whitespace-nowrap">
-                        <i class="fas fa-calendar mr-2"></i>Schedule
                     </button>
                 </div>
             </div>
@@ -1077,23 +513,11 @@
         <nav id="adminNav" class="bg-white shadow-sm border-b hidden">
             <div class="container mx-auto px-4">
                 <div class="flex space-x-1 overflow-x-auto py-2">
-                    <button onclick="showPage('adminUsers')" class="nav-btn text-gray-700 hover:text-blue-600 whitespace-nowrap">
-                        <i class="fas fa-users mr-2"></i>Users
-                    </button>
                     <button onclick="showPage('adminTasks')" class="nav-btn text-gray-700 hover:text-blue-600 whitespace-nowrap">
                         <i class="fas fa-tasks mr-2"></i>Tasks
                     </button>
-                    <button onclick="showPage('adminEvents')" class="nav-btn text-gray-700 hover:text-blue-600 whitespace-nowrap">
-                        <i class="fas fa-calendar-alt mr-2"></i>Events
-                    </button>
-                    <button onclick="showPage('adminCourses')" class="nav-btn text-gray-700 hover:text-blue-600 whitespace-nowrap">
-                        <i class="fas fa-book mr-2"></i>Courses
-                    </button>
                     <button onclick="showPage('adminStatus')" class="nav-btn text-gray-700 hover:text-blue-600 whitespace-nowrap">
                         <i class="fas fa-chart-bar mr-2"></i>All Status
-                    </button>
-                    <button onclick="showPage('adminResponse')" class="nav-btn text-gray-700 hover:text-blue-600 whitespace-nowrap">
-                        <i class="fas fa-inbox mr-2"></i>Responses
                     </button>
                 </div>
             </div>
@@ -1117,37 +541,6 @@
                     
                     <div id="subjectCards">
                         <!-- Tasks will be loaded here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Courses Page (Student) -->
-            <div id="coursesPage" class="page-content hidden">
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <h2 class="text-2xl font-bold text-green-600 mb-6">Available Courses</h2>
-                    <div id="coursesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <!-- Courses will be loaded here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Events Page (Student) -->
-            <div id="eventsPage" class="page-content hidden">
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-green-600">Events Calendar</h2>
-                        <div class="flex items-center space-x-2">
-                            <button onclick="changeMonth(-1)" class="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-lg transition duration-300">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <h3 id="currentMonth" class="font-semibold text-gray-800 min-w-[200px] text-center">Loading...</h3>
-                            <button onclick="changeMonth(1)" class="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-lg transition duration-300">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="calendar" class="grid grid-cols-7 gap-1">
-                        <!-- Calendar will be loaded here -->
                     </div>
                 </div>
             </div>
@@ -1208,35 +601,6 @@
                             </div>
                             <p class="text-sm text-purple-700" id="eventProgress">0%</p>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Timetable Page (Student) -->
-            <div id="timetablePage" class="page-content hidden">
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <h2 class="text-2xl font-bold text-green-600 mb-6">My Schedule</h2>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full border-collapse">
-                            <thead>
-                                <tr class="bg-green-50">
-                                    <th class="border border-gray-300 p-2 text-left font-semibold sticky left-0 bg-green-100 z-10">Day / Period</th>
-                                    <th class="border border-gray-300 p-2 text-center font-semibold min-w-[80px]">1st</th>
-                                    <th class="border border-gray-300 p-2 text-center font-semibold min-w-[80px]">2nd</th>
-                                    <th class="border border-gray-300 p-2 text-center font-semibold min-w-[80px]">3rd</th>
-                                    <th class="border border-gray-300 p-2 text-center font-semibold min-w-[80px]">4th</th>
-                                    <th class="border border-gray-300 p-2 text-center font-semibold min-w-[80px]">5th</th>
-                                    <th class="border border-gray-300 p-2 text-center font-semibold min-w-[80px]">6th</th>
-                                    <th class="border border-gray-300 p-2 text-center font-semibold min-w-[80px]">7th</th>
-                                    <th class="border border-gray-300 p-2 text-center font-semibold min-w-[80px]">8th</th>
-                                    <th class="border border-gray-300 p-2 text-center font-semibold min-w-[80px]">9th</th>
-                                    <th class="border border-gray-300 p-2 text-center font-semibold min-w-[80px]">10th</th>
-                                </tr>
-                            </thead>
-                            <tbody id="timetableBody">
-                                <!-- Timetable will be loaded here -->
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
@@ -1306,51 +670,6 @@
                                 <!-- Students will be loaded here -->
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Admin Users Page -->
-            <div id="adminUsersPage" class="page-content hidden">
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-blue-600">User Management</h2>
-                        <button onclick="showAddUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300">
-                            <i class="fas fa-plus mr-2"></i>Add User
-                        </button>
-                    </div>
-                    <div id="usersList">
-                        <!-- Users will be loaded here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Admin Events Page -->
-            <div id="adminEventsPage" class="page-content hidden">
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-blue-600">Event Management</h2>
-                        <button onclick="showAddEventModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300">
-                            <i class="fas fa-plus mr-2"></i>Add Event
-                        </button>
-                    </div>
-                    <div id="adminEventsList" class="space-y-4">
-                        <!-- Events will be loaded here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Admin Courses Page -->
-            <div id="adminCoursesPage" class="page-content hidden">
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-blue-600">Course Management</h2>
-                        <button onclick="showAddCourseModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300">
-                            <i class="fas fa-plus mr-2"></i>Add Course
-                        </button>
-                    </div>
-                    <div id="adminCoursesList" class="space-y-4">
-                        <!-- Courses will be loaded here -->
                     </div>
                 </div>
             </div>
@@ -1443,77 +762,7 @@
                 </div>
             </div>
 
-            <!-- Admin Response Page -->
-            <div id="adminResponsePage" class="page-content hidden">
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <h2 class="text-2xl font-bold text-blue-600">Registration Responses</h2>
-                            <p class="text-gray-600">Total Responses: <span id="responseCount" class="font-semibold">0</span></p>
-                        </div>
-                    </div>
-                    <div id="responsesList">
-                        <!-- Responses will be loaded here -->
-                    </div>
-                </div>
-            </div>
-
         </main>
-    </div>
-
-    <!-- Course Modal -->
-    <div id="courseModal" class="modal hidden">
-        <div class="modal-content max-w-2xl w-full mx-4">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 id="courseTitle" class="text-xl font-bold text-green-600">Course Title</h3>
-                    <button onclick="closeCourseModal()" class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-                
-                <div class="mb-4">
-                    <div class="flex justify-between items-center">
-                        <p id="stepIndicator" class="text-sm text-gray-600">Step 1 of 5</p>
-                    </div>
-                </div>
-                
-                <div id="courseContent" class="mb-6 min-h-[300px]">
-                    <!-- Course content will be loaded here -->
-                </div>
-                
-                <div class="flex justify-between">
-                    <button id="prevBtn" onclick="prevStep()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition duration-300">
-                        <i class="fas fa-chevron-left mr-2"></i>Previous
-                    </button>
-                    <button id="nextBtn" onclick="nextStep()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition duration-300">
-                        Next<i class="fas fa-chevron-right ml-2"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Event Modal -->
-    <div id="eventModal" class="modal hidden">
-        <div class="modal-content max-w-md w-full mx-4">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 id="eventTitle" class="text-xl font-bold text-green-600">Event Details</h3>
-                    <button onclick="closeEventModal()" class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-                
-                <div id="eventDateTime" class="text-gray-600 mb-4">
-                    <!-- Event date and time -->
-                </div>
-                
-                <div id="eventDetails" class="space-y-3">
-                    <!-- Event details -->
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Student Task Assignment Modal -->
@@ -1543,331 +792,9 @@
         </div>
     </div>
 
-    <!-- Add User Modal -->
-    <div id="addUserModal" class="modal hidden">
-        <div class="modal-content max-w-md w-full mx-4">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold text-blue-600">Add New User</h3>
-                    <button onclick="closeAddUserModal()" class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-                
-                <form id="addUserForm">
-                    <div class="space-y-4">
-                        <div>
-                            <label for="newUsername" class="block text-sm font-medium text-gray-700 mb-1">Username *</label>
-                            <input type="text" id="newUsername" name="newUsername" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-                        
-                        <div>
-                            <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1">Password *</label>
-                            <input type="password" id="newPassword" name="newPassword" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-
-                        <div>
-                            <label for="newFullName" class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                            <input type="text" id="newFullName" name="newFullName" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-
-                        <div>
-                            <label for="newRole" class="block text-sm font-medium text-gray-700 mb-1">Role *</label>
-                            <select id="newRole" name="newRole" required onchange="toggleRoleFields()"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <option value="student">Student</option>
-                                <option value="admin">Admin</option>
-                            </select>
-                        </div>
-
-                        <!-- Student Fields -->
-                        <div id="studentFields">
-                            <label for="newClass" class="block text-sm font-medium text-gray-700 mb-1">Class *</label>
-                            <select id="newClass" name="newClass"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <option value="">-- Select Class --</option>
-                                <option value="1">Class 1</option>
-                                <option value="2">Class 2</option>
-                                <option value="3">Class 3</option>
-                                <option value="4">Class 4</option>
-                                <option value="5">Class 5</option>
-                                <option value="6">Class 6</option>
-                                <option value="7">Class 7</option>
-                                <option value="8">Class 8</option>
-                                <option value="9">Class 9</option>
-                                <option value="10">Class 10</option>
-                            </select>
-                        </div>
-
-                        <!-- Admin Fields -->
-                        <div id="adminFields" class="hidden">
-                            <div>
-                                <label for="newSubjects" class="block text-sm font-medium text-gray-700 mb-1">Teaching Classes & Subjects *</label>
-                                <input type="text" id="newSubjects" name="newSubjects" placeholder="e.g., 1,2,3 for classes and (1-english),(2-mathematics),(3-urdu) for subjects"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <p class="text-xs text-gray-500 mt-1">Format: Classes: 1,2,3 | Subjects: (1-english),(2-mathematics),(3-urdu)</p>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">
-                            <i class="fas fa-plus mr-2"></i>Add User
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Event Modal -->
-    <div id="addEventModal" class="modal hidden">
-        <div class="modal-content max-w-md w-full mx-4">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold text-blue-600">Add New Event</h3>
-                    <button onclick="closeAddEventModal()" class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-                
-                <form id="addEventForm">
-                    <div class="space-y-4">
-                        <div>
-                            <label for="eventTitle" class="block text-sm font-medium text-gray-700 mb-1">Event Title *</label>
-                            <input type="text" id="eventTitle" name="eventTitle" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-                        
-                        <div>
-                            <label for="eventDate" class="block text-sm font-medium text-gray-700 mb-1">Event Date *</label>
-                            <input type="date" id="eventDate" name="eventDate" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-
-                        <div>
-                            <label for="eventTime" class="block text-sm font-medium text-gray-700 mb-1">Event Time</label>
-                            <input type="time" id="eventTime" name="eventTime"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-
-                        <div>
-                            <label for="eventDescription" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                            <textarea id="eventDescription" name="eventDescription" rows="3"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
-                        </div>
-
-                        <div>
-                            <label for="eventPlace" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                            <input type="text" id="eventPlace" name="eventPlace"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-
-                        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">
-                            <i class="fas fa-plus mr-2"></i>Add Event
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Course Modal -->
-    <div id="addCourseModal" class="modal hidden">
-        <div class="modal-content max-w-lg w-full mx-4">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold text-blue-600">Add New Course</h3>
-                    <button onclick="closeAddCourseModal()" class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-                
-                <form id="addCourseForm">
-                    <div class="space-y-4">
-                        <div>
-                            <label for="courseId" class="block text-sm font-medium text-gray-700 mb-1">Course ID *</label>
-                            <input type="text" id="courseId" name="courseId" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-
-                        <div>
-                            <label for="courseTitle" class="block text-sm font-medium text-gray-700 mb-1">Course Title *</label>
-                            <input type="text" id="courseTitle" name="courseTitle" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-
-                        <div>
-                            <label for="courseDescription" class="block text-sm font-medium text-gray-700 mb-1">Description *</label>
-                            <textarea id="courseDescription" name="courseDescription" rows="3" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
-                        </div>
-
-                        <div>
-                            <label for="courseStep1" class="block text-sm font-medium text-gray-700 mb-1">Step 1 Content *</label>
-                            <textarea id="courseStep1" name="courseStep1" rows="3" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
-                        </div>
-
-                        <div>
-                            <label for="courseStep2" class="block text-sm font-medium text-gray-700 mb-1">Step 2 Content *</label>
-                            <textarea id="courseStep2" name="courseStep2" rows="3" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
-                        </div>
-
-                        <div>
-                            <label for="courseStep3" class="block text-sm font-medium text-gray-700 mb-1">Step 3 Content *</label>
-                            <textarea id="courseStep3" name="courseStep3" rows="3" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
-                        </div>
-
-                        <div>
-                            <label for="courseStep4" class="block text-sm font-medium text-gray-700 mb-1">Step 4 Content *</label>
-                            <textarea id="courseStep4" name="courseStep4" rows="3" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
-                        </div>
-
-                        <div>
-                            <label for="courseStep5" class="block text-sm font-medium text-gray-700 mb-1">Step 5 Content *</label>
-                            <textarea id="courseStep5" name="courseStep5" rows="3" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
-                        </div>
-
-                        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">
-                            <i class="fas fa-plus mr-2"></i>Add Course
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <script src="app.js"></script>
 
     <script>
-        // Mobile Menu Toggle
-        const menuToggle = document.getElementById('menuToggle');
-        const mobileMenu = document.getElementById('mobileMenu');
-        
-        if (menuToggle) {
-            menuToggle.addEventListener('click', function(e) {
-                e.stopPropagation();
-                menuToggle.classList.toggle('active');
-                mobileMenu.classList.toggle('active');
-            });
-        }
-        
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(event) {
-            if (menuToggle && mobileMenu) {
-                if (!menuToggle.contains(event.target) && !mobileMenu.contains(event.target)) {
-                    menuToggle.classList.remove('active');
-                    mobileMenu.classList.remove('active');
-                }
-            }
-        });
-        
-        // Close mobile menu when clicking on menu items
-        if (mobileMenu) {
-            const mobileMenuLinks = mobileMenu.querySelectorAll('a');
-            mobileMenuLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    menuToggle.classList.remove('active');
-                    mobileMenu.classList.remove('active');
-                });
-            });
-        }
-        
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    const headerHeight = document.querySelector('.header')?.offsetHeight || 0;
-                    const targetPosition = target.offsetTop - headerHeight - 20;
-                    
-                    window.scrollTo({
-                        top: targetPosition,
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        });
-        
-        // Intersection Observer for animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-        
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, observerOptions);
-        
-        // Observe all animated elements
-        document.querySelectorAll('.fade-in').forEach(el => {
-            observer.observe(el);
-        });
-        
-        // Touch feedback for mobile
-        if ('ontouchstart' in window) {
-            document.querySelectorAll('.cta-button, .btn-secondary, .login-btn, .menu-toggle').forEach(element => {
-                element.addEventListener('touchstart', function() {
-                    this.style.transform = 'scale(0.95)';
-                });
-                
-                element.addEventListener('touchend', function() {
-                    setTimeout(() => {
-                        this.style.transform = '';
-                    }, 150);
-                });
-                
-                element.addEventListener('touchcancel', function() {
-                    this.style.transform = '';
-                });
-            });
-        }
-        
-        // Performance optimization
-        let ticking = false;
-        
-        function handleScroll() {
-            if (!ticking) {
-                requestAnimationFrame(() => {
-                    // Add any scroll-based functionality here
-                    ticking = false;
-                });
-                ticking = true;
-            }
-        }
-        
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        
-        // Preload critical resources
-        const link = document.createElement('link');
-        link.rel = 'preload';
-        link.as = 'image';
-        link.href = 'hudalogo.png';
-        document.head.appendChild(link);
-        
-        // Error handling for logo
-        const logos = document.querySelectorAll('img[src="hudalogo.png"]');
-        logos.forEach(logo => {
-            logo.addEventListener('error', function() {
-                // Create fallback icon if logo fails to load
-                const fallback = document.createElement('div');
-                fallback.className = 'w-12 h-12 bg-gradient-to-br from-blue-600 to-green-600 rounded-lg flex items-center justify-center';
-                
-                this.parentNode.replaceChild(fallback, this);
-            });
-        });
-
         // Function to clear admin task filters
         function clearAdminTaskFilters() {
             document.getElementById('adminTaskClassSelect').value = '';
@@ -1880,26 +807,48 @@
             document.getElementById('adminTasksDefaultView').classList.remove('hidden');
         }
 
-        // Function to toggle role fields in add user modal
-        function toggleRoleFields() {
-            const role = document.getElementById('newRole').value;
-            const studentFields = document.getElementById('studentFields');
-            const adminFields = document.getElementById('adminFields');
-            
-            if (role === 'admin') {
-                studentFields.classList.add('hidden');
-                adminFields.classList.remove('hidden');
-                // Make subjects required for admin
-                document.getElementById('newSubjects').required = true;
-                document.getElementById('newClass').required = false;
-            } else {
-                studentFields.classList.remove('hidden');
-                adminFields.classList.add('hidden');
-                // Make class required for student
-                document.getElementById('newClass').required = true;
-                document.getElementById('newSubjects').required = false;
+        // Performance optimization: Debounce resize events
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                if (currentPage === 'status') {
+                    Object.values(chartInstances).forEach(chart => {
+                        if (chart) chart.resize();
+                    });
+                }
+                if (currentPage === 'adminStatus') {
+                    Object.values(adminChartInstances).forEach(chart => {
+                        if (chart) chart.resize();
+                    });
+                }
+            }, 250);
+        });
+
+        // Disable right-click
+        document.addEventListener("contextmenu", function (e) {
+            e.preventDefault();
+        });
+
+        // Disable common inspect shortcuts
+        document.addEventListener("keydown", function (e) {
+            // F12
+            if (e.key === "F12") {
+                e.preventDefault();
             }
-        }
+            // Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+Shift+C
+            if (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C")) {
+                e.preventDefault();
+            }
+            // Ctrl+U (View source)
+            if (e.ctrlKey && (e.key === "u" || e.key === "U")) {
+                e.preventDefault();
+            }
+            // Ctrl+S (Save page)
+            if (e.ctrlKey && (e.key === "s" || e.key === "S")) {
+                e.preventDefault();
+            }
+        });
     </script>
 </body>
 </html>
