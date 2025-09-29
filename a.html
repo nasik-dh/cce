@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon32x32.png">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+    <!-- Primary Meta Tags -->
+    <title>CCE MARKS DHDC MANOOR</title>
+    <meta name="title" content="CCE MARKS DHDC MANOOR">
+    <meta name="description" content="CCE MARKS DHDC MANOOR">
+    
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Your existing CSS styles remain the same */
+        * {
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            margin: 0;
+            padding: 0;
+        }
+        
+        :root {
+            --primary-color: #1e40af;
+            --secondary-color: #059669;
+            --accent-color: #f59e0b;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --bg-light: #f8fafc;
+            --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+        }
+        
+        .urdu-text {
+            font-family: 'Noto Sans Arabic', sans-serif;
+            direction: rtl;
+            text-align: center;
+        }
+        
+        /* All your existing CSS styles remain exactly the same */
+        /* ... (keep all your existing CSS styles) ... */
+
+        /* Admin specific styles */
+        .admin-subject-filter {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 1rem;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-select, .filter-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            ring: 2px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .student-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .student-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 90vw;
+            width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <!-- Logo and Brand -->
+            <div class="logo-container">
+                <div class="brand-text">
+                    <h1 class="brand-title">Darul Hidaya Da'wa College</h1>
+                    <span class="brand-motto english-text">CCE MARKS</span>
+                </div>
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <div class="desktop-nav">
+                <a href="#classes" class="nav-link">Classes</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#reports" class="nav-link">Reports</a>
+                <a href="#contact" class="nav-link">Contact</a>
+                <a href="login.html" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login
+                </a>
+            </div>
+            
+            <!-- Mobile Menu Toggle -->
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </button>
+            
+            <!-- Mobile Menu -->
+            <div class="mobile-menu" id="mobileMenu">
+                <div class="mobile-menu-content">
+                    <a href="#classes" class="mobile-nav-link">Classes</a>
+                    <a href="#features" class="mobile-nav-link">Features</a>
+                    <a href="#reports" class="mobile-nav-link">Reports</a>
+                    <a href="#contact" class="mobile-nav-link">Contact</a>
+                    
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero-section fade-in">
+            <h2 class="hero-title">
+                DARUL HIDAYA DA'WA COLLEGE,MANOOR
+            </h2>
+            <p class="hero-subtitle urdu-text" style="margin-bottom: 12px;">
+                CCE MARKS
+            </p>
+            
+            <a href="login.html" class="cta-button">
+                <i class="fas fa-clipboard-list"></i>
+                LOGIN
+            </a>
+        </section>
+        
+        <!-- Classes Overview Section -->
+        <section id="classes" class="features-section">
+            <div class="section-header fade-in">
+                <h3 class="section-title">Academic Classes</h3>
+                
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-school"></i>
+                    </div>
+                    <h4 class="feature-title">Secondary Level</h4>
+                    <p class="feature-description">
+                        <strong>Classes 1-5:</strong> Secondary 1st Year, 2nd Year, 3rd Year, 4th Year, and Final Year with comprehensive CCE evaluation system.
+                    </p>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h4 class="feature-title">Senior Secondary</h4>
+                    <p class="feature-description">
+                        <strong>Classes 6-7:</strong> Senior Secondary 1st Year and Final Year with advanced CCE marking and evaluation tracking.
+                    </p>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <h4 class="feature-title">Degree Level</h4>
+                    <p class="feature-description">
+                        <strong>Classes 8-10:</strong> Degree 1st Year, 2nd Year, and Final Year with comprehensive higher education CCE management.
+                    </p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Features Section -->
+        <section id="features" class="features-section">
+            <div class="section-header fade-in">
+                <h3 class="section-title">Features</h3>
+                
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h4 class="feature-title">30 Marks System</h4>
+                    <p class="feature-description">
+                        Each subject carries a maximum of 30 CCE marks with detailed breakdown and automatic calculation of totals and percentages.
+                    </p>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4 class="feature-title">Progress Tracking</h4>
+                    <p class="feature-description">
+                        Real-time monitoring of student progress across all subjects with visual charts and performance analytics.
+                    </p>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h4 class="feature-title">Automated Reports</h4>
+                    <p class="feature-description">
+                        Generate comprehensive CCE reports, mark sheets, and performance summaries for all classes and subjects instantly.
+                    </p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Call to Action Section -->
+        <section class="cta-section fade-in">
+            <h3 class="section-title">Any doubts?</h3>
+            
+            <div class="cta-actions">
+                <a href="#contact" class="btn-secondary">
+                    <i class="fas fa-phone"></i>
+                    Contact
+                </a>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <h4 class="footer-title">Darul Hidaya Da'wa College</h4>
+            </div>
+            <p class="footer-description">CCE Management System</p>
+            <div class="social-links">
+                <a href="#" class="social-link" aria-label="Facebook">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="#" class="social-link" aria-label="Twitter">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="#" class="social-link" aria-label="Instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="#" class="social-link" aria-label="LinkedIn">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+            </div>
+            <p class="footer-copyright">
+                © 2024 Darul Hidaya Da'wa College, Manoor. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Student Task Modal -->
+    <div id="studentTaskModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="studentTaskModalTitle" class="text-lg font-semibold">Student Tasks</h3>
+                <button onclick="closeStudentTaskModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="studentTaskModalContent">
+                    <!-- Tasks will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeStudentTaskModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                    Cancel
+                </button>
+                <button onclick="submitSelectedStudentTasks()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                    <i class="fas fa-check mr-2"></i>Submit Selected Tasks
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Your existing JavaScript code remains the same until we add the admin specific functions
+        // =============================
+        // 🌐 Global Variables
+        // =============================
+        let currentUser = null;
+        let currentPage = 'tasks';
+        let currentCourse = null;
+        let currentStep = 0;
+        let currentDate = new Date();
+        let chartInstances = {};
+
+        // Cache for better performance
+        let dataCache = {
+            users: null,
+            tasks: null,
+            courses: null,
+            events: null,
+            lastUpdated: null
+        };
+
+        // =============================
+        // 📊 Optimized Google Sheets Integration
+        // =============================
+        class GoogleSheetsAPI {
+            constructor() {
+                this.apiUrl = "https://script.google.com/macros/s/AKfycbw0jNeTVwrG8wVloSCtsqPf76yAy4_LP4JrZa9OGoIOivBQ2B0OaEBr5XHyhCUjvh_cXg/exec";
+                this.cache = new Map();
+                this.cacheTimeout = 2 * 60 * 1000; // 2 minutes cache
+            }
+
+            async getSheet(sheetName, useCache = true) {
+                const cacheKey = sheetName;
+                
+                // Check cache first
+                if (useCache && this.cache.has(cacheKey)) {
+                    const cached = this.cache.get(cacheKey);
+                    if (Date.now() - cached.timestamp < this.cacheTimeout) {
+                        console.log(`Using cached data for ${sheetName}`);
+                        return cached.data;
+                    }
+                }
+
+                try {
+                    const url = `${this.apiUrl}?sheet=${encodeURIComponent(sheetName)}&cachebust=${Date.now()}`;
+                    console.log(`Fetching sheet: ${sheetName} from URL: ${url}`);
+                    
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const text = await response.text();
+                    console.log(`Raw response for ${sheetName}:`, text.substring(0, 200) + '...');
+                    
+                    const data = JSON.parse(text);
+                    console.log(`Parsed data for ${sheetName}:`, {
+                        isArray: Array.isArray(data),
+                        length: data?.length || 0,
+                        sample: Array.isArray(data) ? data.slice(0, 2) : 'Not array'
+                    });
+                    
+                    // Cache the result
+                    if (useCache) {
+                        this.cache.set(cacheKey, {
+                            data: data,
+                            timestamp: Date.now()
+                        });
+                    }
+                    
+                    return data;
+                } catch (error) {
+                    console.error(`Error fetching ${sheetName}:`, error);
+                    return { error: error.message };
+                }
+            }
+
+            clearCache() {
+                this.cache.clear();
+            }
+
+            async addRow(sheetName, row) {
+                try {            
+                    const response = await fetch(this.apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: new URLSearchParams({
+                            sheet: sheetName,
+                            data: JSON.stringify(row)
+                        })
+                    });
+                    
+                    const text = await response.text();
+                    let result;
+                    try {
+                        result = JSON.parse(text);
+                    } catch (parseError) {
+                        result = { message: text };
+                    }
+                    
+                    // Clear relevant cache entries after adding data
+                    this.cache.delete(sheetName);
+                    
+                    return result;
+                } catch (error) {
+                    console.error('Error adding row:', error);
+                    return { error: error.message };
+                }
+            }
+        }
+
+        const api = new GoogleSheetsAPI();
+
+        // =============================
+        // 🔑 Optimized Authentication
+        // =============================
+        async function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorDiv = document.getElementById('loginError');
+
+            if (!username || !password) {
+                showError('Please enter both username and password');
+                return;
+            }
+
+            // Show loading state
+            const loginBtn = document.querySelector('button[type="submit"]');
+            const originalText = loginBtn.innerHTML;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Signing In...';
+            loginBtn.disabled = true;
+
+            try {
+                console.log('Attempting login with:', username);
+                const users = await api.getSheet("user_credentials", false);
+                console.log('Raw response:', users);
+                
+                if (!users || users.error) {
+                    showError(users?.error || 'Failed to fetch user data');
+                    return;
+                }
+                
+                if (!Array.isArray(users) || users.length === 0) {
+                    showError('No users found in database');
+                    return;
+                }
+                
+                // Simple exact match
+                const user = users.find(u => 
+                    u.username === username && u.password === password
+                );
+
+                if (user) {
+                    currentUser = {
+                        username: user.username,
+                        name: user.full_name || user.username,
+                        role: user.role || 'student',
+                        class: user.class || null,
+                        subjects: user.subjects || null,
+                        userId: user.username
+                    };
+
+                    // Hide login, show dashboard
+                    document.getElementById('loginPage').classList.add('hidden');
+                    document.getElementById('dashboardContainer').classList.remove('hidden');
+                    document.getElementById('welcomeUser').textContent = `Welcome, ${currentUser.name}`;
+
+                    // Show appropriate navigation based on role
+                    if (currentUser.role === 'admin') {
+                        document.getElementById('studentNav').classList.add('hidden');
+                        document.getElementById('adminNav').classList.remove('hidden');
+                        showPage('adminTasks'); // Changed to adminTasks
+                        await loadAdminData();
+                    } else {
+                        document.getElementById('studentNav').classList.remove('hidden');
+                        document.getElementById('adminNav').classList.add('hidden');
+                        showPage('tasks');
+                        await Promise.all([
+                            loadTasks(),
+                            loadCourses(),
+                            loadEvents(),
+                            loadTimeTable(),
+                            checkOverdueTasks()
+                        ]);
+                    }
+                    
+                    hideError();
+                } else {
+                    showError('Invalid username or password');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('Network error: ' + error.message);
+            } finally {
+                loginBtn.innerHTML = originalText;
+                loginBtn.disabled = false;
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('loginError').classList.add('hidden');
+        }
+
+        function logout() {
+            currentUser = null;
+            api.clearCache();
+            
+            // Clean up admin chart instances
+            Object.values(adminChartInstances).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+            adminChartInstances = {};
+            
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('dashboardContainer').classList.add('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            hideError();
+        }
+
+        // =============================
+        // 📍 Navigation
+        // =============================
+        async function showPage(page) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('border-green-500', 'text-green-600', 'border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent');
+            });
+
+            document.getElementById(page + 'Page').classList.remove('hidden');
+            
+            // Find the clicked button and highlight it
+            const clickedBtn = Array.from(document.querySelectorAll('.nav-btn')).find(btn => {
+                const btnText = btn.textContent.toLowerCase();
+                return btnText.includes(page.replace('admin', '').toLowerCase()) || 
+                       (page === 'timetable' && btnText.includes('schedule')) ||
+                       (page === 'adminStatus' && btnText.includes('all status'));
+            });
+            
+            if (clickedBtn) {
+                if (currentUser && currentUser.role === 'admin') {
+                    clickedBtn.classList.add('border-blue-500', 'text-blue-600');
+                } else {
+                    clickedBtn.classList.add('border-green-500', 'text-green-600');
+                }
+            }
+
+            currentPage = page;
+
+           // Load page-specific data
+            if (page === 'events') {
+                currentDate = new Date();
+                loadCalendar();
+            } else if (page === 'status') {
+                loadStatusCharts();
+            } else if (page === 'timetable') {
+                loadTimeTable();
+            } else if (page === 'adminUsers') {
+                loadAdminUsers();
+            } else if (page === 'adminEvents') {
+                loadAdminEvents();
+            } else if (page === 'adminTasks') {
+                loadAdminTasks();
+            } else if (page === 'adminCourses') {
+                loadAdminCourses();
+            } else if (page === 'adminStatus') {
+                await loadAllUsersStatus();
+            } else if (page === 'adminResponse') {
+                loadAdminResponse();
+            }
+        }
+
+        // =============================
+        // ✅ Optimized Tasks (UPDATED FOR CLASS-BASED SYSTEM)
+        // =============================
+        async function loadTasks() {
+            const tasksContainer = document.getElementById('subjectCards');
+            
+            // Show loading state
+            tasksContainer.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin mr-2"></i>Loading your tasks...</div>';
+
+            try {
+                // For students, load tasks based on their class
+                if (currentUser.role === 'student') {
+                    if (!currentUser.class) {
+                        tasksContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No class assigned. Please contact administrator.</p>';
+                        document.getElementById('userClass').textContent = 'Class: Not Assigned';
+                        return;
+                    }
+                    
+                    // Update class info display
+                    document.getElementById('userClass').textContent = `Class ${currentUser.class}`;
+                    
+                    const tasksSheetName = `${currentUser.class}_tasks_master`;
+                    const [tasks, progress] = await Promise.all([
+                        api.getSheet(tasksSheetName),
+                        api.getSheet(`${currentUser.username}_progress`)
+                    ]);
+                    
+                    tasksContainer.innerHTML = '';
+
+                    if (!tasks || tasks.error || tasks.length === 0) {
+                        tasksContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No tasks found for your class.</p>';
+                        return;
+                    }
+
+                    // Group tasks by subject
+                    const tasksBySubject = {};
+                    tasks.forEach(task => {
+                        const subject = task.subject || 'General';
+                        if (!tasksBySubject[subject]) {
+                            tasksBySubject[subject] = [];
+                        }
+                        tasksBySubject[subject].push(task);
+                    });
+
+                    const fragment = document.createDocumentFragment();
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    // Create subject cards
+                    Object.entries(tasksBySubject).forEach(([subject, subjectTasks]) => {
+                        const completedCount = subjectTasks.filter(task => {
+                            const userTask = progress.find(p => 
+                                String(p.item_id) === String(task.task_id) && 
+                                p.item_type === "task" && 
+                                p.status === "complete"
+                            );
+                            return !!userTask;
+                        }).length;
+
+                        const progressPercentage = subjectTasks.length > 0 ? Math.round((completedCount / subjectTasks.length) * 100) : 0;
+
+                        const subjectCard = document.createElement('div');
+                        subjectCard.className = 'subject-card';
+                        subjectCard.setAttribute('data-subject', subject);
+                        
+                        subjectCard.innerHTML = `
+                            <div class="subject-header" onclick="toggleSubjectTasks('${subject.replace(/\s+/g, '-')}')">
+                                <div class="subject-name">
+                                    <div class="subject-icon ${getSubjectIconClass(subject)}">
+                                        <i class="${getSubjectIcon(subject)}"></i>
+                                    </div>
+                                    <div>
+                                        <h3>${subject}</h3>
+                                        <div class="subject-description">${subjectTasks.length} tasks • ${completedCount} completed</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <div class="task-count-badge">
+                                        <i class="fas fa-tasks"></i>
+                                        ${subjectTasks.length}
+                                    </div>
+                                    <i class="fas fa-chevron-down expand-indicator" id="arrow-${subject.replace(/\s+/g, '-')}"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="subject-progress">
+                                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                    <span>Progress</span>
+                                    <span>${progressPercentage}%</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${progressPercentage}%"></div>
+                                    </div>
+                                    <div class="progress-text">${completedCount}/${subjectTasks.length}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="subject-tasks hidden" id="tasks-${subject.replace(/\s+/g, '-')}">
+                                ${subjectTasks.map(task => {
+                                    const userTask = progress.find(p => 
+                                        String(p.item_id) === String(task.task_id) && 
+                                        p.item_type === "task" && 
+                                        p.status === "complete"
+                                    );
+                                    const completed = !!userTask;
+                                    
+                                    const dueDate = new Date(task.due_date);
+                                    dueDate.setHours(23, 59, 59, 999);
+                                    const isOverdue = !completed && dueDate < today;
+                                    const isDueToday = !completed && dueDate.toDateString() === today.toDateString();
+
+                                    let taskClass = 'task-item';
+                                    let statusIcon = '';
+                                    let dueDateClass = 'task-due-date';
+                                    
+                                    if (completed) {
+                                        taskClass += ' completed';
+                                        statusIcon = '<i class="fas fa-check-circle task-status completed"></i>';
+                                    } else if (isOverdue) {
+                                        taskClass += ' overdue';
+                                        dueDateClass += ' overdue';
+                                        statusIcon = '<i class="fas fa-exclamation-circle task-status"></i>';
+                                    } else if (isDueToday) {
+                                        taskClass += ' due-today';
+                                        dueDateClass += ' due-today';
+                                        statusIcon = '<i class="fas fa-clock task-status"></i>';
+                                    } else {
+                                        statusIcon = '<i class="fas fa-clock task-status pending"></i>';
+                                    }
+
+                                    const dueDateFormatted = new Date(task.due_date).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric'
+                                    });
+                                    
+                                    return `
+                                        <div class="${taskClass}">
+                                            ${statusIcon}
+                                            <div class="task-id">${task.task_id}</div>
+                                            <div class="task-title ${isOverdue ? 'task-overdue-text' : ''}">${task.title}</div>
+                                            <div class="task-description ${isOverdue ? 'task-overdue-text' : ''}">${task.description}</div>
+                                            <div class="${dueDateClass}">
+                                                <i class="fas fa-calendar-alt"></i>
+                                                Due: ${dueDateFormatted}
+                                                ${isOverdue ? ' (OVERDUE)' : isDueToday ? ' (TODAY)' : ''}
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        `;
+                        fragment.appendChild(subjectCard);
+                    });
+
+                    tasksContainer.appendChild(fragment);
+                }
+                
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                tasksContainer.innerHTML = '<p class="text-red-500 text-center py-8">Error loading tasks. Please try again.</p>';
+            }
+        }
+
+        // Helper functions for subject icons
+        function getSubjectIconClass(subject) {
+            const subjectLower = subject.toLowerCase();
+            if (subjectLower.includes('math')) return 'mathematics';
+            if (subjectLower.includes('english')) return 'english';
+            if (subjectLower.includes('urdu')) return 'urdu';
+            if (subjectLower.includes('arabic')) return 'arabic';
+            if (subjectLower.includes('science')) return 'science';
+            if (subjectLower.includes('islamic') || subjectLower.includes('quran')) return 'islamic';
+            if (subjectLower.includes('computer')) return 'computer';
+            if (subjectLower.includes('social')) return 'social';
+            if (subjectLower.includes('physics')) return 'physics';
+            if (subjectLower.includes('chemistry')) return 'chemistry';
+            if (subjectLower.includes('biology')) return 'biology';
+            if (subjectLower.includes('history')) return 'history';
+            if (subjectLower.includes('geography')) return 'geography';
+            return 'islamic';
+        }
+
+        function getSubjectIcon(subject) {
+            const subjectLower = subject.toLowerCase();
+            if (subjectLower.includes('math')) return 'fas fa-calculator';
+            if (subjectLower.includes('english')) return 'fas fa-language';
+            if (subjectLower.includes('urdu') || subjectLower.includes('arabic')) return 'fas fa-font';
+            if (subjectLower.includes('science')) return 'fas fa-flask';
+            if (subjectLower.includes('islamic') || subjectLower.includes('quran')) return 'fas fa-mosque';
+            if (subjectLower.includes('computer')) return 'fas fa-laptop';
+            if (subjectLower.includes('physics')) return 'fas fa-atom';
+            if (subjectLower.includes('chemistry')) return 'fas fa-vial';
+            if (subjectLower.includes('biology')) return 'fas fa-dna';
+            if (subjectLower.includes('history')) return 'fas fa-landmark';
+            if (subjectLower.includes('geography')) return 'fas fa-globe-asia';
+            return 'fas fa-book';
+        }
+
+        function toggleSubjectTasks(subject) {
+            const subjectId = subject.replace(/\s+/g, '-').toLowerCase();
+            const subjectCard = document.querySelector(`[data-subject="${subject}"]`);
+            const tasksContainer = document.getElementById(`tasks-${subjectId}`);
+            const arrow = document.getElementById(`arrow-${subjectId}`);
+            
+            if (!subjectCard || !tasksContainer) return;
+            
+            // Close all other expanded cards first
+            document.querySelectorAll('.subject-card.expanded').forEach(card => {
+                if (card !== subjectCard) {
+                    card.classList.remove('expanded');
+                    const otherSubject = card.getAttribute('data-subject');
+                    const otherTasks = document.getElementById(`tasks-${otherSubject.replace(/\s+/g, '-')}`);
+                    const otherArrow = document.getElementById(`arrow-${otherSubject.replace(/\s+/g, '-')}`);
+                    if (otherTasks) otherTasks.style.display = 'none';
+                    if (otherArrow) otherArrow.classList.remove('rotate-180');
+                }
+            });
+            
+            // Toggle current card
+            if (subjectCard.classList.contains('expanded')) {
+                subjectCard.classList.remove('expanded');
+                tasksContainer.style.display = 'none';
+                if (arrow) arrow.classList.remove('rotate-180');
+            } else {
+                subjectCard.classList.add('expanded');
+                tasksContainer.style.display = 'block';
+                if (arrow) arrow.classList.add('rotate-180');
+            }
+        }
+
+        // =============================
+        // 👨‍💼 Admin Functions (UPDATED FOR CLASS-BASED SYSTEM)
+        // =============================
+
+        async function loadAdminData() {
+            try {
+                await Promise.all([
+                    loadAdminUsers(),
+                    loadAdminResponse(),
+                    loadAdminEvents(),
+                    loadAdminTasks(),
+                    loadAdminCourses()
+                ]);
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+            }
+        }
+
+        // Admin Tasks Management (UPDATED FOR ADMIN TEACHING SUBJECTS)
+        async function loadAdminTasks() {
+            try {
+                // Parse admin's classes and subjects
+                const adminClasses = parseAdminClasses(currentUser.class);
+                const adminSubjects = parseAdminSubjects(currentUser.subjects);
+                
+                console.log('Admin teaching data:', {
+                    classes: adminClasses,
+                    subjects: adminSubjects,
+                    rawClass: currentUser.class,
+                    rawSubjects: currentUser.subjects
+                });
+                
+                // Update admin teaching info
+                const teachingInfo = document.getElementById('teachingSubjects');
+                if (currentUser.subjects) {
+                    teachingInfo.textContent = `Teaching: Classes ${adminClasses.join(', ')} - Subjects: ${Object.values(adminSubjects).flat().join(', ')}`;
+                } else {
+                    teachingInfo.textContent = 'No subjects assigned';
+                }
+                
+                // Load class dropdown with admin's classes only
+                await loadAdminClassDropdown(adminClasses);
+                
+                // Reset view
+                document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
+                document.getElementById('adminTasksDefaultView').classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('Error loading admin tasks:', error);
+            }
+        }
+
+        // Parse admin classes from string like "1,2,3"
+        function parseAdminClasses(classString) {
+            if (!classString) return [];
+            return classString.split(',').map(c => c.trim()).filter(c => c);
+        }
+
+        // Parse admin subjects from string like "(1-english),(2-mathematics),(3-urdu)"
+        function parseAdminSubjects(subjectsString) {
+            if (!subjectsString) return {};
+            
+            const subjectsByClass = {};
+            
+            // Remove spaces and split by commas between parentheses
+            const cleanString = subjectsString.replace(/\s/g, '');
+            const matches = cleanString.match(/\((\d+)-([^)]+)\)/g);
+            
+            if (matches) {
+                matches.forEach(match => {
+                    const [_, classNum, subject] = match.match(/\((\d+)-([^)]+)\)/);
+                    if (!subjectsByClass[classNum]) {
+                        subjectsByClass[classNum] = [];
+                    }
+                    subjectsByClass[classNum].push(subject.toLowerCase());
+                });
+            }
+            
+            return subjectsByClass;
+        }
+
+        // Load class dropdown for admin (UPDATED - only show admin's classes)
+        async function loadAdminClassDropdown(adminClasses = []) {
+            const classSelect = document.getElementById('adminTaskClassSelect');
+            classSelect.innerHTML = '<option value="">-- Select Class --</option>';
+            
+            // If no specific classes assigned, show all classes 1-10
+            const classesToShow = adminClasses.length > 0 ? adminClasses : ['1','2','3','4','5','6','7','8','9','10'];
+            
+            classesToShow.forEach(classNum => {
+                const option = document.createElement('option');
+                option.value = classNum;
+                option.textContent = `Class ${classNum}`;
+                classSelect.appendChild(option);
+            });
+            
+            // Add event listener for class selection
+            classSelect.onchange = handleAdminClassSelection;
+        }
+
+        // Handle class selection
+        async function handleAdminClassSelection(event) {
+            const classNumber = event.target.value;
+            const subjectSelect = document.getElementById('adminTaskSubjectSelect');
+            
+            if (!classNumber) {
+                subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
+                subjectSelect.disabled = true;
+                document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
+                document.getElementById('adminTasksDefaultView').classList.remove('hidden');
+                return;
+            }
+            
+            // Parse admin's teaching subjects and filter by selected class
+            await loadAdminClassSubjects(classNumber);
+        }
+
+        // Load subjects for selected class (UPDATED - only show admin's subjects for that class)
+        async function loadAdminClassSubjects(classNumber) {
+            const subjectSelect = document.getElementById('adminTaskSubjectSelect');
+            subjectSelect.innerHTML = '<option value="">-- Loading Subjects... --</option>';
+            subjectSelect.disabled = true;
+            
+            try {
+                // Get admin's subjects for this class
+                const adminSubjects = parseAdminSubjects(currentUser.subjects);
+                const subjectsForThisClass = adminSubjects[classNumber] || [];
+                
+                subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
+                
+                if (subjectsForThisClass.length === 0) {
+                    // If no specific subjects assigned for this class, load from tasks sheet
+                    const tasksSheetName = `${classNumber}_tasks_master`;
+                    const tasks = await api.getSheet(tasksSheetName);
+                    
+                    if (!tasks || tasks.error || !Array.isArray(tasks) || tasks.length === 0) {
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = 'No subjects found';
+                        subjectSelect.appendChild(option);
+                        return;
+                    }
+                    
+                    // Get unique subjects from tasks
+                    const subjects = [...new Set(tasks.map(task => task.subject).filter(Boolean))];
+                    
+                    if (subjects.length === 0) {
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = 'No subjects found';
+                        subjectSelect.appendChild(option);
+                        return;
+                    }
+                    
+                    // Add all subjects to dropdown
+                    subjects.forEach(subject => {
+                        const option = document.createElement('option');
+                        option.value = subject;
+                        option.textContent = subject;
+                        subjectSelect.appendChild(option);
+                    });
+                } else {
+                    // Add only admin's assigned subjects for this class
+                    subjectsForThisClass.forEach(subject => {
+                        const option = document.createElement('option');
+                        option.value = subject;
+                        option.textContent = subject.charAt(0).toUpperCase() + subject.slice(1);
+                        subjectSelect.appendChild(option);
+                    });
+                }
+                
+                subjectSelect.disabled = false;
+                subjectSelect.onchange = () => handleAdminSubjectSelection(classNumber, subjectSelect.value);
+                
+            } catch (error) {
+                console.error('Error loading subjects:', error);
+                subjectSelect.innerHTML = '<option value="">-- Error Loading Subjects --</option>';
+            }
+        }
+
+        // Handle subject selection (UPDATED)
+        async function handleAdminSubjectSelection(classNumber, subject) {
+            if (!classNumber || !subject) {
+                document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
+                document.getElementById('adminTasksDefaultView').classList.remove('hidden');
+                return;
+            }
+            
+            document.getElementById('adminTasksDefaultView').classList.add('hidden');
+            document.getElementById('adminTasksClassSubjectView').classList.remove('hidden');
+            
+            // Update header info
+            document.getElementById('selectedClassSubjectInfo').textContent = 
+                `Class ${classNumber} - ${subject}`;
+            
+            // Load tasks and students for this class and subject
+            await Promise.all([
+                loadAdminClassSubjectTasks(classNumber, subject),
+                loadAdminClassStudents(classNumber)
+            ]);
+        }
+
+        // Load tasks for selected class and subject
+        async function loadAdminClassSubjectTasks(classNumber, subject) {
+            const container = document.getElementById('adminClassSubjectTasksList');
+            container.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading tasks...</div>';
+            
+            try {
+                const tasksSheetName = `${classNumber}_tasks_master`;
+                const tasks = await api.getSheet(tasksSheetName);
+                
+                if (!tasks || tasks.error || !Array.isArray(tasks) || tasks.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-4">No tasks found.</p>';
+                    return;
+                }
+                
+                // Filter tasks by subject
+                const subjectTasks = tasks.filter(task => task.subject === subject);
+                
+                if (subjectTasks.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-4">No tasks found for this subject.</p>';
+                    return;
+                }
+                
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                container.innerHTML = subjectTasks.map(task => {
+                    const dueDate = new Date(task.due_date);
+                    dueDate.setHours(23, 59, 59, 999);
+                    const isOverdue = dueDate < today;
+                    const isDueToday = dueDate.toDateString() === today.toDateString();
+                    
+                    const dueDateFormatted = new Date(task.due_date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    
+                    let statusClass = '';
+                    let statusText = '';
+                    
+                    if (isOverdue) {
+                        statusClass = 'text-red-600';
+                        statusText = 'Overdue';
+                    } else if (isDueToday) {
+                        statusClass = 'text-yellow-600';
+                        statusText = 'Due Today';
+                    } else {
+                        statusClass = 'text-green-600';
+                        statusText = 'Active';
+                    }
+                    
+                    return `
+                        <div class="assignment-task-card">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2 mb-2">
+                                        <span class="text-sm font-mono bg-gray-200 px-2 py-1 rounded">${task.task_id}</span>
+                                        <span class="text-sm ${statusClass} font-medium">${statusText}</span>
+                                    </div>
+                                    <h5 class="font-semibold text-gray-800 mb-1">${task.title}</h5>
+                                    <p class="text-sm text-gray-600 mb-2">${task.description}</p>
+                                    <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                        <span><i class="fas fa-calendar-alt mr-1"></i>Due: ${dueDateFormatted}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Error loading class subject tasks:', error);
+                container.innerHTML = '<p class="text-red-500 text-center py-4">Error loading tasks.</p>';
+            }
+        }
+
+        // Load students for selected class
+        async function loadAdminClassStudents(classNumber) {
+            const container = document.getElementById('adminClassStudentsList');
+            container.innerHTML = '<div class="col-span-3 text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading students...</div>';
+            
+            try {
+                const users = await api.getSheet("user_credentials");
+                
+                if (!users || users.error || !Array.isArray(users)) {
+                    container.innerHTML = '<div class="col-span-3 text-center py-4 text-gray-500">No students found</div>';
+                    return;
+                }
+                
+                // Filter students by class
+                const classStudents = users.filter(user => 
+                    user.role === 'student' && 
+                    user.class == classNumber
+                );
+                
+                if (classStudents.length === 0) {
+                    container.innerHTML = '<div class="col-span-3 text-center py-4 text-gray-500">No students in this class</div>';
+                    return;
+                }
+                
+                // Create student cards
+                container.innerHTML = classStudents.map(student => `
+                    <div class="student-card bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer"
+                         onclick="openStudentTaskModal('${student.username}', '${classNumber}', '${document.getElementById('adminTaskSubjectSelect').value}')">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                ${(student.full_name || student.username).charAt(0).toUpperCase()}
+                            </div>
+                            <div class="flex-1">
+                                <h5 class="font-semibold text-gray-800">${student.full_name || student.username}</h5>
+                                <p class="text-sm text-gray-600">@${student.username}</p>
+                                <p class="text-xs text-blue-600">Class ${student.class}</p>
+                            </div>
+                        </div>
+                        <div class="mt-3 flex items-center justify-between">
+                            <span class="text-xs text-gray-500">
+                                <i class="fas fa-tasks mr-1"></i>View Tasks
+                            </span>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading students:', error);
+                container.innerHTML = '<div class="col-span-3 text-center py-4 text-red-500">Error loading students</div>';
+            }
+        }
+
+        // Student Task Modal Functions
+        let currentStudentUsername = '';
+        let currentStudentClass = '';
+        let currentStudentSubject = '';
+
+        // Open student task modal
+        async function openStudentTaskModal(username, classNumber, subject) {
+            currentStudentUsername = username;
+            currentStudentClass = classNumber;
+            currentStudentSubject = subject;
+            
+            const modal = document.getElementById('studentTaskModal');
+            const title = document.getElementById('studentTaskModalTitle');
+            const content = document.getElementById('studentTaskModalContent');
+            
+            // Get student info
+            const users = await api.getSheet("user_credentials");
+            const student = users.find(u => u.username === username);
+            
+            title.textContent = `Tasks for ${student?.full_name || username} - ${subject.charAt(0).toUpperCase() + subject.slice(1)}`;
+            content.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading tasks...</div>';
+            
+            modal.classList.remove('hidden');
+            
+            // Load student tasks
+            await loadStudentTasksInModal(username, classNumber, subject);
+        }
+
+        // Close student task modal
+        function closeStudentTaskModal() {
+            document.getElementById('studentTaskModal').classList.add('hidden');
+            currentStudentUsername = '';
+            currentStudentClass = '';
+            currentStudentSubject = '';
+        }
+
+        // Load student tasks in modal
+        async function loadStudentTasksInModal(username, classNumber, subject) {
+            const content = document.getElementById('studentTaskModalContent');
+            
+            try {
+                const [tasks, progress] = await Promise.all([
+                    api.getSheet(`${classNumber}_tasks_master`),
+                    api.getSheet(`${username}_progress`)
+                ]);
+                
+                if (!tasks || tasks.error || !Array.isArray(tasks)) {
+                    content.innerHTML = '<p class="text-gray-500 text-center py-4">No tasks found.</p>';
+                    return;
+                }
+                
+                // Filter tasks by subject
+                const subjectTasks = tasks.filter(task => 
+                    task.subject && task.subject.toLowerCase() === subject.toLowerCase()
+                );
+                
+                if (subjectTasks.length === 0) {
+                    content.innerHTML = '<p class="text-gray-500 text-center py-4">No tasks found for this subject.</p>';
+                    return;
+                }
+                
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                content.innerHTML = subjectTasks.map(task => {
+                    const userTask = progress?.find(p => 
+                        String(p.item_id) === String(task.task_id) && 
+                        p.item_type === "task" && 
+                        p.status === "complete"
+                    );
+                    const completed = !!userTask;
+                    
+                    const dueDate = new Date(task.due_date);
+                    dueDate.setHours(23, 59, 59, 999);
+                    const isOverdue = !completed && dueDate < today;
+                    
+                    const dueDateFormatted = new Date(task.due_date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    
+                    return `
+                        <div class="task-assignment-card ${completed ? 'completed' : ''} ${isOverdue ? 'overdue' : ''} border rounded-lg p-4 mb-3">
+                            <div class="flex items-start space-x-3">
+                                <input type="checkbox" id="modal-task-${task.task_id}" 
+                                       ${completed ? 'checked disabled' : ''}
+                                       class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <span class="text-sm font-mono bg-gray-200 px-2 py-1 rounded">${task.task_id}</span>
+                                        ${completed ? 
+                                            '<span class="text-green-600 text-sm font-medium"><i class="fas fa-check mr-1"></i>Completed</span>' :
+                                            isOverdue ? 
+                                            '<span class="text-red-600 text-sm font-medium"><i class="fas fa-exclamation-triangle mr-1"></i>Overdue</span>' :
+                                            '<span class="text-blue-600 text-sm font-medium"><i class="fas fa-clock mr-1"></i>Pending</span>'
+                                        }
+                                    </div>
+                                    <h5 class="font-semibold ${completed ? 'line-through text-gray-500' : 'text-gray-800'} mb-2">${task.title}</h5>
+                                    <p class="text-sm ${completed ? 'line-through text-gray-400' : 'text-gray-600'} mb-3">${task.description}</p>
+                                    <div class="text-xs text-gray-500">
+                                        <i class="fas fa-calendar-alt mr-1"></i>Due: ${dueDateFormatted}
+                                        ${isOverdue ? ' <span class="text-red-500 font-medium">(OVERDUE)</span>' : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Error loading student tasks:', error);
+                content.innerHTML = '<p class="text-red-500 text-center py-4">Error loading tasks.</p>';
+            }
+        }
+
+        // Submit selected student tasks
+        async function submitSelectedStudentTasks() {
+            if (!currentStudentUsername || !currentStudentClass || !currentStudentSubject) {
+                alert('Error: Missing student information.');
+                return;
+            }
+
+            const submitBtn = event.target;
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Updating...';
+            submitBtn.disabled = true;
+
+            try {
+                // Get selected tasks
+                const selectedTasks = [];
+                document.querySelectorAll('input[id^="modal-task-"]:checked:not(:disabled)').forEach(checkbox => {
+                    const taskId = checkbox.id.replace('modal-task-', '');
+                    selectedTasks.push(taskId);
+                });
+
+                if (selectedTasks.length === 0) {
+                    alert('No new tasks were selected for submission.');
+                    return;
+                }
+
+                const progress = await api.getSheet(`${currentStudentUsername}_progress`);
+                
+                const promises = [];
+                let updatedCount = 0;
+
+                for (let taskId of selectedTasks) {
+                    const existingTask = progress?.find(p => 
+                        String(p.item_id) === String(taskId) && 
+                        p.item_type === "task" && 
+                        p.status === "complete"
+                    );
+                    
+                    if (!existingTask) {
+                        const rowData = [
+                            taskId,
+                            "task",
+                            "complete",
+                            new Date().toISOString().split('T')[0],
+                            "100"
+                        ];
+                        
+                        promises.push(api.addRow(`${currentStudentUsername}_progress`, rowData));
+                        updatedCount++;
+                    }
+                }
+
+                if (promises.length > 0) {
+                    await Promise.all(promises);
+                    alert(`${updatedCount} task(s) submitted successfully for ${currentStudentUsername}!`);
+                    closeStudentTaskModal();
+                    // Refresh the students list to show updated status
+                    await loadAdminClassStudents(currentStudentClass);
+                } else {
+                    alert('All selected tasks are already completed.');
+                }
+            } catch (error) {
+                console.error('Error submitting tasks:', error);
+                alert('Error updating tasks. Please try again.');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        // =============================
+        // 🎯 Event Listeners
+        // =============================
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            login();
+        });
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Your existing initialization code
+            loadCalendar();
+        });
+
+        // Your existing remaining JavaScript functions (loadCourses, loadEvents, etc.) remain the same
+        // ... (keep all your existing JavaScript functions)
+
+    </script>
+</body>
+</html>
