@@ -839,6 +839,7 @@ async function handleClassChange() {
     subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
     
     console.log('Class selected:', selectedClass);
+    console.log('Admin subjects for verification:', currentUser.adminSubjects);
     
     if (selectedClass) {
         subjectSelect.disabled = false;
@@ -848,9 +849,10 @@ async function handleClassChange() {
         
         if (currentUser.adminSubjects && currentUser.adminSubjects[selectedClass]) {
             availableSubjects = currentUser.adminSubjects[selectedClass];
+            console.log('Available subjects for class', selectedClass, ':', availableSubjects);
+        } else {
+            console.log('No subjects found for class', selectedClass);
         }
-        
-        console.log('Available subjects for class', selectedClass, ':', availableSubjects);
         
         if (availableSubjects.length > 0) {
             availableSubjects.forEach(subject => {
@@ -862,7 +864,7 @@ async function handleClassChange() {
         } else {
             const option = document.createElement('option');
             option.value = '';
-            option.textContent = 'No subjects assigned';
+            option.textContent = 'No subjects assigned to you';
             option.disabled = true;
             subjectSelect.appendChild(option);
         }
