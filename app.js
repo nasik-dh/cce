@@ -698,9 +698,11 @@ async function loadAdminData() {
             if (currentUser.subjects) {
                 const subjectsStr = currentUser.subjects.toString().trim();
                 
-                // New enhanced format: 1,2,3|(1-english,mathematics,science)(2-urdu,arabic,malayalam)
+                // Enhanced format: 1,2|(1-english,mathematics,science)(2-urdu,arabic)
                 if (subjectsStr.includes('|')) {
-                    const [classesStr, subjectsStr] = subjectsStr.split('|');
+                    const parts = subjectsStr.split('|');
+                    const classesStr = parts[0];
+                    const subjectAssignments = parts[1];
                     
                     // Parse classes
                     if (classesStr) {
@@ -708,46 +710,40 @@ async function loadAdminData() {
                     }
                     
                     // Parse subject assignments - format: (class-subject1,subject2,subject3)
-                    const subjectMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
-                    if (subjectMatches) {
-                        subjectMatches.forEach(match => {
-                            const innerContent = match.slice(1, -1); // Remove parentheses
-                            const [classNum, ...subjectParts] = innerContent.split('-');
-                            if (classNum && subjectParts.length > 0) {
-                                const subjectsString = subjectParts.join('-');
-                                let subjects;
-                                
-                                if (subjectsString.toLowerCase() === 'all') {
-                                    subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
-                                } else {
-                                    subjects = subjectsString.split(',').map(s => s.trim()).filter(s => s);
+                    if (subjectAssignments) {
+                        const subjectMatches = subjectAssignments.match(/\(\d+-[^)]+\)/g);
+                        if (subjectMatches) {
+                            subjectMatches.forEach(match => {
+                                const innerContent = match.slice(1, -1); // Remove parentheses
+                                const dashIndex = innerContent.indexOf('-');
+                                if (dashIndex > 0) {
+                                    const classNum = innerContent.substring(0, dashIndex);
+                                    const subjectsString = innerContent.substring(dashIndex + 1);
+                                    
+                                    let subjects;
+                                    if (subjectsString.toLowerCase() === 'all') {
+                                        subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
+                                    } else {
+                                        subjects = subjectsString.split(',').map(s => s.trim()).filter(s => s);
+                                    }
+                                    
+                                    if (subjects.length > 0) {
+                                        adminSubjects[classNum] = subjects;
+                                    }
                                 }
-                                
-                                if (subjects.length > 0) {
-                                    adminSubjects[classNum] = subjects;
-                                }
-                            }
-                        });
+                            });
+                        }
                     }
                 } else {
-                    // Fallback to old format for backward compatibility
-                    const classMatch = subjectsStr.match(/^[\d,\s]+/);
+                    // Fallback: if no pipe, treat as old format or assign default
+                    console.log('No pipe found, using fallback parsing');
+                    const classMatch = subjectsStr.match(/[\d,\s]+/);
                     if (classMatch) {
                         adminClasses = classMatch[0].split(',').map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
-                    }
-                    
-                    const subjectMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
-                    if (subjectMatches) {
-                        subjectMatches.forEach(match => {
-                            const innerContent = match.slice(1, -1);
-                            const [classNum, ...subjectParts] = innerContent.split('-');
-                            if (classNum && subjectParts.length > 0) {
-                                const subjectsString = subjectParts.join('-');
-                                const subjects = subjectsString.split(',').map(s => s.trim()).filter(s => s);
-                                if (subjects.length > 0) {
-                                    adminSubjects[classNum] = subjects;
-                                }
-                            }
+                        // Assign all subjects to all classes as fallback
+                        const defaultSubjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
+                        adminClasses.forEach(classNum => {
+                            adminSubjects[classNum] = defaultSubjects;
                         });
                     }
                 }
@@ -784,7 +780,7 @@ async function loadAdminData() {
         console.error('Error loading admin data:', error);
         const teachingInfo = document.getElementById('teachingSubjects');
         if (teachingInfo) {
-            teachingInfo.textContent = 'Error loading teaching assignments';
+            teachingInfo.textContent = 'Error loading teaching assignments - check console';
         }
     }
 }
