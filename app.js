@@ -466,25 +466,26 @@ async function loadTasks() {
                                 day: 'numeric'
                             });
                             
-                            return `
-                                <div class="task-item">
-                                    <div class="task-header">
-                                        <span class="task-id-badge">${task.task_id}</span>
-                                        <span class="task-status ${statusClass}">
-                                            ${statusText}
-                                        </span>
-                                    </div>
-                                    <h4 class="task-title">${task.title}</h4>
-                                    <p class="task-description">${task.description}</p>
-                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
-                                        <p class="task-due-date">
-                                            <i class="fas fa-calendar-alt"></i>
-                                            Due: ${dueDateFormatted}
-                                        </p>
-                                        ${completed && grade ? `<span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Score: ${grade}/30</span>` : ''}
-                                    </div>
-                                </div>
-                            `;
+                            // Update the task item display in student view
+return `
+    <div class="task-item">
+        <div class="task-header">
+            <span class="task-id-badge">${task.task_id}</span>
+            <span class="task-status ${statusClass}">
+                ${statusText}
+            </span>
+        </div>
+        <h4 class="task-title">${task.title}</h4>
+        <p class="task-description">${task.description}</p>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
+            <p class="task-due-date">
+                <i class="fas fa-calendar-alt"></i>
+                Due: ${dueDateFormatted}
+            </p>
+            ${completed && grade ? `<span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Score: ${grade}</span>` : ''}
+        </div>
+    </div>
+`;
                         }).join('')}
                     </div>
                 `;
@@ -575,7 +576,7 @@ async function loadSubjectPointsSummary(progress) {
         
         // Group tasks by subject and calculate points
         const subjectStats = {};
-        const maxPointsPerTask = 30; // Updated to 30 points per task
+        // Remove maxPointsPerTask constant
         
         tasks.forEach(task => {
             const subject = task.subject || 'General';
@@ -589,7 +590,6 @@ async function loadSubjectPointsSummary(progress) {
             }
             
             subjectStats[subject].totalTasks++;
-            subjectStats[subject].totalPoints += maxPointsPerTask; // Each task worth 30 points
             
             // Check if task is completed
             const userTask = Array.isArray(progress) ? progress.find(p => 
@@ -600,8 +600,15 @@ async function loadSubjectPointsSummary(progress) {
             
             if (userTask) {
                 subjectStats[subject].completedTasks++;
-                subjectStats[subject].earnedPoints += parseInt(userTask.grade || maxPointsPerTask);
+                subjectStats[subject].earnedPoints += parseInt(userTask.grade || 0); // Use 0 as default
             }
+        });
+        
+        // Calculate total possible points for each subject
+        Object.keys(subjectStats).forEach(subject => {
+            // Since there's no fixed limit per task, totalPoints is the sum of all completed task points
+            // For display purposes, we'll show earned points vs completed tasks
+            subjectStats[subject].totalPoints = subjectStats[subject].earnedPoints;
         });
         
         // Generate subject points grid
@@ -618,7 +625,7 @@ async function loadSubjectPointsSummary(progress) {
                         <h4>${subject}</h4>
                     </div>
                     <div class="points-display">${stats.earnedPoints}</div>
-                    <div class="points-label">of ${stats.totalPoints} points</div>
+                    <div class="points-label">total points</div>
                     <div class="text-xs text-gray-500 mt-2">
                         ${stats.completedTasks}/${stats.totalTasks} tasks completed
                     </div>
@@ -1054,55 +1061,54 @@ async function openStudentTaskModal(username, fullName, classNum) {
                 statusText = 'Pending';
             }
             
-            return `
-                <div class="${taskClass}">
-                    <div class="flex items-start space-x-3">
-                        <input type="checkbox" 
-                               data-task-id="${task.task_id}"
-                               data-username="${username}"
-                               ${completed ? 'checked disabled' : ''}
-                               class="task-checkbox"
-                               onchange="toggleGradeSection('${task.task_id}', this.checked)">
-                        <div class="flex-1">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="task-id-badge">${task.task_id}</span>
-                                <div class="flex items-center space-x-2">
-                                    ${statusIcon}
-                                    <span class="text-xs font-medium">${statusText}</span>
-                                </div>
-                            </div>
-                            <h4 class="task-title">${task.title}</h4>
-                            <p class="task-description">${task.description}</p>
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
-                                <p class="task-due-date">
-                                    <i class="fas fa-calendar-alt mr-1"></i>
-                                    Due: ${new Date(task.due_date).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'short',
-                                        day: 'numeric'
-                                    })}
-                                </p>
-                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                    ${task.subject}
-                                </span>
-                            </div>
-                            <div class="grade-section" id="grade-${task.task_id}">
-                                <div class="grade-input-group">
-                                    <span class="grade-label">Grade:</span>
-                                    <input type="number" 
-                                           class="grade-input" 
-                                           id="grade-input-${task.task_id}"
-                                           min="0" 
-                                           max="30" 
-                                           value="${currentGrade}"
-                                           placeholder="0-30">
-                                    <span class="grade-label">/ 30</span>
-                                </div>
-                            </div>
-                        </div>
+            // In the tasksHtml generation part, update the grade input section:
+return `
+    <div class="${taskClass}">
+        <div class="flex items-start space-x-3">
+            <input type="checkbox" 
+                   data-task-id="${task.task_id}"
+                   data-username="${username}"
+                   ${completed ? 'checked disabled' : ''}
+                   class="task-checkbox"
+                   onchange="toggleGradeSection('${task.task_id}', this.checked)">
+            <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="task-id-badge">${task.task_id}</span>
+                    <div class="flex items-center space-x-2">
+                        ${statusIcon}
+                        <span class="text-xs font-medium">${statusText}</span>
                     </div>
                 </div>
-            `;
+                <h4 class="task-title">${task.title}</h4>
+                <p class="task-description">${task.description}</p>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
+                    <p class="task-due-date">
+                        <i class="fas fa-calendar-alt mr-1"></i>
+                        Due: ${new Date(task.due_date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        })}
+                    </p>
+                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        ${task.subject}
+                    </span>
+                </div>
+                <div class="grade-section" id="grade-${task.task_id}">
+                    <div class="grade-input-group">
+                        <span class="grade-label">Points:</span>
+                        <input type="number" 
+                               class="grade-input" 
+                               id="grade-input-${task.task_id}"
+                               min="0" 
+                               value="${currentGrade}"
+                               placeholder="Enter points">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+`;
         }).join('');
         
         content.innerHTML = tasksHtml;
@@ -1147,10 +1153,10 @@ async function submitSelectedStudentTasks() {
             const taskId = checkbox.getAttribute('data-task-id');
             const username = checkbox.getAttribute('data-username');
             const gradeInput = document.getElementById(`grade-input-${taskId}`);
-            let grade = 30; // default grade
+            let grade = 0; // Start from 0
             
             if (gradeInput && gradeInput.value) {
-                grade = Math.max(0, Math.min(30, parseInt(gradeInput.value) || 30));
+                grade = Math.max(0, parseInt(gradeInput.value) || 0); // Remove the 30-point limit
             }
             
             const rowData = [
@@ -1353,7 +1359,7 @@ async function loadAdminSubjectPointsSummary(progress, userClass) {
         
         // Group tasks by subject and calculate points
         const subjectStats = {};
-        const maxPointsPerTask = 30; // Updated to 30 points per task
+        // Remove maxPointsPerTask constant
         
         tasks.forEach(task => {
             const subject = task.subject || 'General';
@@ -1367,7 +1373,6 @@ async function loadAdminSubjectPointsSummary(progress, userClass) {
             }
             
             subjectStats[subject].totalTasks++;
-            subjectStats[subject].totalPoints += maxPointsPerTask; // Each task worth 30 points
             
             // Check if task is completed
             const userTask = Array.isArray(progress) ? progress.find(p => 
@@ -1378,8 +1383,13 @@ async function loadAdminSubjectPointsSummary(progress, userClass) {
             
             if (userTask) {
                 subjectStats[subject].completedTasks++;
-                subjectStats[subject].earnedPoints += parseInt(userTask.grade || maxPointsPerTask);
+                subjectStats[subject].earnedPoints += parseInt(userTask.grade || 0); // Use 0 as default
             }
+        });
+        
+        // Calculate total points
+        Object.keys(subjectStats).forEach(subject => {
+            subjectStats[subject].totalPoints = subjectStats[subject].earnedPoints;
         });
         
         // Create or find the subject points container in admin status
@@ -1411,7 +1421,7 @@ async function loadAdminSubjectPointsSummary(progress, userClass) {
                         <h4>${subject}</h4>
                     </div>
                     <div class="points-display">${stats.earnedPoints}</div>
-                    <div class="points-label">of ${stats.totalPoints} points</div>
+                    <div class="points-label">total points</div>
                     <div class="text-xs text-gray-500 mt-2">
                         ${stats.completedTasks}/${stats.totalTasks} tasks completed
                     </div>
