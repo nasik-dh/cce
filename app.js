@@ -715,8 +715,8 @@ async function loadAdminData() {
                 const subjectsStr = currentUser.subjects.toString().trim();
                 console.log('Processing subjects string:', subjectsStr);
                 
-                // Updated regex to match (number-subject) format
-                const subjectMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
+                // Handle both formats: (1-english) and (1-english,mathematics)
+                const subjectMatches = subjectsStr.match(/\(\d+-[^)]*\)/g);
                 console.log('Subject matches found:', subjectMatches);
                 
                 if (subjectMatches && subjectMatches.length > 0) {
@@ -736,6 +736,9 @@ async function loadAdminData() {
                             let subjects = [];
                             if (subjectsString.toLowerCase() === 'all') {
                                 subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science', 'hadith'];
+                            } else if (subjectsString === '') {
+                                // Handle empty subjects case
+                                subjects = [];
                             } else {
                                 // Split by comma and clean each subject
                                 subjects = subjectsString.split(',')
@@ -803,7 +806,7 @@ function debugAdminParsing() {
     const testSubjects = "(1-english)(2-arabic)";
     console.log('Testing with:', testSubjects);
     
-    const subjectMatches = testSubjects.match(/\(\d+-[^)]+\)/g);
+    const subjectMatches = testSubjects.match(/\(\d+-[^)]*\)/g);
     console.log('Regex matches:', subjectMatches);
     
     if (subjectMatches) {
@@ -1705,7 +1708,7 @@ function debugAdminData() {
     
     if (testUser.subjects) {
         const subjectsStr = testUser.subjects.toString().trim();
-        const subjectMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
+        const subjectMatches = subjectsStr.match(/\(\d+-[^)]*\)/g);
         if (subjectMatches) {
             subjectMatches.forEach(match => {
                 const innerContent = match.slice(1, -1);
@@ -1760,3 +1763,23 @@ function debugSubjectMatching() {
     console.log('Length:', availableSubjects.length);
 }
 
+// Add this function to your app.js for testing
+function testSubjectParsing() {
+    const testSubjects = "(1-english)(2-arabic)";
+    console.log('Testing subjects:', testSubjects);
+    
+    const matches = testSubjects.match(/\(\d+-[^)]*\)/g);
+    console.log('Matches:', matches);
+    
+    if (matches) {
+        matches.forEach(match => {
+            const innerContent = match.slice(1, -1);
+            const dashIndex = innerContent.indexOf('-');
+            if (dashIndex > 0) {
+                const classNum = innerContent.substring(0, dashIndex).trim();
+                const subjectsString = innerContent.substring(dashIndex + 1).trim();
+                console.log(`Class: ${classNum}, Subjects: "${subjectsString}"`);
+            }
+        });
+    }
+}
