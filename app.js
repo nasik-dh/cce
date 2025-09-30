@@ -481,7 +481,7 @@ async function loadTasks() {
                                             <i class="fas fa-calendar-alt"></i>
                                             Due: ${dueDateFormatted}
                                         </p>
-                                        ${completed && grade ? `<span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Score: ${grade}/30</span>` : ''}
+                                        ${completed && grade ? `<span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Score: ${grade}${task.max_points ? `/${task.max_points}` : ''}</span>` : ''}
                                     </div>
                                 </div>
                             `;
@@ -575,7 +575,6 @@ async function loadSubjectPointsSummary(progress) {
         
         // Group tasks by subject and calculate points
         const subjectStats = {};
-        const maxPointsPerTask = 30; // Updated to 30 points per task
         
         tasks.forEach(task => {
             const subject = task.subject || 'General';
@@ -583,13 +582,17 @@ async function loadSubjectPointsSummary(progress) {
                 subjectStats[subject] = {
                     totalTasks: 0,
                     completedTasks: 0,
-                    totalPoints: 0,
-                    earnedPoints: 0
+                    totalPossiblePoints: 0,
+                    totalEarnedPoints: 0,
+                    scaledPoints: 0
                 };
             }
             
             subjectStats[subject].totalTasks++;
-            subjectStats[subject].totalPoints += maxPointsPerTask; // Each task worth 30 points
+            
+            // Use custom max_points if available, otherwise default to task-based calculation
+            const maxPoints = parseInt(task.max_points) || 0;
+            subjectStats[subject].totalPossiblePoints += maxPoints;
             
             // Check if task is completed
             const userTask = Array.isArray(progress) ? progress.find(p => 
@@ -600,8 +603,23 @@ async function loadSubjectPointsSummary(progress) {
             
             if (userTask) {
                 subjectStats[subject].completedTasks++;
-                subjectStats[subject].earnedPoints += parseInt(userTask.grade || maxPointsPerTask);
+                const earnedPoints = parseInt(userTask.grade) || 0;
+                subjectStats[subject].totalEarnedPoints += earnedPoints;
             }
+        });
+        
+        // Calculate scaled points out of 30 for each subject
+        Object.keys(subjectStats).forEach(subject => {
+            const stats = subjectStats[subject];
+            if (stats.totalPossiblePoints > 0) {
+                // Scale to 30 points maximum
+                stats.scaledPoints = Math.round((stats.totalEarnedPoints / stats.totalPossiblePoints) * 30);
+            } else {
+                // Fallback: if no custom points defined, use completed count
+                stats.scaledPoints = Math.round((stats.completedTasks / stats.totalTasks) * 30);
+            }
+            // Ensure we don't exceed 30
+            stats.scaledPoints = Math.min(stats.scaledPoints, 30);
         });
         
         // Generate subject points grid
@@ -617,10 +635,13 @@ async function loadSubjectPointsSummary(progress) {
                         </div>
                         <h4>${subject}</h4>
                     </div>
-                    <div class="points-display">${stats.earnedPoints}</div>
-                    <div class="points-label">of ${stats.totalPoints} points</div>
+                    <div class="points-display">${stats.scaledPoints}</div>
+                    <div class="points-label">of 30 points</div>
                     <div class="text-xs text-gray-500 mt-2">
                         ${stats.completedTasks}/${stats.totalTasks} tasks completed
+                    </div>
+                    <div class="text-xs text-gray-400 mt-1">
+                        Raw: ${stats.totalEarnedPoints}/${stats.totalPossiblePoints}
                     </div>
                 </div>
             `;
@@ -1028,7 +1049,7 @@ async function openStudentTaskModal(username, fullName, classNum) {
             ) : null;
             
             const completed = !!userTask;
-            const currentGrade = userTask ? parseInt(userTask.grade || 30) : 30;
+            const taskMaxPoints = parseInt(task.max_points) || 30; const currentGrade = userTask ? parseInt(userTask.grade || taskMaxPoints) : taskMaxPoints;
             
             const dueDate = new Date(task.due_date);
             dueDate.setHours(0, 0, 0, 0);
@@ -1042,7 +1063,7 @@ async function openStudentTaskModal(username, fullName, classNum) {
             if (completed) {
                 taskClass += ' completed';
                 statusIcon = '<i class="fas fa-check-circle text-green-500"></i>';
-                statusText = `Completed (${currentGrade}/30)`;
+                statusText = `Completed (${currentGrade}/${taskMaxPoints})`;
             } else if (isOverdue) {
                 statusIcon = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
                 statusText = 'Overdue';
@@ -1090,13 +1111,13 @@ async function openStudentTaskModal(username, fullName, classNum) {
                                 <div class="grade-input-group">
                                     <span class="grade-label">Grade:</span>
                                     <input type="number" 
-                                           class="grade-input" 
-                                           id="grade-input-${task.task_id}"
-                                           min="0" 
-                                           max="30" 
-                                           value="${currentGrade}"
-                                           placeholder="0-30">
-                                    <span class="grade-label">/ 30</span>
+       class="grade-input" 
+       id="grade-input-${task.task_id}"
+       min="0" 
+       max="${taskMaxPoints}" 
+       value="${currentGrade}"
+       placeholder="0-${taskMaxPoints}">
+<span class="grade-label">/ ${taskMaxPoints}</span>
                                 </div>
                             </div>
                         </div>
@@ -1150,7 +1171,7 @@ async function submitSelectedStudentTasks() {
             let grade = 30; // default grade
             
             if (gradeInput && gradeInput.value) {
-                grade = Math.max(0, Math.min(30, parseInt(gradeInput.value) || 30));
+                const taskMaxPoints = parseInt(document.querySelector(`#grade-input-${taskId}`)?.max) || 30; grade = Math.max(0, Math.min(taskMaxPoints, parseInt(gradeInput.value) || taskMaxPoints));
             }
             
             const rowData = [
@@ -1353,7 +1374,6 @@ async function loadAdminSubjectPointsSummary(progress, userClass) {
         
         // Group tasks by subject and calculate points
         const subjectStats = {};
-        const maxPointsPerTask = 30; // Updated to 30 points per task
         
         tasks.forEach(task => {
             const subject = task.subject || 'General';
@@ -1361,13 +1381,17 @@ async function loadAdminSubjectPointsSummary(progress, userClass) {
                 subjectStats[subject] = {
                     totalTasks: 0,
                     completedTasks: 0,
-                    totalPoints: 0,
-                    earnedPoints: 0
+                    totalPossiblePoints: 0,
+                    totalEarnedPoints: 0,
+                    scaledPoints: 0
                 };
             }
             
             subjectStats[subject].totalTasks++;
-            subjectStats[subject].totalPoints += maxPointsPerTask; // Each task worth 30 points
+            
+            // Use custom max_points if available, otherwise default to task-based calculation
+            const maxPoints = parseInt(task.max_points) || 0;
+            subjectStats[subject].totalPossiblePoints += maxPoints;
             
             // Check if task is completed
             const userTask = Array.isArray(progress) ? progress.find(p => 
@@ -1378,8 +1402,23 @@ async function loadAdminSubjectPointsSummary(progress, userClass) {
             
             if (userTask) {
                 subjectStats[subject].completedTasks++;
-                subjectStats[subject].earnedPoints += parseInt(userTask.grade || maxPointsPerTask);
+                const earnedPoints = parseInt(userTask.grade) || 0;
+                subjectStats[subject].totalEarnedPoints += earnedPoints;
             }
+        });
+        
+        // Calculate scaled points out of 30 for each subject
+        Object.keys(subjectStats).forEach(subject => {
+            const stats = subjectStats[subject];
+            if (stats.totalPossiblePoints > 0) {
+                // Scale to 30 points maximum
+                stats.scaledPoints = Math.round((stats.totalEarnedPoints / stats.totalPossiblePoints) * 30);
+            } else {
+                // Fallback: if no custom points defined, use completed count
+                stats.scaledPoints = Math.round((stats.completedTasks / stats.totalTasks) * 30);
+            }
+            // Ensure we don't exceed 30
+            stats.scaledPoints = Math.min(stats.scaledPoints, 30);
         });
         
         // Create or find the subject points container in admin status
@@ -1410,10 +1449,13 @@ async function loadAdminSubjectPointsSummary(progress, userClass) {
                         </div>
                         <h4>${subject}</h4>
                     </div>
-                    <div class="points-display">${stats.earnedPoints}</div>
-                    <div class="points-label">of ${stats.totalPoints} points</div>
+                    <div class="points-display">${stats.scaledPoints}</div>
+                    <div class="points-label">of 30 points</div>
                     <div class="text-xs text-gray-500 mt-2">
                         ${stats.completedTasks}/${stats.totalTasks} tasks completed
+                    </div>
+                    <div class="text-xs text-gray-400 mt-1">
+                        Raw: ${stats.totalEarnedPoints}/${stats.totalPossiblePoints}
                     </div>
                 </div>
             `;
