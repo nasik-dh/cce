@@ -155,6 +155,9 @@ async function login() {
                 userId: user.username
             };
 
+            // Debug dhdc user specifically
+            debugDhdcUser();
+
             // Hide login, show dashboard
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('dashboardContainer').classList.remove('hidden');
@@ -185,7 +188,6 @@ async function login() {
         loginBtn.disabled = false;
     }
 }
-
 
 function showError(message) {
     const errorDiv = document.getElementById('loginError');
@@ -360,7 +362,6 @@ async function showPage(page) {
     }
 }
 
-
 // =============================
 // ✅ Tasks (Class-Based System)
 // =============================
@@ -473,26 +474,25 @@ async function loadTasks() {
                                 day: 'numeric'
                             });
                             
-                            // Update the task item display in student view
-return `
-    <div class="task-item">
-        <div class="task-header">
-            <span class="task-id-badge">${task.task_id}</span>
-            <span class="task-status ${statusClass}">
-                ${statusText}
-            </span>
-        </div>
-        <h4 class="task-title">${task.title}</h4>
-        <p class="task-description">${task.description}</p>
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
-            <p class="task-due-date">
-                <i class="fas fa-calendar-alt"></i>
-                Due: ${dueDateFormatted}
-            </p>
-            ${completed && grade ? `<span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Score: ${grade}</span>` : ''}
-        </div>
-    </div>
-`;
+                            return `
+                                <div class="task-item">
+                                    <div class="task-header">
+                                        <span class="task-id-badge">${task.task_id}</span>
+                                        <span class="task-status ${statusClass}">
+                                            ${statusText}
+                                        </span>
+                                    </div>
+                                    <h4 class="task-title">${task.title}</h4>
+                                    <p class="task-description">${task.description}</p>
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
+                                        <p class="task-due-date">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            Due: ${dueDateFormatted}
+                                        </p>
+                                        ${completed && grade ? `<span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Score: ${grade}</span>` : ''}
+                                    </div>
+                                </div>
+                            `;
                         }).join('')}
                     </div>
                 `;
@@ -583,7 +583,6 @@ async function loadSubjectPointsSummary(progress) {
         
         // Group tasks by subject and calculate points
         const subjectStats = {};
-        // Remove maxPointsPerTask constant
         
         tasks.forEach(task => {
             const subject = task.subject || 'General';
@@ -607,14 +606,12 @@ async function loadSubjectPointsSummary(progress) {
             
             if (userTask) {
                 subjectStats[subject].completedTasks++;
-                subjectStats[subject].earnedPoints += parseInt(userTask.grade || 0); // Use 0 as default
+                subjectStats[subject].earnedPoints += parseInt(userTask.grade || 0);
             }
         });
         
-        // Calculate total possible points for each subject
+        // Calculate total points
         Object.keys(subjectStats).forEach(subject => {
-            // Since there's no fixed limit per task, totalPoints is the sum of all completed task points
-            // For display purposes, we'll show earned points vs completed tasks
             subjectStats[subject].totalPoints = subjectStats[subject].earnedPoints;
         });
         
@@ -691,7 +688,7 @@ async function loadTaskChart(progress) {
 }
 
 // =============================
-// 👨‍💼 Admin Functions
+// 👨‍💼 Admin Functions - UPDATED
 // =============================
 async function loadAdminData() {
     try {
@@ -702,23 +699,20 @@ async function loadAdminData() {
             console.log('=== LOADING ADMIN DATA ===');
             console.log('Admin class raw:', currentUser.class);
             console.log('Admin subjects raw:', currentUser.subjects);
-            console.log('Admin class type:', typeof currentUser.class);
-            console.log('Admin subjects type:', typeof currentUser.subjects);
             
-            // Parse classes from the class column (comma separated)
+            // Parse classes from the class column (space or comma separated)
             if (currentUser.class) {
                 const classStr = currentUser.class.toString().trim();
-                adminClasses = classStr.split(/[,\s]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
+                adminClasses = classStr.split(/[,\s]+/)
+                    .map(c => c.trim())
+                    .filter(c => c && /^\d+$/.test(c));
                 console.log('Parsed admin classes:', adminClasses);
-                console.log('Admin classes types:', adminClasses.map(c => typeof c));
             }
             
-            // Parse subjects from the subjects column
+            // FIXED: Parse subjects with improved logic
             if (currentUser.subjects) {
                 const subjectsStr = currentUser.subjects.toString().trim();
                 console.log('Processing subjects string:', `"${subjectsStr}"`);
-                console.log('Subjects string length:', subjectsStr.length);
-                console.log('Subjects string characters:', subjectsStr.split('').map(c => `"${c}"`));
                 
                 // Handle both formats: (1-english) and (1-english,mathematics)
                 const subjectMatches = subjectsStr.match(/\(\d+-[^)]*\)/g);
@@ -746,10 +740,16 @@ async function loadAdminData() {
                                 // Handle empty subjects case
                                 subjects = [];
                             } else {
-                                // Split by comma and clean each subject
-                                subjects = subjectsString.split(',')
-                                    .map(s => s.trim().toLowerCase())
-                                    .filter(s => s && s !== '');
+                                // FIXED: Handle both single subjects and comma-separated subjects
+                                if (subjectsString.includes(',')) {
+                                    // Multiple subjects separated by comma
+                                    subjects = subjectsString.split(',')
+                                        .map(s => s.trim().toLowerCase())
+                                        .filter(s => s && s !== '');
+                                } else {
+                                    // Single subject case
+                                    subjects = [subjectsString.trim().toLowerCase()];
+                                }
                             }
                             
                             console.log(`Final subjects for class "${classNum}":`, subjects);
@@ -769,8 +769,6 @@ async function loadAdminData() {
             console.log('=== FINAL PARSED ADMIN DATA ===');
             console.log('Admin Classes:', adminClasses);
             console.log('Admin Subjects:', adminSubjects);
-            console.log('Admin Subjects keys:', Object.keys(adminSubjects));
-            console.log('Admin Subjects key types:', Object.keys(adminSubjects).map(k => typeof k));
             
             // Store the parsed data
             currentUser.adminClasses = adminClasses;
@@ -801,40 +799,6 @@ async function loadAdminData() {
         }
     }
 }
-
-
-// Add this function to debug the admin data parsing
-function debugAdminParsing() {
-    console.log('=== DEBUGGING ADMIN PARSING ===');
-    console.log('Raw currentUser:', currentUser);
-    console.log('Raw class:', currentUser.class);
-    console.log('Raw subjects:', currentUser.subjects);
-    console.log('Parsed adminClasses:', currentUser.adminClasses);
-    console.log('Parsed adminSubjects:', currentUser.adminSubjects);
-    
-    // Test the specific parsing with dhdc user data
-    const testSubjects = "(1-english)(2-arabic)";
-    console.log('Testing with:', testSubjects);
-    
-    const subjectMatches = testSubjects.match(/\(\d+-[^)]*\)/g);
-    console.log('Regex matches:', subjectMatches);
-    
-    if (subjectMatches) {
-        subjectMatches.forEach(match => {
-            console.log('Processing match:', match);
-            const innerContent = match.slice(1, -1);
-            const dashIndex = innerContent.indexOf('-');
-            console.log('Inner content:', innerContent, 'Dash index:', dashIndex);
-            
-            if (dashIndex > 0) {
-                const classNum = innerContent.substring(0, dashIndex).trim();
-                const subjectsString = innerContent.substring(dashIndex + 1).trim();
-                console.log('Class:', classNum, 'Subjects string:', subjectsString);
-            }
-        });
-    }
-}
-
 
 async function loadAdminTasks() {
     const adminTaskClassSelect = document.getElementById('adminTaskClassSelect');
@@ -877,7 +841,7 @@ async function loadAdminTasks() {
     adminTaskSubjectSelect.addEventListener('change', handleSubjectChange);
 }
 
-// Separate event handler functions
+// FIXED: Separate event handler functions with improved subject matching
 async function handleClassChange() {
     const selectedClass = this.value;
     const subjectSelect = document.getElementById('adminTaskSubjectSelect');
@@ -890,29 +854,43 @@ async function handleClassChange() {
     if (selectedClass) {
         subjectSelect.disabled = false;
         
-        // Get subjects for this class from admin assignments ONLY
+        // FIXED: Get subjects for this class with improved key matching
         let availableSubjects = [];
+        const adminSubjects = currentUser.adminSubjects || {};
         
         console.log('Checking for subjects in class:', selectedClass);
-        console.log('AdminSubjects object:', currentUser.adminSubjects);
-        console.log('Keys in adminSubjects:', Object.keys(currentUser.adminSubjects || {}));
-        console.log('Keys comparison:');
-        Object.keys(currentUser.adminSubjects || {}).forEach(key => {
-            console.log(`  Key: "${key}" (${typeof key}) === "${selectedClass}" (${typeof selectedClass}): ${key === selectedClass}`);
-            console.log(`  String comparison: ${String(key) === String(selectedClass)}`);
-        });
+        console.log('AdminSubjects object:', adminSubjects);
+        console.log('Keys in adminSubjects:', Object.keys(adminSubjects));
         
-        // Try both string and exact match
-        if (currentUser.adminSubjects && 
-            (currentUser.adminSubjects[selectedClass] || currentUser.adminSubjects[String(selectedClass)])) {
-            availableSubjects = currentUser.adminSubjects[selectedClass] || currentUser.adminSubjects[String(selectedClass)];
-            console.log('Found subjects for class', selectedClass, ':', availableSubjects);
+        // Try multiple matching strategies
+        if (adminSubjects[selectedClass]) {
+            availableSubjects = adminSubjects[selectedClass];
+            console.log('Found subjects via direct match:', availableSubjects);
+        } else if (adminSubjects[String(selectedClass)]) {
+            availableSubjects = adminSubjects[String(selectedClass)];
+            console.log('Found subjects via string match:', availableSubjects);
         } else {
-            console.log('No subjects found for class', selectedClass);
-            console.log('Available classes:', Object.keys(currentUser.adminSubjects || {}));
+            // Try number conversion
+            const numClass = parseInt(selectedClass);
+            if (adminSubjects[numClass]) {
+                availableSubjects = adminSubjects[numClass];
+                console.log('Found subjects via number match:', availableSubjects);
+            } else {
+                // Try searching all keys for a match
+                const matchingKey = Object.keys(adminSubjects).find(key => 
+                    String(key) === String(selectedClass) || 
+                    parseInt(key) === parseInt(selectedClass)
+                );
+                if (matchingKey) {
+                    availableSubjects = adminSubjects[matchingKey];
+                    console.log('Found subjects via comprehensive search:', availableSubjects);
+                }
+            }
         }
         
-        if (availableSubjects.length > 0) {
+        console.log('Final available subjects:', availableSubjects);
+        
+        if (availableSubjects && availableSubjects.length > 0) {
             console.log('Adding subjects to dropdown:', availableSubjects);
             // Add subjects to dropdown - only the ones assigned to this admin
             availableSubjects.forEach(subject => {
@@ -939,8 +917,6 @@ async function handleClassChange() {
     document.getElementById('adminTasksDefaultView').classList.remove('hidden');
 }
 
-
-
 async function handleSubjectChange() {
     const selectedClass = document.getElementById('adminTaskClassSelect').value;
     const selectedSubject = this.value;
@@ -948,14 +924,22 @@ async function handleSubjectChange() {
     console.log('Subject selected:', selectedSubject, 'for class:', selectedClass);
     
     if (selectedClass && selectedSubject) {
-        // Verify admin has access to this class-subject combination
-        const hasAccess = currentUser.adminSubjects && 
-                         currentUser.adminSubjects[selectedClass] && 
-                         currentUser.adminSubjects[selectedClass]
-                             .map(s => s.toLowerCase())
-                             .includes(selectedSubject.toLowerCase());
+        // FIXED: Verify admin has access with improved matching
+        const adminSubjects = currentUser.adminSubjects || {};
+        let hasAccess = false;
+        
+        // Try multiple matching strategies for access verification
+        const classSubjects = adminSubjects[selectedClass] || 
+                             adminSubjects[String(selectedClass)] || 
+                             adminSubjects[parseInt(selectedClass)] || [];
+        
+        hasAccess = classSubjects
+            .map(s => s.toLowerCase().trim())
+            .includes(selectedSubject.toLowerCase().trim());
         
         console.log('Access verification:', hasAccess);
+        console.log('Available subjects for class:', classSubjects);
+        console.log('Looking for subject:', selectedSubject.toLowerCase().trim());
         
         if (hasAccess) {
             selectedClassForModal = selectedClass;
@@ -972,8 +956,6 @@ async function handleSubjectChange() {
         document.getElementById('adminTasksDefaultView').classList.remove('hidden');
     }
 }
-
-
 
 async function loadAdminClassSubjectData(classNum, subject) {
     try {
@@ -1174,54 +1156,53 @@ async function openStudentTaskModal(username, fullName, classNum) {
                 statusText = 'Pending';
             }
             
-            // In the tasksHtml generation part, update the grade input section:
-return `
-    <div class="${taskClass}">
-        <div class="flex items-start space-x-3">
-            <input type="checkbox" 
-                   data-task-id="${task.task_id}"
-                   data-username="${username}"
-                   ${completed ? 'checked disabled' : ''}
-                   class="task-checkbox"
-                   onchange="toggleGradeSection('${task.task_id}', this.checked)">
-            <div class="flex-1">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="task-id-badge">${task.task_id}</span>
-                    <div class="flex items-center space-x-2">
-                        ${statusIcon}
-                        <span class="text-xs font-medium">${statusText}</span>
+            return `
+                <div class="${taskClass}">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" 
+                               data-task-id="${task.task_id}"
+                               data-username="${username}"
+                               ${completed ? 'checked disabled' : ''}
+                               class="task-checkbox"
+                               onchange="toggleGradeSection('${task.task_id}', this.checked)">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="task-id-badge">${task.task_id}</span>
+                                <div class="flex items-center space-x-2">
+                                    ${statusIcon}
+                                    <span class="text-xs font-medium">${statusText}</span>
+                                </div>
+                            </div>
+                            <h4 class="task-title">${task.title}</h4>
+                            <p class="task-description">${task.description}</p>
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
+                                <p class="task-due-date">
+                                    <i class="fas fa-calendar-alt mr-1"></i>
+                                    Due: ${new Date(task.due_date).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric'
+                                    })}
+                                </p>
+                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                    ${task.subject}
+                                </span>
+                            </div>
+                            <div class="grade-section" id="grade-${task.task_id}">
+                                <div class="grade-input-group">
+                                    <span class="grade-label">Points:</span>
+                                    <input type="number" 
+                                           class="grade-input" 
+                                           id="grade-input-${task.task_id}"
+                                           min="0" 
+                                           value="${currentGrade}"
+                                           placeholder="Enter points">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <h4 class="task-title">${task.title}</h4>
-                <p class="task-description">${task.description}</p>
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
-                    <p class="task-due-date">
-                        <i class="fas fa-calendar-alt mr-1"></i>
-                        Due: ${new Date(task.due_date).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                        })}
-                    </p>
-                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        ${task.subject}
-                    </span>
-                </div>
-                <div class="grade-section" id="grade-${task.task_id}">
-                    <div class="grade-input-group">
-                        <span class="grade-label">Points:</span>
-                        <input type="number" 
-                               class="grade-input" 
-                               id="grade-input-${task.task_id}"
-                               min="0" 
-                               value="${currentGrade}"
-                               placeholder="Enter points">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-`;
+            `;
         }).join('');
         
         content.innerHTML = tasksHtml;
@@ -1266,10 +1247,10 @@ async function submitSelectedStudentTasks() {
             const taskId = checkbox.getAttribute('data-task-id');
             const username = checkbox.getAttribute('data-username');
             const gradeInput = document.getElementById(`grade-input-${taskId}`);
-            let grade = 0; // Start from 0
+            let grade = 0;
             
             if (gradeInput && gradeInput.value) {
-                grade = Math.max(0, parseInt(gradeInput.value) || 0); // Remove the 30-point limit
+                grade = Math.max(0, parseInt(gradeInput.value) || 0);
             }
             
             const rowData = [
@@ -1403,15 +1384,6 @@ async function loadSelectedUserStatus(username) {
             loadAdminSubjectPointsSummary(progress, user.class)
         ]);
         
-        // Hide other sections that are not needed
-        const courseChartContainer = document.getElementById('adminCourseChart')?.closest('.bg-gray-50');
-        const activityChartContainer = document.getElementById('adminActivityChart')?.closest('.bg-gray-50');
-        const progressBarsContainer = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.gap-6');
-        
-        if (courseChartContainer) courseChartContainer.style.display = 'none';
-        if (activityChartContainer) activityChartContainer.style.display = 'none';
-        if (progressBarsContainer) progressBarsContainer.style.display = 'none';
-        
     } catch (error) {
         console.error('Error loading selected user status:', error);
         alert('Error loading user status. Please try again.');
@@ -1472,7 +1444,6 @@ async function loadAdminSubjectPointsSummary(progress, userClass) {
         
         // Group tasks by subject and calculate points
         const subjectStats = {};
-        // Remove maxPointsPerTask constant
         
         tasks.forEach(task => {
             const subject = task.subject || 'General';
@@ -1496,7 +1467,7 @@ async function loadAdminSubjectPointsSummary(progress, userClass) {
             
             if (userTask) {
                 subjectStats[subject].completedTasks++;
-                subjectStats[subject].earnedPoints += parseInt(userTask.grade || 0); // Use 0 as default
+                subjectStats[subject].earnedPoints += parseInt(userTask.grade || 0);
             }
         });
         
@@ -1649,6 +1620,137 @@ function showNotification(message, type = 'info', duration = 5000) {
 }
 
 // =============================
+// 🔧 DEBUG FUNCTIONS - NEW
+// =============================
+function debugDhdcUser() {
+    if (currentUser && currentUser.username === 'dhdc') {
+        console.log('=== DHDC USER DEBUG ===');
+        console.log('Raw subjects:', currentUser.subjects);
+        console.log('Parsed adminSubjects:', currentUser.adminSubjects);
+        
+        // Test the specific string
+        const testStr = "(1-english)(2-arabic)";
+        console.log('Testing with:', testStr);
+        
+        const matches = testStr.match(/\(\d+-[^)]*\)/g);
+        console.log('Matches:', matches);
+        
+        if (matches) {
+            matches.forEach((match, index) => {
+                console.log(`Match ${index}:`, match);
+                const inner = match.slice(1, -1);
+                const dashIdx = inner.indexOf('-');
+                if (dashIdx > 0) {
+                    const cls = inner.substring(0, dashIdx);
+                    const subj = inner.substring(dashIdx + 1);
+                    console.log(`  Class: "${cls}", Subject: "${subj}"`);
+                }
+            });
+        }
+    }
+}
+
+function debugAdminData() {
+    console.log('=== ADMIN DATA DEBUG ===');
+    console.log('Current User:', currentUser);
+    console.log('Admin Classes:', currentUser?.adminClasses);
+    console.log('Admin Subjects:', currentUser?.adminSubjects);
+    
+    // Test the specific parsing with dhdc user data
+    const testUser = {
+        class: "1 2 3",
+        subjects: "(1-english,mathematics,science)(2-urdu,arabic)(3-all)"
+    };
+    
+    console.log('=== TESTING WITH SAMPLE DATA ===');
+    console.log('Test input:', testUser);
+    
+    // Test parsing
+    let adminClasses = [];
+    let adminSubjects = {};
+    
+    if (testUser.class) {
+        const classStr = testUser.class.toString().trim();
+        adminClasses = classStr.split(/[\s,;]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
+    }
+    
+    if (testUser.subjects) {
+        const subjectsStr = testUser.subjects.toString().trim();
+        const subjectMatches = subjectsStr.match(/\(\d+-[^)]*\)/g);
+        if (subjectMatches) {
+            subjectMatches.forEach(match => {
+                const innerContent = match.slice(1, -1);
+                const dashIndex = innerContent.indexOf('-');
+                if (dashIndex > 0) {
+                    const classNum = innerContent.substring(0, dashIndex);
+                    const subjectsString = innerContent.substring(dashIndex + 1);
+                    
+                    let subjects;
+                    if (subjectsString.toLowerCase() === 'all') {
+                        subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
+                    } else {
+                        subjects = subjectsString.split(',').map(s => s.trim()).filter(s => s);
+                    }
+                    
+                    if (subjects.length > 0) {
+                        adminSubjects[classNum] = subjects;
+                    }
+                }
+            });
+        }
+    }
+    
+    console.log('Parsed Classes:', adminClasses);
+    console.log('Parsed Subjects:', adminSubjects);
+}
+
+function debugSubjectMatching() {
+    console.log('=== DEBUGGING SUBJECT MATCHING ===');
+    console.log('Current User Admin Subjects:', currentUser.adminSubjects);
+    
+    // Check what subjects are available for Class 1
+    if (currentUser.adminSubjects && currentUser.adminSubjects['1']) {
+        console.log('Subjects for Class 1:', currentUser.adminSubjects['1']);
+        console.log('Subject types:', currentUser.adminSubjects['1'].map(s => typeof s));
+        console.log('Subject values:', currentUser.adminSubjects['1'].map(s => `"${s}"`));
+    } else {
+        console.log('No subjects found for Class 1');
+        console.log('Available classes:', Object.keys(currentUser.adminSubjects || {}));
+    }
+    
+    // Check what the handleClassChange function will use
+    const selectedClass = '1';
+    let availableSubjects = [];
+    
+    if (currentUser.adminSubjects && currentUser.adminSubjects[selectedClass]) {
+        availableSubjects = currentUser.adminSubjects[selectedClass];
+    }
+    
+    console.log('Available subjects that will be shown:', availableSubjects);
+    console.log('Length:', availableSubjects.length);
+}
+
+function testSubjectParsing() {
+    const testSubjects = "(1-english)(2-arabic)";
+    console.log('Testing subjects:', testSubjects);
+    
+    const matches = testSubjects.match(/\(\d+-[^)]*\)/g);
+    console.log('Matches:', matches);
+    
+    if (matches) {
+        matches.forEach(match => {
+            const innerContent = match.slice(1, -1);
+            const dashIndex = innerContent.indexOf('-');
+            if (dashIndex > 0) {
+                const classNum = innerContent.substring(0, dashIndex).trim();
+                const subjectsString = innerContent.substring(dashIndex + 1).trim();
+                console.log(`Class: ${classNum}, Subjects: "${subjectsString}"`);
+            }
+        });
+    }
+}
+
+// =============================
 // 🔒 Security Functions
 // =============================
 // Disable right-click
@@ -1698,106 +1800,3 @@ function initializeApp() {
 // Console welcome message
 console.log('%c🎓 DHDC MANOOR System Loaded Successfully! 🎓', 'color: #059669; font-size: 16px; font-weight: bold;');
 console.log('%cDarul Hidaya Da\'wa College Management System', 'color: #1e40af; font-size: 12px;');
-
-// Add this function for testing - call it in console
-function debugAdminData() {
-    console.log('=== ADMIN DATA DEBUG ===');
-    console.log('Current User:', currentUser);
-    console.log('Admin Classes:', currentUser?.adminClasses);
-    console.log('Admin Subjects:', currentUser?.adminSubjects);
-    
-    // Test with sample data
-    const testUser = {
-        class: "1 2 3",
-        subjects: "(1-english,mathematics,science)(2-urdu,arabic)(3-all)"
-    };
-    
-    console.log('=== TESTING WITH SAMPLE DATA ===');
-    console.log('Test input:', testUser);
-    
-    // Test parsing
-    let adminClasses = [];
-    let adminSubjects = {};
-    
-    if (testUser.class) {
-        const classStr = testUser.class.toString().trim();
-        adminClasses = classStr.split(/[\s,;]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
-    }
-    
-    if (testUser.subjects) {
-        const subjectsStr = testUser.subjects.toString().trim();
-        const subjectMatches = subjectsStr.match(/\(\d+-[^)]*\)/g);
-        if (subjectMatches) {
-            subjectMatches.forEach(match => {
-                const innerContent = match.slice(1, -1);
-                const dashIndex = innerContent.indexOf('-');
-                if (dashIndex > 0) {
-                    const classNum = innerContent.substring(0, dashIndex);
-                    const subjectsString = innerContent.substring(dashIndex + 1);
-                    
-                    let subjects;
-                    if (subjectsString.toLowerCase() === 'all') {
-                        subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
-                    } else {
-                        subjects = subjectsString.split(',').map(s => s.trim()).filter(s => s);
-                    }
-                    
-                    if (subjects.length > 0) {
-                        adminSubjects[classNum] = subjects;
-                    }
-                }
-            });
-        }
-    }
-    
-    console.log('Parsed Classes:', adminClasses);
-    console.log('Parsed Subjects:', adminSubjects);
-}
-
-// Debug function to check subject matching
-function debugSubjectMatching() {
-    console.log('=== DEBUGGING SUBJECT MATCHING ===');
-    console.log('Current User Admin Subjects:', currentUser.adminSubjects);
-    
-    // Check what subjects are available for Class 1
-    if (currentUser.adminSubjects && currentUser.adminSubjects['1']) {
-        console.log('Subjects for Class 1:', currentUser.adminSubjects['1']);
-        console.log('Subject types:', currentUser.adminSubjects['1'].map(s => typeof s));
-        console.log('Subject values:', currentUser.adminSubjects['1'].map(s => `"${s}"`));
-    } else {
-        console.log('No subjects found for Class 1');
-        console.log('Available classes:', Object.keys(currentUser.adminSubjects || {}));
-    }
-    
-    // Check what the handleClassChange function will use
-    const selectedClass = '1';
-    let availableSubjects = [];
-    
-    if (currentUser.adminSubjects && currentUser.adminSubjects[selectedClass]) {
-        availableSubjects = currentUser.adminSubjects[selectedClass];
-    }
-    
-    console.log('Available subjects that will be shown:', availableSubjects);
-    console.log('Length:', availableSubjects.length);
-}
-
-// Add this function to your app.js for testing
-function testSubjectParsing() {
-    const testSubjects = "(1-english)(2-arabic)";
-    console.log('Testing subjects:', testSubjects);
-    
-    const matches = testSubjects.match(/\(\d+-[^)]*\)/g);
-    console.log('Matches:', matches);
-    
-    if (matches) {
-        matches.forEach(match => {
-            const innerContent = match.slice(1, -1);
-            const dashIndex = innerContent.indexOf('-');
-            if (dashIndex > 0) {
-                const classNum = innerContent.substring(0, dashIndex).trim();
-                const subjectsString = innerContent.substring(dashIndex + 1).trim();
-                console.log(`Class: ${classNum}, Subjects: "${subjectsString}"`);
-            }
-        });
-    }
-}
