@@ -571,8 +571,8 @@
     }
 
     .task-checkbox {
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 1rem;
+        height: 1rem;
         accent-color: #3b82f6;
         margin-right: 0.75rem;
         flex-shrink: 0;
@@ -882,9 +882,6 @@
             <!-- Login Section -->
             <div id="loginSection">
                 <div class="text-center mb-6">
-                    <div class="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-blue-600 to-green-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                        <i class="fas fa-mosque text-white text-lg md:text-2xl"></i>
-                    </div>
                     <h1 class="text-2xl md:text-3xl font-bold text-gray-800">CCE MARKS</h1>
                     <p class="text-gray-600 mt-2 text-sm md:text-base">Darul Hidaya Da'wa College</p>
                 </div>
@@ -911,90 +908,10 @@
                     </div>
                 </form>
 
-                <div class="text-center mt-4 md:mt-6">
-                    <p class="text-gray-600 text-sm md:text-base">Don't have an account? 
-                        <button onclick="showSignup()" class="text-blue-600 hover:text-blue-800 font-semibold">Sign up here</button>
-                    </p>
-                </div>
+                
             </div>
 
-            <!-- Signup Section -->
-            <div id="signupSection" class="hidden">
-                <div class="text-center mb-4 md:mb-6">
-                    <div class="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-blue-600 to-green-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                        <i class="fas fa-user-plus text-white text-lg md:text-2xl"></i>
-                    </div>
-                    <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Create Account</h1>
-                    <p class="text-gray-600 mt-2 text-sm md:text-base">Register for CCE System</p>
-                </div>
-
-                <form id="signupForm">
-                    <div class="space-y-3 md:space-y-4">
-                        <div>
-                            <label for="signupName" class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                            <input type="text" id="signupName" name="signupName" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
-                        </div>
-                        
-                        <div>
-                            <label for="signupPhone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
-                            <input type="tel" id="signupPhone" name="signupPhone" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
-                        </div>
-
-                        <div>
-                            <label for="signupGmail" class="block text-sm font-medium text-gray-700 mb-1">Gmail (Optional)</label>
-                            <input type="email" id="signupGmail" name="signupGmail"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                                <label for="signupState" class="block text-sm font-medium text-gray-700 mb-1">State *</label>
-                                <input type="text" id="signupState" name="signupState" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
-                            </div>
-                            <div>
-                                <label for="signupDistrict" class="block text-sm font-medium text-gray-700 mb-1">District *</label>
-                                <input type="text" id="signupDistrict" name="signupDistrict" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                                <label for="signupPlace" class="block text-sm font-medium text-gray-700 mb-1">Place *</label>
-                                <input type="text" id="signupPlace" name="signupPlace" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
-                            </div>
-                            <div>
-                                <label for="signupPO" class="block text-sm font-medium text-gray-700 mb-1">Post Office *</label>
-                                <input type="text" id="signupPO" name="signupPO" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label for="signupPinCode" class="block text-sm font-medium text-gray-700 mb-1">Pin Code *</label>
-                            <input type="text" id="signupPinCode" name="signupPinCode" required pattern="[0-9]{6}"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
-                        </div>
-
-                        <div id="signupError" class="hidden bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm"></div>
-                        <div id="signupSuccess" class="hidden bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-lg text-sm"></div>
-
-                        <button type="submit" class="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-2 md:py-3 px-4 rounded-lg hover:from-green-700 hover:to-blue-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-semibold transition duration-300 text-sm md:text-base">
-                            <i class="fas fa-user-plus mr-2"></i>Create Account
-                        </button>
-                    </div>
-                </form>
-
-                <div class="text-center mt-4">
-                    <p class="text-gray-600 text-sm">Already have an account? 
-                        <button onclick="showLogin()" class="text-blue-600 hover:text-blue-800 font-semibold">Sign in here</button>
-                    </p>
-                </div>
-            </div>
+        
         </div>
     </div>
 
@@ -1005,9 +922,7 @@
             <div class="container mx-auto px-2 md:px-4 py-2 md:py-3">
                 <div class="header-content">
                     <div class="header-info">
-                        <div class="w-8 h-8 md:w-10 md:h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-mosque text-sm md:text-xl"></i>
-                        </div>
+                        
                         <div class="min-w-0">
                             <h1 class="header-title">DHDC MANOOR</h1>
                             <p class="header-subtitle" id="welcomeUser">Welcome</p>
@@ -1293,4 +1208,5 @@
     </script>
 </body>
 </html>
+
 
