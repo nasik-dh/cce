@@ -60,6 +60,7 @@
         display: none !important;
     }
 
+    /* Mobile-first responsive navigation */
     .nav-btn {
         padding: 0.5rem 1rem;
         margin: 0 0.25rem;
@@ -68,25 +69,80 @@
         text-decoration: none;
         transition: all 0.3s ease;
         font-weight: 500;
+        font-size: 0.875rem;
+        white-space: nowrap;
     }
 
     .nav-btn:hover {
         background-color: rgba(0, 0, 0, 0.05);
     }
 
-    .page-content {
-        padding: 2rem 0;
+    /* Mobile navigation styles */
+    @media (max-width: 768px) {
+        .nav-btn {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+            margin: 0 0.125rem;
+        }
+        
+        nav .container {
+            padding: 0 1rem;
+        }
+        
+        nav .flex {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        nav .flex::-webkit-scrollbar {
+            display: none;
+        }
     }
 
-    /* Subject card styles for students */
+    .page-content {
+        padding: 1rem 0;
+    }
+
+    @media (min-width: 768px) {
+        .page-content {
+            padding: 2rem 0;
+        }
+    }
+
+    /* Mobile-responsive containers */
+    .main-container {
+        padding: 0.5rem;
+    }
+
+    @media (min-width: 768px) {
+        .main-container {
+            padding: 1rem;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .main-container {
+            padding: 1.5rem;
+        }
+    }
+
+    /* Subject card styles - mobile responsive */
     .subject-card {
         background: white;
         border-radius: 12px;
-        padding: 1.5rem;
+        padding: 1rem;
         border: 2px solid #e5e7eb;
         margin-bottom: 1rem;
         transition: all 0.3s ease;
         cursor: pointer;
+    }
+
+    @media (min-width: 768px) {
+        .subject-card {
+            padding: 1.5rem;
+        }
     }
 
     .subject-card:hover {
@@ -97,61 +153,111 @@
 
     .subject-header {
         display: flex;
-        justify-content: between;
+        justify-content: space-between;
         align-items: center;
-        padding: 1rem;
+        padding: 0.5rem;
         cursor: pointer;
     }
 
+    @media (min-width: 768px) {
+        .subject-header {
+            padding: 1rem;
+        }
+    }
+
     .subject-icon {
-        width: 3rem;
-        height: 3rem;
+        width: 2.5rem;
+        height: 2.5rem;
         background: linear-gradient(135deg, #059669, #047857);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 1.2rem;
-        margin-right: 1rem;
+        font-size: 1rem;
+        margin-right: 0.75rem;
+        flex-shrink: 0;
+    }
+
+    @media (min-width: 768px) {
+        .subject-icon {
+            width: 3rem;
+            height: 3rem;
+            font-size: 1.2rem;
+            margin-right: 1rem;
+        }
     }
 
     .subject-info h3 {
-        font-size: 1.25rem;
+        font-size: 1rem;
         font-weight: 700;
         color: #1f2937;
         margin-bottom: 0.25rem;
     }
 
+    @media (min-width: 768px) {
+        .subject-info h3 {
+            font-size: 1.25rem;
+        }
+    }
+
     .subject-info p {
         color: #6b7280;
-        font-size: 0.875rem;
+        font-size: 0.75rem;
+    }
+
+    @media (min-width: 768px) {
+        .subject-info p {
+            font-size: 0.875rem;
+        }
     }
 
     .task-count-badge {
         background: #dbeafe;
         color: #1e40af;
-        padding: 0.5rem 1rem;
+        padding: 0.375rem 0.75rem;
         border-radius: 1rem;
-        font-size: 0.875rem;
+        font-size: 0.75rem;
         font-weight: 600;
+        white-space: nowrap;
+    }
+
+    @media (min-width: 768px) {
+        .task-count-badge {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
     }
 
     .expand-arrow {
         color: #6b7280;
         transition: transform 0.3s ease;
-        font-size: 1rem;
-        margin-left: 1rem;
+        font-size: 0.875rem;
+        margin-left: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    @media (min-width: 768px) {
+        .expand-arrow {
+            font-size: 1rem;
+            margin-left: 1rem;
+        }
     }
 
     .expand-arrow.expanded {
         transform: rotate(180deg);
     }
 
-    /* Task list styles for students */
+    /* Task list styles - mobile responsive */
     .tasks-container {
-        padding: 0 1rem 1rem 1rem;
+        padding: 0 0.5rem 0.5rem 0.5rem;
         display: none;
+    }
+
+    @media (min-width: 768px) {
+        .tasks-container {
+            padding: 0 1rem 1rem 1rem;
+        }
     }
 
     .tasks-container.expanded {
@@ -162,9 +268,16 @@
         background: #f9fafb;
         border: 1px solid #e5e7eb;
         border-radius: 0.5rem;
-        padding: 1rem;
-        margin-bottom: 1rem;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
         transition: all 0.2s ease;
+    }
+
+    @media (min-width: 768px) {
+        .task-item {
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
     }
 
     .task-item:hover {
@@ -174,9 +287,11 @@
 
     .task-header {
         display: flex;
-        justify-between;
+        justify-content: space-between;
         align-items: flex-start;
         margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
     }
 
     .task-id-badge {
@@ -194,6 +309,7 @@
         font-weight: 600;
         padding: 0.25rem 0.5rem;
         border-radius: 0.25rem;
+        white-space: nowrap;
     }
 
     .status-completed {
@@ -206,18 +322,36 @@
         color: #1e40af;
     }
 
+    .status-overdue {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
     .task-title {
         font-weight: 600;
         color: #1f2937;
         margin-bottom: 0.5rem;
-        font-size: 1rem;
+        font-size: 0.875rem;
+        line-height: 1.4;
+    }
+
+    @media (min-width: 768px) {
+        .task-title {
+            font-size: 1rem;
+        }
     }
 
     .task-description {
         color: #6b7280;
-        font-size: 0.875rem;
+        font-size: 0.75rem;
         line-height: 1.5;
         margin-bottom: 0.75rem;
+    }
+
+    @media (min-width: 768px) {
+        .task-description {
+            font-size: 0.875rem;
+        }
     }
 
     .task-due-date {
@@ -225,26 +359,40 @@
         font-size: 0.75rem;
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
     }
 
     .task-due-date i {
         margin-right: 0.25rem;
     }
 
-    /* Admin task assignment styles */
+    /* Admin styles - mobile responsive */
     .admin-filter-section {
         background: white;
         border-radius: 12px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (min-width: 768px) {
+        .admin-filter-section {
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
     }
 
     .filter-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: 1fr;
         gap: 1rem;
         align-items: end;
+    }
+
+    @media (min-width: 768px) {
+        .filter-grid {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
     }
 
     .filter-group {
@@ -265,6 +413,7 @@
         border-radius: 0.5rem;
         font-size: 0.875rem;
         transition: border-color 0.2s ease;
+        background: white;
     }
 
     .filter-select:focus {
@@ -275,17 +424,36 @@
 
     .students-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        grid-template-columns: 1fr;
         gap: 1rem;
+    }
+
+    @media (min-width: 640px) {
+        .students-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .students-grid {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
     }
 
     .student-card {
         background: white;
         border-radius: 12px;
-        padding: 1.5rem;
+        padding: 1rem;
         border: 2px solid #e5e7eb;
         transition: all 0.3s ease;
         cursor: pointer;
+        text-align: center;
+    }
+
+    @media (min-width: 768px) {
+        .student-card {
+            padding: 1.5rem;
+        }
     }
 
     .student-card:hover {
@@ -295,8 +463,8 @@
     }
 
     .student-avatar {
-        width: 3rem;
-        height: 3rem;
+        width: 2.5rem;
+        height: 2.5rem;
         background: linear-gradient(135deg, #3b82f6, #1d4ed8);
         border-radius: 50%;
         display: flex;
@@ -304,20 +472,42 @@
         justify-content: center;
         color: white;
         font-weight: 700;
-        font-size: 1.25rem;
-        margin-bottom: 1rem;
+        font-size: 1rem;
+        margin: 0 auto 0.75rem auto;
+    }
+
+    @media (min-width: 768px) {
+        .student-avatar {
+            width: 3rem;
+            height: 3rem;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
     }
 
     .student-name {
         font-weight: 700;
         color: #1f2937;
         margin-bottom: 0.25rem;
+        font-size: 0.875rem;
+    }
+
+    @media (min-width: 768px) {
+        .student-name {
+            font-size: 1rem;
+        }
     }
 
     .student-username {
         color: #6b7280;
-        font-size: 0.875rem;
+        font-size: 0.75rem;
         margin-bottom: 0.5rem;
+    }
+
+    @media (min-width: 768px) {
+        .student-username {
+            font-size: 0.875rem;
+        }
     }
 
     .student-class {
@@ -330,7 +520,7 @@
         display: inline-block;
     }
 
-    /* Admin task modal styles */
+    /* Modal styles - mobile responsive */
     .task-assignment-modal {
         position: fixed;
         top: 0;
@@ -342,14 +532,15 @@
         align-items: center;
         justify-content: center;
         z-index: 1000;
+        padding: 1rem;
     }
 
     .task-assignment-modal-content {
         background: white;
         border-radius: 1rem;
         max-width: 600px;
-        width: 90vw;
-        max-height: 80vh;
+        width: 100%;
+        max-height: 90vh;
         overflow-y: auto;
     }
 
@@ -357,9 +548,15 @@
         background: #f9fafb;
         border: 2px solid #e5e7eb;
         border-radius: 0.75rem;
-        padding: 1rem;
+        padding: 0.75rem;
         margin-bottom: 0.75rem;
         transition: all 0.2s ease;
+    }
+
+    @media (min-width: 768px) {
+        .admin-task-item {
+            padding: 1rem;
+        }
     }
 
     .admin-task-item:hover {
@@ -378,12 +575,53 @@
         height: 1.25rem;
         accent-color: #3b82f6;
         margin-right: 0.75rem;
+        flex-shrink: 0;
+    }
+
+    /* Grade input styles */
+    .grade-section {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e5e7eb;
+        display: none;
+    }
+
+    .grade-section.show {
+        display: block;
+    }
+
+    .grade-input-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .grade-input {
+        width: 80px;
+        padding: 0.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        text-align: center;
+    }
+
+    .grade-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+
+    .grade-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+        white-space: nowrap;
     }
 
     .submit-btn {
         background: linear-gradient(135deg, #10b981, #059669);
         color: white;
-        padding: 0.75rem 2rem;
+        padding: 0.75rem 1.5rem;
         border: none;
         border-radius: 0.5rem;
         font-weight: 600;
@@ -391,6 +629,14 @@
         transition: all 0.3s ease;
         width: 100%;
         margin-top: 1rem;
+        font-size: 0.875rem;
+    }
+
+    @media (min-width: 768px) {
+        .submit-btn {
+            padding: 0.75rem 2rem;
+            font-size: 1rem;
+        }
     }
 
     .submit-btn:hover {
@@ -406,264 +652,267 @@
         box-shadow: none;
     }
 
-    /* Subject points summary */
+    /* Subject points summary - mobile responsive */
     .subject-points-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: 1fr;
         gap: 1rem;
-        margin-top: 2rem;
+        margin-top: 1.5rem;
+    }
+
+    @media (min-width: 640px) {
+        .subject-points-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .subject-points-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
     }
 
     .subject-points-card {
         background: white;
         border-radius: 0.75rem;
-        padding: 1.5rem;
+        padding: 1rem;
         border: 2px solid #e5e7eb;
         text-align: center;
+    }
+
+    @media (min-width: 768px) {
+        .subject-points-card {
+            padding: 1.5rem;
+        }
     }
 
     .subject-points-card h4 {
         font-weight: 700;
         color: #1f2937;
         margin-bottom: 0.5rem;
-    }
-
-    .points-display {
-        font-size: 2rem;
-        font-weight: 800;
-        color: #059669;
-    }
-
-    .points-label {
         font-size: 0.875rem;
-        color: #6b7280;
-        margin-top: 0.25rem;
     }
 
-    @media (max-width: 768px) {
-        .filter-grid {
-            grid-template-columns: 1fr;
-            gap: 1rem;
+    @media (min-width: 768px) {
+        .subject-points-card h4 {
+            font-size: 1rem;
         }
-
-        .students-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .subject-points-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    /* Mobile Responsiveness Improvements */
-@media (max-width: 768px) {
-    .container {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-
-    /* Header adjustments */
-    header .container {
-        padding: 0.75rem 1rem;
-    }
-
-    header .flex {
-        flex-direction: column;
-        gap: 0.75rem;
-        text-align: center;
-    }
-
-    header h1 {
-        font-size: 1.25rem;
-    }
-
-    /* Navigation improvements */
-    .nav-btn {
-        padding: 0.75rem 1rem;
-        font-size: 0.875rem;
-        white-space: nowrap;
-    }
-
-    /* Subject cards mobile view */
-    .subject-card {
-        margin-bottom: 0.75rem;
-        padding: 1rem;
-    }
-
-    .subject-header {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
-    }
-
-    .subject-header .flex:first-child {
-        width: 100%;
-    }
-
-    .subject-icon {
-        width: 2.5rem;
-        height: 2.5rem;
-        font-size: 1rem;
-    }
-
-    .task-count-badge {
-        font-size: 0.75rem;
-        padding: 0.375rem 0.75rem;
-    }
-
-    /* Task items mobile */
-    .task-item {
-        padding: 0.75rem;
-    }
-
-    .task-header {
-        flex-direction: column;
-        gap: 0.5rem;
-        align-items: flex-start;
-    }
-
-    /* Admin filter section mobile */
-    .admin-filter-section {
-        padding: 1rem;
-    }
-
-    .filter-grid {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
-
-    /* Students grid mobile */
-    .students-grid {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 0.75rem;
-    }
-
-    .student-card {
-        padding: 1rem;
-        text-align: center;
-    }
-
-    /* Modal improvements for mobile */
-    .task-assignment-modal-content {
-        width: 95vw;
-        max-height: 90vh;
-        margin: 1rem;
-    }
-
-    .admin-task-item {
-        padding: 0.75rem;
-    }
-
-    .admin-task-item .flex {
-        flex-direction: column;
-        gap: 0.75rem;
-        align-items: flex-start;
-    }
-
-    .task-checkbox {
-        align-self: flex-start;
-        margin-bottom: 0.5rem;
-    }
-
-    /* Charts mobile */
-    .chart-container {
-        height: 250px !important;
-    }
-
-    /* Subject points grid mobile */
-    .subject-points-grid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 0.75rem;
-    }
-
-    .subject-points-card {
-        padding: 1rem;
     }
 
     .points-display {
         font-size: 1.5rem;
+        font-weight: 800;
+        color: #059669;
     }
 
-    /* Form improvements */
-    .filter-select {
-        padding: 0.75rem;
-        font-size: 1rem;
+    @media (min-width: 768px) {
+        .points-display {
+            font-size: 2rem;
+        }
     }
 
-    /* Button improvements */
-    .submit-btn {
-        padding: 1rem 2rem;
-        font-size: 1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    /* Extra small devices */
-    .container {
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
+    .points-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
     }
 
-    header h1 {
+    @media (min-width: 768px) {
+        .points-label {
+            font-size: 0.875rem;
+        }
+    }
+
+    /* Chart container responsive */
+    .chart-container {
+        position: relative;
+        height: 250px;
+        width: 100%;
+    }
+
+    @media (min-width: 768px) {
+        .chart-container {
+            height: 300px;
+        }
+    }
+
+    /* Header responsive */
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .header-info {
+        display: flex;
+        items-center;
+        space-x: 0.75rem;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .header-title {
         font-size: 1.125rem;
+        font-weight: bold;
+        min-width: 0;
     }
 
-    .subject-info h3 {
-        font-size: 1.125rem;
+    @media (min-width: 768px) {
+        .header-title {
+            font-size: 1.25rem;
+        }
     }
 
-    .task-title {
-        font-size: 0.875rem;
+    .header-subtitle {
+        font-size: 0.75rem;
+        opacity: 0.9;
     }
 
-    .students-grid {
-        grid-template-columns: 1fr;
+    @media (min-width: 768px) {
+        .header-subtitle {
+            font-size: 0.875rem;
+        }
     }
 
-    .subject-points-grid {
-        grid-template-columns: 1fr;
+    .header-logout {
+        background: rgba(255, 255, 255, 0.2);
+        hover:bg-opacity-30;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+        font-size: 0.75rem;
+        white-space: nowrap;
     }
-}    
+
+    @media (min-width: 768px) {
+        .header-logout {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+    }
+
+    /* Mobile improvements for login/signup */
+    .login-container {
+        padding: 1rem;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    @media (min-width: 768px) {
+        .login-container {
+            padding: 2rem;
+            max-width: 500px;
+        }
+    }
+
+    /* Mobile scroll improvements */
+    @media (max-width: 768px) {
+        body {
+            overflow-x: hidden;
+        }
+        
+        .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        .mx-auto {
+            margin-left: auto;
+            margin-right: auto;
+        }
+    }
+
+    /* Loading states */
+    .loading-spinner {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid #f3f4f6;
+        border-radius: 50%;
+        border-top-color: #3b82f6;
+        animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Accessibility improvements */
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+
+    /* Focus states for better accessibility */
+    .task-checkbox:focus,
+    .grade-input:focus,
+    .filter-select:focus {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
+    }
+
+    /* Better touch targets for mobile */
+    @media (max-width: 768px) {
+        .task-checkbox {
+            min-width: 44px;
+            min-height: 44px;
+        }
+        
+        .subject-header {
+            min-height: 44px;
+        }
+        
+        .nav-btn {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
+    }
 </style>
 </head>
 <body>
     <!-- Login Page -->
     <div id="loginPage" class="min-h-screen flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+        <div class="bg-white rounded-2xl shadow-2xl login-container">
             <!-- Login Section -->
             <div id="loginSection">
-                <div class="text-center mb-8">
-                    <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-green-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                        <i class="fas fa-mosque text-white text-2xl"></i>
+                <div class="text-center mb-6">
+                    <div class="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-blue-600 to-green-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-mosque text-white text-lg md:text-2xl"></i>
                     </div>
-                    <h1 class="text-3xl font-bold text-gray-800">CCE MARKS</h1>
-                    <p class="text-gray-600 mt-2">Darul Hidaya Da'wa College</p>
+                    <h1 class="text-2xl md:text-3xl font-bold text-gray-800">CCE MARKS</h1>
+                    <p class="text-gray-600 mt-2 text-sm md:text-base">Darul Hidaya Da'wa College</p>
                 </div>
 
                 <form id="loginForm">
-                    <div class="space-y-6">
+                    <div class="space-y-4 md:space-y-6">
                         <div>
                             <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
                             <input type="text" id="username" name="username" required
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300">
+                                class="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm md:text-base">
                         </div>
                         
                         <div>
                             <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
                             <input type="password" id="password" name="password" required
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300">
+                                class="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm md:text-base">
                         </div>
 
-                        <div id="loginError" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"></div>
+                        <div id="loginError" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm"></div>
 
-                        <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-green-600 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-green-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold transition duration-300">
+                        <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-green-600 text-white py-2 md:py-3 px-4 rounded-lg hover:from-blue-700 hover:to-green-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold transition duration-300 text-sm md:text-base">
                             <i class="fas fa-sign-in-alt mr-2"></i>Sign In
                         </button>
                     </div>
                 </form>
 
-                <div class="text-center mt-6">
-                    <p class="text-gray-600">Don't have an account? 
+                <div class="text-center mt-4 md:mt-6">
+                    <p class="text-gray-600 text-sm md:text-base">Don't have an account? 
                         <button onclick="showSignup()" class="text-blue-600 hover:text-blue-800 font-semibold">Sign up here</button>
                     </p>
                 </div>
@@ -671,77 +920,77 @@
 
             <!-- Signup Section -->
             <div id="signupSection" class="hidden">
-                <div class="text-center mb-6">
-                    <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-green-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                        <i class="fas fa-user-plus text-white text-2xl"></i>
+                <div class="text-center mb-4 md:mb-6">
+                    <div class="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-blue-600 to-green-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-user-plus text-white text-lg md:text-2xl"></i>
                     </div>
-                    <h1 class="text-3xl font-bold text-gray-800">Create Account</h1>
-                    <p class="text-gray-600 mt-2">Register for CCE System</p>
+                    <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Create Account</h1>
+                    <p class="text-gray-600 mt-2 text-sm md:text-base">Register for CCE System</p>
                 </div>
 
                 <form id="signupForm">
-                    <div class="space-y-4">
+                    <div class="space-y-3 md:space-y-4">
                         <div>
                             <label for="signupName" class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
                             <input type="text" id="signupName" name="signupName" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
                         </div>
                         
                         <div>
                             <label for="signupPhone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
                             <input type="tel" id="signupPhone" name="signupPhone" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
                         </div>
 
                         <div>
                             <label for="signupGmail" class="block text-sm font-medium text-gray-700 mb-1">Gmail (Optional)</label>
                             <input type="email" id="signupGmail" name="signupGmail"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
                         </div>
 
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label for="signupState" class="block text-sm font-medium text-gray-700 mb-1">State *</label>
                                 <input type="text" id="signupState" name="signupState" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
                             </div>
                             <div>
                                 <label for="signupDistrict" class="block text-sm font-medium text-gray-700 mb-1">District *</label>
                                 <input type="text" id="signupDistrict" name="signupDistrict" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label for="signupPlace" class="block text-sm font-medium text-gray-700 mb-1">Place *</label>
                                 <input type="text" id="signupPlace" name="signupPlace" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
                             </div>
                             <div>
                                 <label for="signupPO" class="block text-sm font-medium text-gray-700 mb-1">Post Office *</label>
                                 <input type="text" id="signupPO" name="signupPO" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
                             </div>
                         </div>
 
                         <div>
                             <label for="signupPinCode" class="block text-sm font-medium text-gray-700 mb-1">Pin Code *</label>
                             <input type="text" id="signupPinCode" name="signupPinCode" required pattern="[0-9]{6}"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
                         </div>
 
                         <div id="signupError" class="hidden bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm"></div>
                         <div id="signupSuccess" class="hidden bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-lg text-sm"></div>
 
-                        <button type="submit" class="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-4 rounded-lg hover:from-green-700 hover:to-blue-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-semibold transition duration-300">
+                        <button type="submit" class="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-2 md:py-3 px-4 rounded-lg hover:from-green-700 hover:to-blue-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-semibold transition duration-300 text-sm md:text-base">
                             <i class="fas fa-user-plus mr-2"></i>Create Account
                         </button>
                     </div>
                 </form>
 
                 <div class="text-center mt-4">
-                    <p class="text-gray-600">Already have an account? 
+                    <p class="text-gray-600 text-sm">Already have an account? 
                         <button onclick="showLogin()" class="text-blue-600 hover:text-blue-800 font-semibold">Sign in here</button>
                     </p>
                 </div>
@@ -753,19 +1002,19 @@
     <div id="dashboardContainer" class="hidden min-h-screen bg-gray-50">
         <!-- Header -->
         <header class="bg-gradient-to-r from-blue-600 to-green-600 text-white shadow-lg">
-            <div class="container mx-auto px-4 py-3">
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-mosque text-xl"></i>
+            <div class="container mx-auto px-2 md:px-4 py-2 md:py-3">
+                <div class="header-content">
+                    <div class="header-info">
+                        <div class="w-8 h-8 md:w-10 md:h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-mosque text-sm md:text-xl"></i>
                         </div>
-                        <div>
-                            <h1 class="text-xl font-bold">DHDC MANOOR</h1>
-                            <p class="text-sm opacity-90" id="welcomeUser">Welcome</p>
+                        <div class="min-w-0">
+                            <h1 class="header-title">DHDC MANOOR</h1>
+                            <p class="header-subtitle" id="welcomeUser">Welcome</p>
                         </div>
                     </div>
-                    <button onclick="logout()" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition duration-300">
-                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    <button onclick="logout()" class="header-logout transition duration-300">
+                        <i class="fas fa-sign-out-alt mr-1 md:mr-2"></i>Logout
                     </button>
                 </div>
             </div>
@@ -774,13 +1023,13 @@
         <!-- Navigation -->
         <!-- Student Navigation -->
         <nav id="studentNav" class="bg-white shadow-sm border-b hidden">
-            <div class="container mx-auto px-4">
+            <div class="container mx-auto px-2 md:px-4">
                 <div class="flex space-x-1 overflow-x-auto py-2">
                     <button onclick="showPage('tasks')" class="nav-btn text-gray-700 hover:text-green-600 whitespace-nowrap">
-                        <i class="fas fa-tasks mr-2"></i>Tasks
+                        <i class="fas fa-tasks mr-1 md:mr-2"></i>Tasks
                     </button>
                     <button onclick="showPage('status')" class="nav-btn text-gray-700 hover:text-green-600 whitespace-nowrap">
-                        <i class="fas fa-chart-line mr-2"></i>Status
+                        <i class="fas fa-chart-line mr-1 md:mr-2"></i>Status
                     </button>
                 </div>
             </div>
@@ -788,75 +1037,73 @@
 
         <!-- Admin Navigation -->
         <nav id="adminNav" class="bg-white shadow-sm border-b hidden">
-            <div class="container mx-auto px-4">
+            <div class="container mx-auto px-2 md:px-4">
                 <div class="flex space-x-1 overflow-x-auto py-2">
                     <button onclick="showPage('adminTasks')" class="nav-btn text-gray-700 hover:text-blue-600 whitespace-nowrap">
-                        <i class="fas fa-tasks mr-2"></i>Tasks
+                        <i class="fas fa-tasks mr-1 md:mr-2"></i>Tasks
                     </button>
                     <button onclick="showPage('adminStatus')" class="nav-btn text-gray-700 hover:text-blue-600 whitespace-nowrap">
-                        <i class="fas fa-chart-bar mr-2"></i>All Status
+                        <i class="fas fa-chart-bar mr-1 md:mr-2"></i>All Status
                     </button>
                 </div>
             </div>
         </nav>
 
         <!-- Main Content -->
-        <main class="container mx-auto px-4 py-6">
+        <main class="container mx-auto main-container">
             
             <!-- Tasks Page (Student) -->
-<div id="tasksPage" class="page-content hidden">
-    <div class="bg-white rounded-lg shadow-lg p-6">
-        <div class="flex justify-between items-center mb-6">
-            <div>
-                <h2 class="text-2xl font-bold text-green-600">My Tasks</h2>
-                <p class="text-gray-600" id="userClass">Loading class info...</p>
+            <div id="tasksPage" class="page-content hidden">
+                <div class="bg-white rounded-lg shadow-lg p-3 md:p-6">
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 md:mb-6 gap-2">
+                        <div>
+                            <h2 class="text-xl md:text-2xl font-bold text-green-600">My Tasks</h2>
+                            <p class="text-gray-600 text-sm md:text-base" id="userClass">Loading class info...</p>
+                        </div>
+                    </div>
+                    
+                    <div id="subjectCards">
+                        <!-- Subject cards will be loaded here -->
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <div id="subjectCards">
-            <!-- Subject cards will be loaded here -->
-        </div>
-    </div>
-</div>
-
 
             <!-- Status Page (Student) -->
-<div id="statusPage" class="page-content hidden">
-    <div class="bg-white rounded-lg shadow-lg p-6">
-        <h2 class="text-2xl font-bold text-green-600 mb-6">My Progress</h2>
-        
-        <!-- Task Progress Chart -->
-        <div class="bg-gray-50 rounded-lg p-6 mb-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Task Completion Progress</h3>
-            <div class="chart-container" style="height: 300px;">
-                <canvas id="taskChart"></canvas>
-            </div>
-        </div>
+            <div id="statusPage" class="page-content hidden">
+                <div class="bg-white rounded-lg shadow-lg p-3 md:p-6">
+                    <h2 class="text-xl md:text-2xl font-bold text-green-600 mb-4 md:mb-6">My Progress</h2>
+                    
+                    <!-- Task Progress Chart -->
+                    <div class="bg-gray-50 rounded-lg p-3 md:p-6 mb-4 md:mb-6">
+                        <h3 class="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4">Task Completion Progress</h3>
+                        <div class="chart-container">
+                            <canvas id="taskChart"></canvas>
+                        </div>
+                    </div>
 
-        <!-- Subject Points Summary -->
-        <div class="bg-gray-50 rounded-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Subject Points Summary</h3>
-            <div id="subjectPointsGrid" class="subject-points-grid">
-                <!-- Subject points will be loaded here -->
+                    <!-- Subject Points Summary -->
+                    <div class="bg-gray-50 rounded-lg p-3 md:p-6">
+                        <h3 class="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4">Subject Points Summary</h3>
+                        <div id="subjectPointsGrid" class="subject-points-grid">
+                            <!-- Subject points will be loaded here -->
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
-
 
             <!-- Admin Tasks Page -->
             <div id="adminTasksPage" class="page-content hidden">
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <div class="flex justify-between items-center mb-6">
+                <div class="bg-white rounded-lg shadow-lg p-3 md:p-6">
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 md:mb-6 gap-2">
                         <div>
-                            <h2 class="text-2xl font-bold text-blue-600">Task Management</h2>
-                            <p class="text-gray-600" id="teachingSubjects">Loading teaching info...</p>
+                            <h2 class="text-xl md:text-2xl font-bold text-blue-600">Task Management</h2>
+                            <p class="text-gray-600 text-sm md:text-base" id="teachingSubjects">Loading teaching info...</p>
                         </div>
                     </div>
 
                     <!-- Class and Subject Filter -->
                     <div class="admin-filter-section">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Select Class and Subject</h3>
+                        <h3 class="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4">Select Class and Subject</h3>
                         <div class="filter-grid">
                             <div class="filter-group">
                                 <label class="filter-label">Class</label>
@@ -872,7 +1119,7 @@
                             </div>
                             <div class="filter-group">
                                 <button onclick="clearAdminTaskFilters()" class="filter-select bg-gray-100 hover:bg-gray-200 cursor-pointer text-center">
-                                    <i class="fas fa-times mr-2"></i>Clear Filters
+                                    <i class="fas fa-times mr-1 md:mr-2"></i>Clear Filters
                                 </button>
                             </div>
                         </div>
@@ -880,23 +1127,23 @@
 
                     <!-- Default View -->
                     <div id="adminTasksDefaultView">
-                        <div class="text-center py-8 text-gray-500">
-                            <i class="fas fa-arrow-up text-4xl mb-4"></i>
-                            <p class="text-lg">Please select a class and subject above to manage tasks</p>
+                        <div class="text-center py-6 md:py-8 text-gray-500">
+                            <i class="fas fa-arrow-up text-2xl md:text-4xl mb-3 md:mb-4"></i>
+                            <p class="text-base md:text-lg">Please select a class and subject above to manage tasks</p>
                         </div>
                     </div>
 
                     <!-- Class Subject View -->
                     <div id="adminTasksClassSubjectView" class="hidden">
                         <!-- Selected Class Subject Info -->
-                        <div class="bg-blue-50 rounded-lg p-4 mb-6">
-                            <h3 class="text-lg font-semibold text-blue-800">Managing Tasks For:</h3>
-                            <p class="text-blue-700" id="selectedClassSubjectInfo">-</p>
+                        <div class="bg-blue-50 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
+                            <h3 class="text-base md:text-lg font-semibold text-blue-800">Managing Tasks For:</h3>
+                            <p class="text-blue-700 text-sm md:text-base" id="selectedClassSubjectInfo">-</p>
                         </div>
 
                         <!-- Tasks Section -->
-                        <div class="tasks-section mb-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Available Tasks</h3>
+                        <div class="tasks-section mb-4 md:mb-6">
+                            <h3 class="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4">Available Tasks</h3>
                             <div id="adminClassSubjectTasksList">
                                 <!-- Tasks will be loaded here -->
                             </div>
@@ -904,7 +1151,7 @@
 
                         <!-- Students Section -->
                         <div class="tasks-section">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Students in Class</h3>
+                            <h3 class="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4">Students in Class</h3>
                             <div id="adminClassStudentsList" class="students-grid">
                                 <!-- Students will be loaded here -->
                             </div>
@@ -914,48 +1161,47 @@
             </div>
 
             <!-- Admin Status Page -->
-<div id="adminStatusPage" class="page-content hidden">
-    <div class="bg-white rounded-lg shadow-lg p-6">
-        <h2 class="text-2xl font-bold text-blue-600 mb-6">All Users Status</h2>
-        
-        <!-- User Selection -->
-        <div class="mb-6 p-4 bg-blue-50 rounded-lg">
-            <div class="flex items-center space-x-4">
-                <div class="flex-1">
-                    <label for="userSelect" class="block text-sm font-medium text-blue-700 mb-2">Select User to View Status:</label>
-                    <select id="userSelect" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">-- Loading Users... --</option>
-                    </select>
+            <div id="adminStatusPage" class="page-content hidden">
+                <div class="bg-white rounded-lg shadow-lg p-3 md:p-6">
+                    <h2 class="text-xl md:text-2xl font-bold text-blue-600 mb-4 md:mb-6">All Users Status</h2>
+                    
+                    <!-- User Selection -->
+                    <div class="mb-4 md:mb-6 p-3 md:p-4 bg-blue-50 rounded-lg">
+                        <div class="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-2 md:space-y-0">
+                            <div class="flex-1">
+                                <label for="userSelect" class="block text-sm font-medium text-blue-700 mb-2">Select User to View Status:</label>
+                                <select id="userSelect" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base">
+                                    <option value="">-- Loading Users... --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- No User Selected Message -->
+                    <div id="noUserSelected" class="text-center py-8 md:py-12">
+                        <i class="fas fa-user-friends text-4xl md:text-6xl text-gray-300 mb-3 md:mb-4"></i>
+                        <h3 class="text-lg md:text-xl font-semibold text-gray-500 mb-2">Select a User</h3>
+                        <p class="text-gray-500 text-sm md:text-lg">Choose a user from the dropdown above to view their progress and statistics</p>
+                    </div>
+
+                    <!-- Selected User Status -->
+                    <div id="selectedUserStatus" class="hidden">
+                        <!-- User Info -->
+                        <div class="mb-4 md:mb-6 p-3 md:p-4 bg-blue-50 rounded-lg">
+                            <h3 class="text-lg md:text-xl font-bold text-blue-800" id="selectedUserName">-</h3>
+                            <p class="text-blue-700 text-sm md:text-base" id="selectedUserInfo">-</p>
+                        </div>
+
+                        <!-- Task Progress Chart -->
+                        <div class="bg-gray-50 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
+                            <h3 class="text-base md:text-lg font-bold mb-3 md:mb-4 text-blue-600">Task Progress</h3>
+                            <div class="chart-container">
+                                <canvas id="adminTaskChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- No User Selected Message -->
-        <div id="noUserSelected" class="text-center py-12">
-            <i class="fas fa-user-friends text-6xl text-gray-300 mb-4"></i>
-            <h3 class="text-xl font-semibold text-gray-500 mb-2">Select a User</h3>
-            <p class="text-gray-500 text-lg">Choose a user from the dropdown above to view their progress and statistics</p>
-        </div>
-
-        <!-- Selected User Status -->
-        <div id="selectedUserStatus" class="hidden">
-            <!-- User Info -->
-            <div class="mb-6 p-4 bg-blue-50 rounded-lg">
-                <h3 class="text-xl font-bold text-blue-800" id="selectedUserName">-</h3>
-                <p class="text-blue-700" id="selectedUserInfo">-</p>
-            </div>
-
-            <!-- Task Progress Chart -->
-            <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                <h3 class="text-lg font-bold mb-4 text-blue-600">Task Progress</h3>
-                <div class="chart-container" style="height: 300px;">
-                    <canvas id="adminTaskChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 
         </main>
     </div>
@@ -963,20 +1209,20 @@
     <!-- Student Task Assignment Modal -->
     <div id="studentTaskModal" class="task-assignment-modal hidden">
         <div class="task-assignment-modal-content">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 id="studentTaskModalTitle" class="text-xl font-bold text-blue-600">Student Tasks</h3>
-                    <button onclick="closeStudentTaskModal()" class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times text-xl"></i>
+            <div class="p-4 md:p-6">
+                <div class="flex justify-between items-center mb-3 md:mb-4">
+                    <h3 id="studentTaskModalTitle" class="text-lg md:text-xl font-bold text-blue-600">Student Tasks</h3>
+                    <button onclick="closeStudentTaskModal()" class="text-gray-500 hover:text-gray-700 p-1">
+                        <i class="fas fa-times text-lg md:text-xl"></i>
                     </button>
                 </div>
                 
-                <div id="studentTaskModalContent" class="mb-6 max-h-96 overflow-y-auto">
+                <div id="studentTaskModalContent" class="mb-4 md:mb-6 max-h-96 overflow-y-auto">
                     <!-- Student tasks will be loaded here -->
                 </div>
                 
-                <div class="flex justify-end space-x-3">
-                    <button onclick="closeStudentTaskModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition duration-300">
+                <div class="flex flex-col md:flex-row justify-end space-y-2 md:space-y-0 md:space-x-3">
+                    <button onclick="closeStudentTaskModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition duration-300 text-sm md:text-base">
                         Cancel
                     </button>
                     <button onclick="submitSelectedStudentTasks()" class="submit-btn">
@@ -1047,6 +1293,3 @@
     </script>
 </body>
 </html>
-
-
-
