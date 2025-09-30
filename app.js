@@ -696,25 +696,22 @@ async function loadTaskChart(progress) {
 async function loadAdminData() {
     try {
         if (currentUser.role === 'admin') {
-            // Enhanced parsing for admin subjects
             let adminClasses = [];
             let adminSubjects = {};
             
             console.log('Admin class raw:', currentUser.class);
             console.log('Admin subjects raw:', currentUser.subjects);
             
-            // Parse classes from the class column (space or comma separated)
+            // Parse classes from the class column (comma separated)
             if (currentUser.class) {
                 const classStr = currentUser.class.toString().trim();
-                // Handle different separators: space, comma, or combination
-                adminClasses = classStr.split(/[\s,;]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
+                adminClasses = classStr.split(/[,\s]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
             }
             
             // Parse subjects from the subjects column - format: (1-english,mathematics,science)(2-urdu,arabic)
             if (currentUser.subjects) {
                 const subjectsStr = currentUser.subjects.toString().trim();
                 
-                // Handle different possible formats
                 if (subjectsStr.includes('(') && subjectsStr.includes(')')) {
                     // Parse subject assignments - format: (class-subject1,subject2,subject3)
                     const subjectMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
@@ -740,9 +737,8 @@ async function loadAdminData() {
                         });
                     }
                 } else {
-                    // Handle simple format or fallback
-                    // If it's just a list of subjects, assign to all classes
-                    const subjects = subjectsStr.split(/[\s,;]+/).map(s => s.trim()).filter(s => s);
+                    // Handle simple format - assign subjects to all classes
+                    const subjects = subjectsStr.split(/[,\s]+/).map(s => s.trim()).filter(s => s);
                     if (subjects.length > 0) {
                         adminClasses.forEach(classNum => {
                             adminSubjects[classNum] = subjects;
@@ -754,7 +750,7 @@ async function loadAdminData() {
             // Ensure all assigned classes have subject assignments
             adminClasses.forEach(classNum => {
                 if (!adminSubjects[classNum]) {
-                    // If no specific subjects assigned, assign all default subjects
+                    // If no specific subjects assigned, assign default subjects
                     adminSubjects[classNum] = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
                 }
             });
@@ -787,10 +783,11 @@ async function loadAdminData() {
         console.error('Error loading admin data:', error);
         const teachingInfo = document.getElementById('teachingSubjects');
         if (teachingInfo) {
-            teachingInfo.textContent = 'Error loading teaching assignments - check console';
+            teachingInfo.textContent = 'Error loading teaching assignments';
         }
     }
 }
+
 
 
 
