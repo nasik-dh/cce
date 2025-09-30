@@ -708,7 +708,7 @@ async function loadAdminData() {
                 adminClasses = classStr.split(/[,\s]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
             }
             
-            // Parse subjects from the subjects column - format: (1-english,mathematics,science)(2-urdu,arabic)
+            // Parse subjects from the subjects column
             if (currentUser.subjects) {
                 const subjectsStr = currentUser.subjects.toString().trim();
                 console.log('Subjects string to parse:', subjectsStr);
@@ -724,13 +724,19 @@ async function loadAdminData() {
                                 const classNum = innerContent.substring(0, dashIndex).trim();
                                 const subjectsString = innerContent.substring(dashIndex + 1).trim();
                                 
+                                console.log(`Parsing class ${classNum}: ${subjectsString}`);
+                                
                                 let subjects;
                                 if (subjectsString.toLowerCase() === 'all') {
-                                    // Assign all common subjects if 'all' is specified
                                     subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science', 'hadith'];
                                 } else {
-                                    subjects = subjectsString.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+                                    // Split by comma and trim each subject, then filter out empty strings
+                                    subjects = subjectsString.split(',')
+                                        .map(s => s.trim().toLowerCase())
+                                        .filter(s => s && s !== '');
                                 }
+                                
+                                console.log(`Final subjects for class ${classNum}:`, subjects);
                                 
                                 if (subjects.length > 0) {
                                     adminSubjects[classNum] = subjects;
@@ -740,7 +746,10 @@ async function loadAdminData() {
                     }
                 } else {
                     // Handle simple format - assign subjects to all classes
-                    const subjects = subjectsStr.split(/[,\s]+/).map(s => s.trim().toLowerCase()).filter(s => s);
+                    const subjects = subjectsStr.split(/[,\s]+/)
+                        .map(s => s.trim().toLowerCase())
+                        .filter(s => s && s !== '');
+                    
                     if (subjects.length > 0) {
                         adminClasses.forEach(classNum => {
                             adminSubjects[classNum] = subjects;
@@ -749,16 +758,22 @@ async function loadAdminData() {
                 }
             }
             
-            // Ensure all assigned classes have subject assignments
+            // Debug: Log what we parsed
+            console.log('=== PARSED ADMIN DATA ===');
+            console.log('Admin Classes:', adminClasses);
+            console.log('Admin Subjects:', adminSubjects);
+            
+            // Only assign default subjects if NO subjects were parsed
             adminClasses.forEach(classNum => {
-                if (!adminSubjects[classNum]) {
-                    // If no specific subjects assigned, assign default subjects
+                if (!adminSubjects[classNum] || adminSubjects[classNum].length === 0) {
+                    console.log(`No subjects found for class ${classNum}, assigning defaults`);
                     adminSubjects[classNum] = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science', 'hadith'];
                 }
             });
             
-            console.log('Parsed admin classes:', adminClasses);
-            console.log('Parsed admin subjects:', adminSubjects);
+            console.log('=== FINAL ADMIN DATA ===');
+            console.log('Admin Classes:', adminClasses);
+            console.log('Admin Subjects:', adminSubjects);
             
             currentUser.adminClasses = adminClasses;
             currentUser.adminSubjects = adminSubjects;
