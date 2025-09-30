@@ -702,18 +702,23 @@ async function loadAdminData() {
             console.log('=== LOADING ADMIN DATA ===');
             console.log('Admin class raw:', currentUser.class);
             console.log('Admin subjects raw:', currentUser.subjects);
+            console.log('Admin class type:', typeof currentUser.class);
+            console.log('Admin subjects type:', typeof currentUser.subjects);
             
             // Parse classes from the class column (comma separated)
             if (currentUser.class) {
                 const classStr = currentUser.class.toString().trim();
                 adminClasses = classStr.split(/[,\s]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
                 console.log('Parsed admin classes:', adminClasses);
+                console.log('Admin classes types:', adminClasses.map(c => typeof c));
             }
             
             // Parse subjects from the subjects column
             if (currentUser.subjects) {
                 const subjectsStr = currentUser.subjects.toString().trim();
-                console.log('Processing subjects string:', subjectsStr);
+                console.log('Processing subjects string:', `"${subjectsStr}"`);
+                console.log('Subjects string length:', subjectsStr.length);
+                console.log('Subjects string characters:', subjectsStr.split('').map(c => `"${c}"`));
                 
                 // Handle both formats: (1-english) and (1-english,mathematics)
                 const subjectMatches = subjectsStr.match(/\(\d+-[^)]*\)/g);
@@ -721,17 +726,18 @@ async function loadAdminData() {
                 
                 if (subjectMatches && subjectMatches.length > 0) {
                     subjectMatches.forEach(match => {
-                        console.log('Processing match:', match);
+                        console.log('Processing match:', `"${match}"`);
                         
                         // Remove parentheses
                         const innerContent = match.slice(1, -1);
                         const dashIndex = innerContent.indexOf('-');
+                        console.log('Inner content:', `"${innerContent}"`, 'Dash index:', dashIndex);
                         
                         if (dashIndex > 0) {
                             const classNum = innerContent.substring(0, dashIndex).trim();
                             const subjectsString = innerContent.substring(dashIndex + 1).trim();
                             
-                            console.log(`Parsing class ${classNum}: "${subjectsString}"`);
+                            console.log(`Parsing class "${classNum}": subjects "${subjectsString}"`);
                             
                             let subjects = [];
                             if (subjectsString.toLowerCase() === 'all') {
@@ -746,7 +752,7 @@ async function loadAdminData() {
                                     .filter(s => s && s !== '');
                             }
                             
-                            console.log(`Final subjects for class ${classNum}:`, subjects);
+                            console.log(`Final subjects for class "${classNum}":`, subjects);
                             
                             if (subjects.length > 0) {
                                 adminSubjects[classNum] = subjects;
@@ -756,12 +762,15 @@ async function loadAdminData() {
                 } else {
                     console.warn('No subject matches found. Check subjects format in Google Sheets.');
                     console.warn('Expected format: (1-english)(2-arabic) or (1-english,mathematics)');
+                    console.warn('Current format:', `"${subjectsStr}"`);
                 }
             }
             
             console.log('=== FINAL PARSED ADMIN DATA ===');
             console.log('Admin Classes:', adminClasses);
             console.log('Admin Subjects:', adminSubjects);
+            console.log('Admin Subjects keys:', Object.keys(adminSubjects));
+            console.log('Admin Subjects key types:', Object.keys(adminSubjects).map(k => typeof k));
             
             // Store the parsed data
             currentUser.adminClasses = adminClasses;
@@ -792,6 +801,7 @@ async function loadAdminData() {
         }
     }
 }
+
 
 // Add this function to debug the admin data parsing
 function debugAdminParsing() {
@@ -874,7 +884,7 @@ async function handleClassChange() {
     subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
     
     console.log('=== CLASS CHANGE DEBUG ===');
-    console.log('Selected class:', selectedClass);
+    console.log('Selected class:', `"${selectedClass}"`, typeof selectedClass);
     console.log('Current user admin subjects:', currentUser.adminSubjects);
     
     if (selectedClass) {
@@ -886,9 +896,16 @@ async function handleClassChange() {
         console.log('Checking for subjects in class:', selectedClass);
         console.log('AdminSubjects object:', currentUser.adminSubjects);
         console.log('Keys in adminSubjects:', Object.keys(currentUser.adminSubjects || {}));
+        console.log('Keys comparison:');
+        Object.keys(currentUser.adminSubjects || {}).forEach(key => {
+            console.log(`  Key: "${key}" (${typeof key}) === "${selectedClass}" (${typeof selectedClass}): ${key === selectedClass}`);
+            console.log(`  String comparison: ${String(key) === String(selectedClass)}`);
+        });
         
-        if (currentUser.adminSubjects && currentUser.adminSubjects[selectedClass]) {
-            availableSubjects = currentUser.adminSubjects[selectedClass];
+        // Try both string and exact match
+        if (currentUser.adminSubjects && 
+            (currentUser.adminSubjects[selectedClass] || currentUser.adminSubjects[String(selectedClass)])) {
+            availableSubjects = currentUser.adminSubjects[selectedClass] || currentUser.adminSubjects[String(selectedClass)];
             console.log('Found subjects for class', selectedClass, ':', availableSubjects);
         } else {
             console.log('No subjects found for class', selectedClass);
@@ -921,6 +938,7 @@ async function handleClassChange() {
     document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
     document.getElementById('adminTasksDefaultView').classList.remove('hidden');
 }
+
 
 
 async function handleSubjectChange() {
