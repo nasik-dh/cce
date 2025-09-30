@@ -853,6 +853,7 @@ async function loadAdminTasks() {
 }
 
 // Separate event handler functions
+// Separate event handler functions
 async function handleClassChange() {
     const selectedClass = this.value;
     const subjectSelect = document.getElementById('adminTaskSubjectSelect');
@@ -864,7 +865,7 @@ async function handleClassChange() {
     if (selectedClass) {
         subjectSelect.disabled = false;
         
-        // Get subjects for this class from admin assignments ONLY
+        // Get subjects for this class from admin assignments ONLY (not from tasks sheet)
         let availableSubjects = [];
         
         if (currentUser.adminSubjects && currentUser.adminSubjects[selectedClass]) {
@@ -875,7 +876,7 @@ async function handleClassChange() {
         }
         
         if (availableSubjects.length > 0) {
-            // Add subjects to dropdown
+            // Add subjects to dropdown - only the ones assigned to this admin
             availableSubjects.forEach(subject => {
                 const option = document.createElement('option');
                 option.value = subject.toLowerCase();
@@ -885,7 +886,7 @@ async function handleClassChange() {
         } else {
             const option = document.createElement('option');
             option.value = '';
-            option.textContent = 'No subjects assigned to you';
+            option.textContent = 'No subjects assigned to you for this class';
             option.disabled = true;
             subjectSelect.appendChild(option);
         }
