@@ -693,65 +693,48 @@ async function loadAdminData() {
             let adminClasses = [];
             let adminSubjects = {};
             
+            console.log('Admin class raw:', currentUser.class);
             console.log('Admin subjects raw:', currentUser.subjects);
             
+            // Parse classes from the class column (space or comma separated)
+            if (currentUser.class) {
+                const classStr = currentUser.class.toString().trim();
+                adminClasses = classStr.split(/[\s,]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
+            }
+            
+            // Parse subjects from the subjects column - format: (1-english,mathematics,science)(2-urdu,arabic)
             if (currentUser.subjects) {
                 const subjectsStr = currentUser.subjects.toString().trim();
                 
-                // Enhanced format: 1,2|(1-english,mathematics,science)(2-urdu,arabic)
-                if (subjectsStr.includes('|')) {
-                    const parts = subjectsStr.split('|');
-                    const classesStr = parts[0];
-                    const subjectAssignments = parts[1];
-                    
-                    // Parse classes
-                    if (classesStr) {
-                        adminClasses = classesStr.split(',').map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
-                    }
-                    
-                    // Parse subject assignments - format: (class-subject1,subject2,subject3)
-                    if (subjectAssignments) {
-                        const subjectMatches = subjectAssignments.match(/\(\d+-[^)]+\)/g);
-                        if (subjectMatches) {
-                            subjectMatches.forEach(match => {
-                                const innerContent = match.slice(1, -1); // Remove parentheses
-                                const dashIndex = innerContent.indexOf('-');
-                                if (dashIndex > 0) {
-                                    const classNum = innerContent.substring(0, dashIndex);
-                                    const subjectsString = innerContent.substring(dashIndex + 1);
-                                    
-                                    let subjects;
-                                    if (subjectsString.toLowerCase() === 'all') {
-                                        subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
-                                    } else {
-                                        subjects = subjectsString.split(',').map(s => s.trim()).filter(s => s);
-                                    }
-                                    
-                                    if (subjects.length > 0) {
-                                        adminSubjects[classNum] = subjects;
-                                    }
-                                }
-                            });
+                // Parse subject assignments - format: (class-subject1,subject2,subject3)
+                const subjectMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
+                if (subjectMatches) {
+                    subjectMatches.forEach(match => {
+                        const innerContent = match.slice(1, -1); // Remove parentheses
+                        const dashIndex = innerContent.indexOf('-');
+                        if (dashIndex > 0) {
+                            const classNum = innerContent.substring(0, dashIndex);
+                            const subjectsString = innerContent.substring(dashIndex + 1);
+                            
+                            let subjects;
+                            if (subjectsString.toLowerCase() === 'all') {
+                                subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
+                            } else {
+                                subjects = subjectsString.split(',').map(s => s.trim()).filter(s => s);
+                            }
+                            
+                            if (subjects.length > 0) {
+                                adminSubjects[classNum] = subjects;
+                            }
                         }
-                    }
-                } else {
-                    // Fallback: if no pipe, treat as old format or assign default
-                    console.log('No pipe found, using fallback parsing');
-                    const classMatch = subjectsStr.match(/[\d,\s]+/);
-                    if (classMatch) {
-                        adminClasses = classMatch[0].split(',').map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
-                        // Assign all subjects to all classes as fallback
-                        const defaultSubjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
-                        adminClasses.forEach(classNum => {
-                            adminSubjects[classNum] = defaultSubjects;
-                        });
-                    }
+                    });
                 }
             }
             
             // Ensure all assigned classes have subject assignments
             adminClasses.forEach(classNum => {
                 if (!adminSubjects[classNum]) {
+                    // If no specific subjects assigned, assign all default subjects
                     adminSubjects[classNum] = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
                 }
             });
@@ -784,6 +767,7 @@ async function loadAdminData() {
         }
     }
 }
+
 
 
 async function loadAdminTasks() {
