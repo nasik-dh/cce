@@ -688,7 +688,7 @@ async function loadTaskChart(progress) {
 }
 
 // =============================
-// 👨‍💼 Admin Functions - UPDATED
+// 👨‍💼 Admin Functions - FIXED SUBJECT PARSING
 // =============================
 async function loadAdminData() {
     try {
@@ -709,50 +709,39 @@ async function loadAdminData() {
                 console.log('Parsed admin classes:', adminClasses);
             }
             
-            // FIXED: Parse subjects with improved logic
+            // FIXED: NEW SUBJECT PARSING LOGIC
             if (currentUser.subjects) {
                 const subjectsStr = currentUser.subjects.toString().trim();
                 console.log('Processing subjects string:', `"${subjectsStr}"`);
                 
-                // Handle both formats: (1-english) and (1-english,mathematics)
+                // Check if it's the format with parentheses (old format)
                 const subjectMatches = subjectsStr.match(/\(\d+-[^)]*\)/g);
-                console.log('Subject matches found:', subjectMatches);
                 
                 if (subjectMatches && subjectMatches.length > 0) {
+                    console.log('Detected OLD format with parentheses');
+                    // OLD FORMAT: (1-english)(2-arabic) etc.
                     subjectMatches.forEach(match => {
-                        console.log('Processing match:', `"${match}"`);
-                        
-                        // Remove parentheses
                         const innerContent = match.slice(1, -1);
                         const dashIndex = innerContent.indexOf('-');
-                        console.log('Inner content:', `"${innerContent}"`, 'Dash index:', dashIndex);
                         
                         if (dashIndex > 0) {
                             const classNum = innerContent.substring(0, dashIndex).trim();
                             const subjectsString = innerContent.substring(dashIndex + 1).trim();
                             
-                            console.log(`Parsing class "${classNum}": subjects "${subjectsString}"`);
-                            
                             let subjects = [];
                             if (subjectsString.toLowerCase() === 'all') {
                                 subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science', 'hadith'];
                             } else if (subjectsString === '') {
-                                // Handle empty subjects case
                                 subjects = [];
                             } else {
-                                // FIXED: Handle both single subjects and comma-separated subjects
                                 if (subjectsString.includes(',')) {
-                                    // Multiple subjects separated by comma
                                     subjects = subjectsString.split(',')
                                         .map(s => s.trim().toLowerCase())
                                         .filter(s => s && s !== '');
                                 } else {
-                                    // Single subject case
                                     subjects = [subjectsString.trim().toLowerCase()];
                                 }
                             }
-                            
-                            console.log(`Final subjects for class "${classNum}":`, subjects);
                             
                             if (subjects.length > 0) {
                                 adminSubjects[classNum] = subjects;
@@ -760,9 +749,19 @@ async function loadAdminData() {
                         }
                     });
                 } else {
-                    console.warn('No subject matches found. Check subjects format in Google Sheets.');
-                    console.warn('Expected format: (1-english)(2-arabic) or (1-english,mathematics)');
-                    console.warn('Current format:', `"${subjectsStr}"`);
+                    console.log('Detected NEW format - simple comma separated subjects');
+                    // NEW FORMAT: Simple comma-separated subjects like "english, urdu"
+                    // Assign these subjects to ALL classes the admin teaches
+                    const subjectsArray = subjectsStr.split(',')
+                        .map(s => s.trim().toLowerCase())
+                        .filter(s => s && s !== '');
+                    
+                    console.log('Subjects array:', subjectsArray);
+                    
+                    // Assign these subjects to all admin classes
+                    adminClasses.forEach(classNum => {
+                        adminSubjects[classNum] = [...subjectsArray]; // Copy the array
+                    });
                 }
             }
             
@@ -841,26 +840,24 @@ async function loadAdminTasks() {
     adminTaskSubjectSelect.addEventListener('change', handleSubjectChange);
 }
 
-// FIXED: Separate event handler functions with improved subject matching
+// FIXED: Improved class change handler
 async function handleClassChange() {
     const selectedClass = this.value;
     const subjectSelect = document.getElementById('adminTaskSubjectSelect');
     subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
     
     console.log('=== CLASS CHANGE DEBUG ===');
-    console.log('Selected class:', `"${selectedClass}"`, typeof selectedClass);
+    console.log('Selected class:', `"${selectedClass}"`);
     console.log('Current user admin subjects:', currentUser.adminSubjects);
     
     if (selectedClass) {
         subjectSelect.disabled = false;
         
-        // FIXED: Get subjects for this class with improved key matching
+        // Get subjects for this class
         let availableSubjects = [];
         const adminSubjects = currentUser.adminSubjects || {};
         
         console.log('Checking for subjects in class:', selectedClass);
-        console.log('AdminSubjects object:', adminSubjects);
-        console.log('Keys in adminSubjects:', Object.keys(adminSubjects));
         
         // Try multiple matching strategies
         if (adminSubjects[selectedClass]) {
@@ -923,8 +920,8 @@ async function handleSubjectChange() {
     
     console.log('Subject selected:', selectedSubject, 'for class:', selectedClass);
     
-    if (selectedClass && selectedSubject) {
-        // FIXED: Verify admin has access with improved matching
+    if (selectedClass && selectedSubject && selectedSubject !== '') {
+        // Verify admin has access
         const adminSubjects = currentUser.adminSubjects || {};
         let hasAccess = false;
         
@@ -1620,7 +1617,7 @@ function showNotification(message, type = 'info', duration = 5000) {
 }
 
 // =============================
-// 🔧 DEBUG FUNCTIONS - NEW
+// 🔧 DEBUG FUNCTIONS - UPDATED
 // =============================
 function debugDhdcUser() {
     if (currentUser && currentUser.username === 'dhdc') {
@@ -1629,24 +1626,23 @@ function debugDhdcUser() {
         console.log('Parsed adminSubjects:', currentUser.adminSubjects);
         
         // Test the specific string
-        const testStr = "(1-english)(2-arabic)";
+        const testStr = "english, urdu";
         console.log('Testing with:', testStr);
         
-        const matches = testStr.match(/\(\d+-[^)]*\)/g);
-        console.log('Matches:', matches);
+        const subjectsArray = testStr.split(',')
+            .map(s => s.trim().toLowerCase())
+            .filter(s => s && s !== '');
         
-        if (matches) {
-            matches.forEach((match, index) => {
-                console.log(`Match ${index}:`, match);
-                const inner = match.slice(1, -1);
-                const dashIdx = inner.indexOf('-');
-                if (dashIdx > 0) {
-                    const cls = inner.substring(0, dashIdx);
-                    const subj = inner.substring(dashIdx + 1);
-                    console.log(`  Class: "${cls}", Subject: "${subj}"`);
-                }
-            });
-        }
+        console.log('Parsed subjects array:', subjectsArray);
+        
+        // Test assignment to classes
+        const testClasses = ['1', '2'];
+        const testAdminSubjects = {};
+        testClasses.forEach(classNum => {
+            testAdminSubjects[classNum] = [...subjectsArray];
+        });
+        
+        console.log('Test admin subjects assignment:', testAdminSubjects);
     }
 }
 
@@ -1656,48 +1652,34 @@ function debugAdminData() {
     console.log('Admin Classes:', currentUser?.adminClasses);
     console.log('Admin Subjects:', currentUser?.adminSubjects);
     
-    // Test the specific parsing with dhdc user data
+    // Test the NEW parsing with dhdc user data
     const testUser = {
-        class: "1 2 3",
-        subjects: "(1-english,mathematics,science)(2-urdu,arabic)(3-all)"
+        class: "1,2",
+        subjects: "english, urdu"
     };
     
-    console.log('=== TESTING WITH SAMPLE DATA ===');
+    console.log('=== TESTING WITH SAMPLE DATA (NEW FORMAT) ===');
     console.log('Test input:', testUser);
     
-    // Test parsing
+    // Test NEW parsing
     let adminClasses = [];
     let adminSubjects = {};
     
     if (testUser.class) {
         const classStr = testUser.class.toString().trim();
-        adminClasses = classStr.split(/[\s,;]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
+        adminClasses = classStr.split(/[,\s]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
     }
     
     if (testUser.subjects) {
         const subjectsStr = testUser.subjects.toString().trim();
-        const subjectMatches = subjectsStr.match(/\(\d+-[^)]*\)/g);
-        if (subjectMatches) {
-            subjectMatches.forEach(match => {
-                const innerContent = match.slice(1, -1);
-                const dashIndex = innerContent.indexOf('-');
-                if (dashIndex > 0) {
-                    const classNum = innerContent.substring(0, dashIndex);
-                    const subjectsString = innerContent.substring(dashIndex + 1);
-                    
-                    let subjects;
-                    if (subjectsString.toLowerCase() === 'all') {
-                        subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
-                    } else {
-                        subjects = subjectsString.split(',').map(s => s.trim()).filter(s => s);
-                    }
-                    
-                    if (subjects.length > 0) {
-                        adminSubjects[classNum] = subjects;
-                    }
-                }
-            });
-        }
+        const subjectsArray = subjectsStr.split(',')
+            .map(s => s.trim().toLowerCase())
+            .filter(s => s && s !== '');
+        
+        // Assign these subjects to all admin classes
+        adminClasses.forEach(classNum => {
+            adminSubjects[classNum] = [...subjectsArray];
+        });
     }
     
     console.log('Parsed Classes:', adminClasses);
@@ -1731,23 +1713,23 @@ function debugSubjectMatching() {
 }
 
 function testSubjectParsing() {
-    const testSubjects = "(1-english)(2-arabic)";
-    console.log('Testing subjects:', testSubjects);
+    const testSubjects = "english, urdu";
+    console.log('Testing subjects (NEW FORMAT):', testSubjects);
     
-    const matches = testSubjects.match(/\(\d+-[^)]*\)/g);
-    console.log('Matches:', matches);
+    const subjectsArray = testSubjects.split(',')
+        .map(s => s.trim().toLowerCase())
+        .filter(s => s && s !== '');
     
-    if (matches) {
-        matches.forEach(match => {
-            const innerContent = match.slice(1, -1);
-            const dashIndex = innerContent.indexOf('-');
-            if (dashIndex > 0) {
-                const classNum = innerContent.substring(0, dashIndex).trim();
-                const subjectsString = innerContent.substring(dashIndex + 1).trim();
-                console.log(`Class: ${classNum}, Subjects: "${subjectsString}"`);
-            }
-        });
-    }
+    console.log('Parsed subjects array:', subjectsArray);
+    
+    // Test assignment to classes
+    const testClasses = ['1', '2'];
+    const testAdminSubjects = {};
+    testClasses.forEach(classNum => {
+        testAdminSubjects[classNum] = [...subjectsArray];
+    });
+    
+    console.log('Final admin subjects assignment:', testAdminSubjects);
 }
 
 // =============================
