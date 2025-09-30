@@ -48,7 +48,6 @@
         line-height: 1.6;
         background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
         min-height: 100vh;
-        overflow-x: hidden;
     }
     
     .urdu-text {
@@ -72,10 +71,6 @@
         font-weight: 500;
         font-size: 0.875rem;
         white-space: nowrap;
-        background: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
     }
 
     .nav-btn:hover {
@@ -88,7 +83,6 @@
             padding: 0.375rem 0.75rem;
             font-size: 0.75rem;
             margin: 0 0.125rem;
-            min-height: 44px;
         }
         
         nav .container {
@@ -420,7 +414,6 @@
         font-size: 0.875rem;
         transition: border-color 0.2s ease;
         background: white;
-        cursor: pointer;
     }
 
     .filter-select:focus {
@@ -578,12 +571,11 @@
     }
 
     .task-checkbox {
-        width: 1rem;
-        height: 1rem;
+        width: 1.25rem;
+        height: 1.25rem;
         accent-color: #3b82f6;
         margin-right: 0.75rem;
         flex-shrink: 0;
-        cursor: pointer;
     }
 
     /* Grade input styles */
@@ -606,7 +598,7 @@
     }
 
     .grade-input {
-        width: 120px;
+        width: 80px;
         padding: 0.5rem;
         border: 1px solid #d1d5db;
         border-radius: 0.375rem;
@@ -644,7 +636,6 @@
         .submit-btn {
             padding: 0.75rem 2rem;
             font-size: 1rem;
-            width: auto;
         }
     }
 
@@ -756,7 +747,8 @@
 
     .header-info {
         display: flex;
-        align-items: center;
+        items-center;
+        space-x: 0.75rem;
         min-width: 0;
         flex: 1;
     }
@@ -786,20 +778,12 @@
 
     .header-logout {
         background: rgba(255, 255, 255, 0.2);
+        hover:bg-opacity-30;
         padding: 0.375rem 0.75rem;
         border-radius: 0.5rem;
         transition: all 0.3s ease;
         font-size: 0.75rem;
         white-space: nowrap;
-        border: none;
-        color: white;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-    }
-
-    .header-logout:hover {
-        background: rgba(255, 255, 255, 0.3);
     }
 
     @media (min-width: 768px) {
@@ -820,6 +804,23 @@
         .login-container {
             padding: 2rem;
             max-width: 500px;
+        }
+    }
+
+    /* Mobile scroll improvements */
+    @media (max-width: 768px) {
+        body {
+            overflow-x: hidden;
+        }
+        
+        .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        .mx-auto {
+            margin-left: auto;
+            margin-right: auto;
         }
     }
 
@@ -850,8 +851,7 @@
     /* Focus states for better accessibility */
     .task-checkbox:focus,
     .grade-input:focus,
-    .filter-select:focus,
-    .nav-btn:focus {
+    .filter-select:focus {
         outline: 2px solid #3b82f6;
         outline-offset: 2px;
     }
@@ -872,34 +872,8 @@
             display: flex;
             align-items: center;
         }
-        
-        input, select, button {
-            font-size: 16px; /* Prevents zoom on iOS */
-        }
     }
-
-    /* Error message styling */
-    .error-message {
-        background: #fee2e2;
-        border: 1px solid #fecaca;
-        color: #dc2626;
-        padding: 0.75rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1rem;
-        font-size: 0.875rem;
-    }
-
-    /* Success message styling */
-    .success-message {
-        background: #d1fae5;
-        border: 1px solid #a7f3d0;
-        color: #065f46;
-        padding: 0.75rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1rem;
-        font-size: 0.875rem;
-    }
-    </style>
+</style>
 </head>
 <body>
     <!-- Login Page -->
@@ -908,6 +882,9 @@
             <!-- Login Section -->
             <div id="loginSection">
                 <div class="text-center mb-6">
+                    <div class="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-blue-600 to-green-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-mosque text-white text-lg md:text-2xl"></i>
+                    </div>
                     <h1 class="text-2xl md:text-3xl font-bold text-gray-800">CCE MARKS</h1>
                     <p class="text-gray-600 mt-2 text-sm md:text-base">Darul Hidaya Da'wa College</p>
                 </div>
@@ -926,7 +903,7 @@
                                 class="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm md:text-base">
                         </div>
 
-                        <div id="loginError" class="hidden error-message"></div>
+                        <div id="loginError" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm"></div>
 
                         <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-green-600 text-white py-2 md:py-3 px-4 rounded-lg hover:from-blue-700 hover:to-green-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold transition duration-300 text-sm md:text-base">
                             <i class="fas fa-sign-in-alt mr-2"></i>Sign In
@@ -934,9 +911,87 @@
                     </div>
                 </form>
 
+                <div class="text-center mt-4 md:mt-6">
+                    <p class="text-gray-600 text-sm md:text-base">Don't have an account? 
+                        <button onclick="showSignup()" class="text-blue-600 hover:text-blue-800 font-semibold">Sign up here</button>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Signup Section -->
+            <div id="signupSection" class="hidden">
+                <div class="text-center mb-4 md:mb-6">
+                    <div class="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-blue-600 to-green-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-user-plus text-white text-lg md:text-2xl"></i>
+                    </div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Create Account</h1>
+                    <p class="text-gray-600 mt-2 text-sm md:text-base">Register for CCE System</p>
+                </div>
+
+                <form id="signupForm">
+                    <div class="space-y-3 md:space-y-4">
+                        <div>
+                            <label for="signupName" class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                            <input type="text" id="signupName" name="signupName" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="signupPhone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                            <input type="tel" id="signupPhone" name="signupPhone" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
+                        </div>
+
+                        <div>
+                            <label for="signupGmail" class="block text-sm font-medium text-gray-700 mb-1">Gmail (Optional)</label>
+                            <input type="email" id="signupGmail" name="signupGmail"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label for="signupState" class="block text-sm font-medium text-gray-700 mb-1">State *</label>
+                                <input type="text" id="signupState" name="signupState" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
+                            </div>
+                            <div>
+                                <label for="signupDistrict" class="block text-sm font-medium text-gray-700 mb-1">District *</label>
+                                <input type="text" id="signupDistrict" name="signupDistrict" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label for="signupPlace" class="block text-sm font-medium text-gray-700 mb-1">Place *</label>
+                                <input type="text" id="signupPlace" name="signupPlace" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
+                            </div>
+                            <div>
+                                <label for="signupPO" class="block text-sm font-medium text-gray-700 mb-1">Post Office *</label>
+                                <input type="text" id="signupPO" name="signupPO" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="signupPinCode" class="block text-sm font-medium text-gray-700 mb-1">Pin Code *</label>
+                            <input type="text" id="signupPinCode" name="signupPinCode" required pattern="[0-9]{6}"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 text-sm">
+                        </div>
+
+                        <div id="signupError" class="hidden bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm"></div>
+                        <div id="signupSuccess" class="hidden bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-lg text-sm"></div>
+
+                        <button type="submit" class="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-2 md:py-3 px-4 rounded-lg hover:from-green-700 hover:to-blue-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-semibold transition duration-300 text-sm md:text-base">
+                            <i class="fas fa-user-plus mr-2"></i>Create Account
+                        </button>
+                    </div>
+                </form>
+
                 <div class="text-center mt-4">
-                    <p class="text-gray-600 text-sm">Don't have an account? 
-                       <a href="#" onclick="showSignup()" class="text-blue-600 hover:underline">Sign up</a>
+                    <p class="text-gray-600 text-sm">Already have an account? 
+                        <button onclick="showLogin()" class="text-blue-600 hover:text-blue-800 font-semibold">Sign in here</button>
                     </p>
                 </div>
             </div>
@@ -950,12 +1005,15 @@
             <div class="container mx-auto px-2 md:px-4 py-2 md:py-3">
                 <div class="header-content">
                     <div class="header-info">
+                        <div class="w-8 h-8 md:w-10 md:h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-mosque text-sm md:text-xl"></i>
+                        </div>
                         <div class="min-w-0">
                             <h1 class="header-title">DHDC MANOOR</h1>
                             <p class="header-subtitle" id="welcomeUser">Welcome</p>
                         </div>
                     </div>
-                    <button onclick="logout()" class="header-logout">
+                    <button onclick="logout()" class="header-logout transition duration-300">
                         <i class="fas fa-sign-out-alt mr-1 md:mr-2"></i>Logout
                     </button>
                 </div>
@@ -1006,10 +1064,6 @@
                     
                     <div id="subjectCards">
                         <!-- Subject cards will be loaded here -->
-                        <div class="text-center py-8 text-gray-500">
-                            <i class="fas fa-spinner fa-spin text-2xl mb-3"></i>
-                            <p>Loading subjects...</p>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1032,9 +1086,6 @@
                         <h3 class="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4">Subject Points Summary</h3>
                         <div id="subjectPointsGrid" class="subject-points-grid">
                             <!-- Subject points will be loaded here -->
-                            <div class="text-center py-4 text-gray-500">
-                                <p>Loading subject points...</p>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -1055,19 +1106,19 @@
                         <h3 class="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4">Select Class and Subject</h3>
                         <div class="filter-grid">
                             <div class="filter-group">
-                                <label for="adminTaskClassSelect" class="filter-label">Class</label>
+                                <label class="filter-label">Class</label>
                                 <select id="adminTaskClassSelect" class="filter-select">
                                     <option value="">-- Select Class --</option>
                                 </select>
                             </div>
                             <div class="filter-group">
-                                <label for="adminTaskSubjectSelect" class="filter-label">Subject</label>
+                                <label class="filter-label">Subject</label>
                                 <select id="adminTaskSubjectSelect" class="filter-select" disabled>
                                     <option value="">-- Select Subject --</option>
                                 </select>
                             </div>
                             <div class="filter-group">
-                                <button onclick="clearAdminTaskFilters()" class="filter-select bg-gray-100 hover:bg-gray-200 cursor-pointer text-center border-none">
+                                <button onclick="clearAdminTaskFilters()" class="filter-select bg-gray-100 hover:bg-gray-200 cursor-pointer text-center">
                                     <i class="fas fa-times mr-1 md:mr-2"></i>Clear Filters
                                 </button>
                             </div>
@@ -1095,9 +1146,6 @@
                             <h3 class="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4">Available Tasks</h3>
                             <div id="adminClassSubjectTasksList">
                                 <!-- Tasks will be loaded here -->
-                                <div class="text-center py-4 text-gray-500">
-                                    <p>No tasks available for this subject.</p>
-                                </div>
                             </div>
                         </div>
 
@@ -1106,9 +1154,6 @@
                             <h3 class="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4">Students in Class</h3>
                             <div id="adminClassStudentsList" class="students-grid">
                                 <!-- Students will be loaded here -->
-                                <div class="text-center py-4 text-gray-500 col-span-full">
-                                    <p>No students found in this class.</p>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -1167,20 +1212,17 @@
             <div class="p-4 md:p-6">
                 <div class="flex justify-between items-center mb-3 md:mb-4">
                     <h3 id="studentTaskModalTitle" class="text-lg md:text-xl font-bold text-blue-600">Student Tasks</h3>
-                    <button onclick="closeStudentTaskModal()" class="text-gray-500 hover:text-gray-700 p-1 bg-transparent border-none cursor-pointer">
+                    <button onclick="closeStudentTaskModal()" class="text-gray-500 hover:text-gray-700 p-1">
                         <i class="fas fa-times text-lg md:text-xl"></i>
                     </button>
                 </div>
                 
                 <div id="studentTaskModalContent" class="mb-4 md:mb-6 max-h-96 overflow-y-auto">
                     <!-- Student tasks will be loaded here -->
-                    <div class="text-center py-4 text-gray-500">
-                        <p>Loading tasks...</p>
-                    </div>
                 </div>
                 
                 <div class="flex flex-col md:flex-row justify-end space-y-2 md:space-y-0 md:space-x-3">
-                    <button onclick="closeStudentTaskModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition duration-300 text-sm md:text-base border-none cursor-pointer">
+                    <button onclick="closeStudentTaskModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition duration-300 text-sm md:text-base">
                         Cancel
                     </button>
                     <button onclick="submitSelectedStudentTasks()" class="submit-btn">
@@ -1194,65 +1236,6 @@
     <script src="app.js"></script>
 
     <script>
-        // Global variables for chart instances
-        let chartInstances = {};
-        let adminChartInstances = {};
-        let currentPage = '';
-
-        // Function to show page
-        function showPage(page) {
-            // Hide all pages
-            document.querySelectorAll('.page-content').forEach(el => {
-                el.classList.add('hidden');
-            });
-            
-            // Show selected page
-            document.getElementById(page + 'Page').classList.remove('hidden');
-            currentPage = page;
-            
-            // Update navigation active state
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-blue-100', 'text-blue-700', 'bg-green-100', 'text-green-700');
-            });
-            
-            // Add active class to current page button
-            const activeBtn = document.querySelector(`[onclick="showPage('${page}')"]`);
-            if (activeBtn) {
-                if (page.includes('admin')) {
-                    activeBtn.classList.add('bg-blue-100', 'text-blue-700');
-                } else {
-                    activeBtn.classList.add('bg-green-100', 'text-green-700');
-                }
-            }
-        }
-
-        // Function to logout
-        function logout() {
-            // Clear user data
-            localStorage.removeItem('userData');
-            localStorage.removeItem('authToken');
-            
-            // Show login page, hide dashboard
-            document.getElementById('loginPage').classList.remove('hidden');
-            document.getElementById('dashboardContainer').classList.add('hidden');
-            
-            // Reset form
-            document.getElementById('loginForm').reset();
-            document.getElementById('loginError').classList.add('hidden');
-        }
-
-        // Function to close student task modal
-        function closeStudentTaskModal() {
-            document.getElementById('studentTaskModal').classList.add('hidden');
-        }
-
-        // Function to submit selected student tasks
-        function submitSelectedStudentTasks() {
-            // Implementation would go here
-            alert('Tasks submitted successfully!');
-            closeStudentTaskModal();
-        }
-
         // Function to clear admin task filters
         function clearAdminTaskFilters() {
             document.getElementById('adminTaskClassSelect').value = '';
@@ -1263,11 +1246,6 @@
             // Hide class subject view and show default view
             document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
             document.getElementById('adminTasksDefaultView').classList.remove('hidden');
-        }
-
-        // Function to show signup (placeholder)
-        function showSignup() {
-            alert('Signup functionality would be implemented here');
         }
 
         // Performance optimization: Debounce resize events
@@ -1311,86 +1289,6 @@
             if (e.ctrlKey && (e.key === "s" || e.key === "S")) {
                 e.preventDefault();
             }
-        });
-
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if user is already logged in
-            const userData = localStorage.getItem('userData');
-            if (userData) {
-                // User is logged in, show dashboard
-                document.getElementById('loginPage').classList.add('hidden');
-                document.getElementById('dashboardContainer').classList.remove('hidden');
-                
-                // Set user info
-                const user = JSON.parse(userData);
-                document.getElementById('welcomeUser').textContent = `Welcome, ${user.name || user.username}`;
-                
-                // Show appropriate navigation
-                if (user.role === 'admin') {
-                    document.getElementById('adminNav').classList.remove('hidden');
-                    showPage('adminTasks');
-                } else {
-                    document.getElementById('studentNav').classList.remove('hidden');
-                    showPage('tasks');
-                }
-            }
-            
-            // Login form submission
-            document.getElementById('loginForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-                const loginError = document.getElementById('loginError');
-                
-                // Simple validation
-                if (!username || !password) {
-                    loginError.textContent = 'Please enter both username and password';
-                    loginError.classList.remove('hidden');
-                    return;
-                }
-                
-                // Simulate login - in a real app, this would be an API call
-                if (username === 'admin' && password === 'admin') {
-                    // Admin login
-                    const userData = {
-                        username: 'admin',
-                        name: 'Administrator',
-                        role: 'admin'
-                    };
-                    localStorage.setItem('userData', JSON.stringify(userData));
-                    
-                    // Show dashboard
-                    document.getElementById('loginPage').classList.add('hidden');
-                    document.getElementById('dashboardContainer').classList.remove('hidden');
-                    document.getElementById('welcomeUser').textContent = `Welcome, ${userData.name}`;
-                    document.getElementById('adminNav').classList.remove('hidden');
-                    showPage('adminTasks');
-                    
-                } else if (username === 'student' && password === 'student') {
-                    // Student login
-                    const userData = {
-                        username: 'student',
-                        name: 'Student User',
-                        role: 'student',
-                        class: '10th Grade'
-                    };
-                    localStorage.setItem('userData', JSON.stringify(userData));
-                    
-                    // Show dashboard
-                    document.getElementById('loginPage').classList.add('hidden');
-                    document.getElementById('dashboardContainer').classList.remove('hidden');
-                    document.getElementById('welcomeUser').textContent = `Welcome, ${userData.name}`;
-                    document.getElementById('userClass').textContent = userData.class;
-                    document.getElementById('studentNav').classList.remove('hidden');
-                    showPage('tasks');
-                    
-                } else {
-                    loginError.textContent = 'Invalid username or password';
-                    loginError.classList.remove('hidden');
-                }
-            });
         });
     </script>
 </body>
