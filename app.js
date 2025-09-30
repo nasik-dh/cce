@@ -708,15 +708,18 @@ async function loadAdminData() {
                 adminClasses = classStr.split(/[,\s]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
             }
             
-            // Parse subjects from the subjects column
+            // Parse subjects from the subjects column - handle missing or malformed data
             if (currentUser.subjects) {
                 const subjectsStr = currentUser.subjects.toString().trim();
-                console.log('Subjects string to parse:', subjectsStr);
+                console.log('Raw subjects string:', subjectsStr);
                 
+                // Check if the string looks like our expected format
                 if (subjectsStr.includes('(') && subjectsStr.includes(')')) {
                     // Parse subject assignments - format: (class-subject1,subject2,subject3)
                     const subjectMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
                     if (subjectMatches) {
+                        console.log('Found subject matches:', subjectMatches);
+                        
                         subjectMatches.forEach(match => {
                             const innerContent = match.slice(1, -1); // Remove parentheses
                             const dashIndex = innerContent.indexOf('-');
@@ -724,50 +727,53 @@ async function loadAdminData() {
                                 const classNum = innerContent.substring(0, dashIndex).trim();
                                 const subjectsString = innerContent.substring(dashIndex + 1).trim();
                                 
-                                console.log(`Parsing class ${classNum}: ${subjectsString}`);
+                                console.log(`Parsing class ${classNum}: "${subjectsString}"`);
                                 
                                 let subjects;
                                 if (subjectsString.toLowerCase() === 'all') {
                                     subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science', 'hadith'];
                                 } else {
-                                    // Split by comma and trim each subject, then filter out empty strings
+                                    // Split by comma and trim each subject, remove empty strings
                                     subjects = subjectsString.split(',')
                                         .map(s => s.trim().toLowerCase())
-                                        .filter(s => s && s !== '');
+                                        .filter(s => s && s !== '' && s !== ' ');
                                 }
                                 
                                 console.log(`Final subjects for class ${classNum}:`, subjects);
                                 
                                 if (subjects.length > 0) {
                                     adminSubjects[classNum] = subjects;
+                                } else {
+                                    console.warn(`No valid subjects found for class ${classNum}`);
                                 }
                             }
                         });
+                    } else {
+                        console.warn('No subject matches found in string:', subjectsStr);
                     }
                 } else {
-                    // Handle simple format - assign subjects to all classes
-                    const subjects = subjectsStr.split(/[,\s]+/)
-                        .map(s => s.trim().toLowerCase())
-                        .filter(s => s && s !== '');
-                    
-                    if (subjects.length > 0) {
-                        adminClasses.forEach(classNum => {
-                            adminSubjects[classNum] = subjects;
-                        });
-                    }
+                    console.warn('Subjects string does not match expected format:', subjectsStr);
                 }
+            } else {
+                console.warn('No subjects field found for admin user');
             }
             
-            // Debug: Log what we parsed
             console.log('=== PARSED ADMIN DATA ===');
             console.log('Admin Classes:', adminClasses);
             console.log('Admin Subjects:', adminSubjects);
             
             // Only assign default subjects if NO subjects were parsed
+            let hasAssignedSubjects = Object.keys(adminSubjects).length > 0;
+            
             adminClasses.forEach(classNum => {
                 if (!adminSubjects[classNum] || adminSubjects[classNum].length === 0) {
-                    console.log(`No subjects found for class ${classNum}, assigning defaults`);
-                    adminSubjects[classNum] = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science', 'hadith'];
+                    if (!hasAssignedSubjects) {
+                        console.log(`No subjects configured for class ${classNum}, using all subjects`);
+                        adminSubjects[classNum] = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science', 'hadith'];
+                    } else {
+                        console.log(`No specific subjects for class ${classNum}, using empty array`);
+                        adminSubjects[classNum] = [];
+                    }
                 }
             });
             
