@@ -708,46 +708,43 @@ async function loadAdminData() {
                 adminClasses = classStr.split(/[,\s]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
             }
             
-            // Parse subjects from the subjects column - format: (1-english,mathematics,science)(2-arabic)
+            // Parse subjects from the subjects column - format: (1-english,mathematics,science)(2-urdu,arabic)
             if (currentUser.subjects) {
                 const subjectsStr = currentUser.subjects.toString().trim();
                 console.log('Subjects string to parse:', subjectsStr);
                 
-                // Parse subject assignments - format: (class-subject1,subject2,subject3)
-                const subjectMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
-                
-                if (subjectMatches) {
-                    console.log('Found subject matches:', subjectMatches);
-                    
-                    subjectMatches.forEach(match => {
-                        const innerContent = match.slice(1, -1); // Remove parentheses
-                        const dashIndex = innerContent.indexOf('-');
-                        if (dashIndex > 0) {
-                            const classNum = innerContent.substring(0, dashIndex).trim();
-                            const subjectsString = innerContent.substring(dashIndex + 1).trim();
-                            
-                            let subjects;
-                            if (subjectsString.toLowerCase() === 'all') {
-                                subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science', 'hadith'];
-                            } else {
-                                subjects = subjectsString.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+                if (subjectsStr.includes('(') && subjectsStr.includes(')')) {
+                    // Parse subject assignments - format: (class-subject1,subject2,subject3)
+                    const subjectMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
+                    if (subjectMatches) {
+                        subjectMatches.forEach(match => {
+                            const innerContent = match.slice(1, -1); // Remove parentheses
+                            const dashIndex = innerContent.indexOf('-');
+                            if (dashIndex > 0) {
+                                const classNum = innerContent.substring(0, dashIndex).trim();
+                                const subjectsString = innerContent.substring(dashIndex + 1).trim();
+                                
+                                let subjects;
+                                if (subjectsString.toLowerCase() === 'all') {
+                                    // Assign all common subjects if 'all' is specified
+                                    subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science', 'hadith'];
+                                } else {
+                                    subjects = subjectsString.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+                                }
+                                
+                                if (subjects.length > 0) {
+                                    adminSubjects[classNum] = subjects;
+                                }
                             }
-                            
-                            if (subjects.length > 0) {
-                                adminSubjects[classNum] = subjects;
-                                console.log(`Assigned subjects for class ${classNum}:`, subjects);
-                            }
-                        }
-                    });
+                        });
+                    }
                 } else {
-                    console.log('No parenthesized format found, trying simple format');
                     // Handle simple format - assign subjects to all classes
                     const subjects = subjectsStr.split(/[,\s]+/).map(s => s.trim().toLowerCase()).filter(s => s);
                     if (subjects.length > 0) {
                         adminClasses.forEach(classNum => {
                             adminSubjects[classNum] = subjects;
                         });
-                        console.log('Assigned same subjects to all classes:', subjects);
                     }
                 }
             }
@@ -755,14 +752,13 @@ async function loadAdminData() {
             // Ensure all assigned classes have subject assignments
             adminClasses.forEach(classNum => {
                 if (!adminSubjects[classNum]) {
-                    // If no specific subjects assigned, show warning
-                    console.warn(`No subjects assigned for class ${classNum}`);
-                    adminSubjects[classNum] = []; // Empty array instead of default subjects
+                    // If no specific subjects assigned, assign default subjects
+                    adminSubjects[classNum] = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science', 'hadith'];
                 }
             });
             
-            console.log('Final parsed admin classes:', adminClasses);
-            console.log('Final parsed admin subjects:', adminSubjects);
+            console.log('Parsed admin classes:', adminClasses);
+            console.log('Parsed admin subjects:', adminSubjects);
             
             currentUser.adminClasses = adminClasses;
             currentUser.adminSubjects = adminSubjects;
@@ -772,16 +768,10 @@ async function loadAdminData() {
             if (teachingInfo) {
                 if (adminClasses.length > 0) {
                     const classText = `Classes: ${adminClasses.join(', ')}`;
-                    const subjectText = Object.entries(adminSubjects)
-                        .filter(([cls, subjs]) => subjs.length > 0)
-                        .map(([cls, subjs]) => `Class ${cls}: ${subjs.join(', ')}`)
-                        .join(' | ');
-                    
-                    if (subjectText) {
-                        teachingInfo.textContent = `${classText} | ${subjectText}`;
-                    } else {
-                        teachingInfo.textContent = `${classText} | No specific subjects assigned`;
-                    }
+                    const subjectText = Object.entries(adminSubjects).map(([cls, subjs]) => 
+                        `Class ${cls}: ${subjs.join(', ')}`
+                    ).join(' | ');
+                    teachingInfo.textContent = `${classText} | ${subjectText}`;
                 } else {
                     teachingInfo.textContent = 'No classes or subjects assigned';
                 }
@@ -848,7 +838,7 @@ async function handleClassChange() {
     subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
     
     console.log('Class selected:', selectedClass);
-    console.log('Admin subjects for this class:', currentUser.adminSubjects ? currentUser.adminSubjects[selectedClass] : 'No subjects found');
+    console.log('Admin subjects:', currentUser.adminSubjects);
     
     if (selectedClass) {
         subjectSelect.disabled = false;
@@ -860,23 +850,21 @@ async function handleClassChange() {
             availableSubjects = currentUser.adminSubjects[selectedClass];
             console.log('Available subjects for class', selectedClass, ':', availableSubjects);
         } else {
-            console.log('No subjects assigned to you for class', selectedClass);
+            console.log('No subjects found for class', selectedClass);
         }
         
         if (availableSubjects.length > 0) {
-            // Remove duplicates and sort alphabetically
-            const uniqueSubjects = [...new Set(availableSubjects)].sort();
-            
-            uniqueSubjects.forEach(subject => {
+            // Add subjects to dropdown
+            availableSubjects.forEach(subject => {
                 const option = document.createElement('option');
-                option.value = subject;
+                option.value = subject.toLowerCase();
                 option.textContent = subject.charAt(0).toUpperCase() + subject.slice(1);
                 subjectSelect.appendChild(option);
             });
         } else {
             const option = document.createElement('option');
             option.value = '';
-            option.textContent = 'No subjects assigned to you for this class';
+            option.textContent = 'No subjects assigned to you';
             option.disabled = true;
             subjectSelect.appendChild(option);
         }
@@ -899,7 +887,11 @@ async function handleSubjectChange() {
         // Verify admin has access to this class-subject combination
         const hasAccess = currentUser.adminSubjects && 
                          currentUser.adminSubjects[selectedClass] && 
-                         currentUser.adminSubjects[selectedClass].includes(selectedSubject);
+                         currentUser.adminSubjects[selectedClass]
+                             .map(s => s.toLowerCase())
+                             .includes(selectedSubject.toLowerCase());
+        
+        console.log('Access verification:', hasAccess);
         
         if (hasAccess) {
             selectedClassForModal = selectedClass;
