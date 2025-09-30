@@ -865,37 +865,45 @@ async function loadAdminTasks() {
 }
 
 // Separate event handler functions
-// Separate event handler functions
 async function handleClassChange() {
     const selectedClass = this.value;
     const subjectSelect = document.getElementById('adminTaskSubjectSelect');
     subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
     
-    console.log('Class selected:', selectedClass);
-    console.log('Admin subjects:', currentUser.adminSubjects);
+    console.log('=== CLASS CHANGE DEBUG ===');
+    console.log('Selected class:', selectedClass);
+    console.log('Current user admin subjects:', currentUser.adminSubjects);
     
     if (selectedClass) {
         subjectSelect.disabled = false;
         
-        // Get subjects for this class from admin assignments ONLY (not from tasks sheet)
+        // Get subjects for this class from admin assignments ONLY
         let availableSubjects = [];
+        
+        console.log('Checking for subjects in class:', selectedClass);
+        console.log('AdminSubjects object:', currentUser.adminSubjects);
+        console.log('Keys in adminSubjects:', Object.keys(currentUser.adminSubjects || {}));
         
         if (currentUser.adminSubjects && currentUser.adminSubjects[selectedClass]) {
             availableSubjects = currentUser.adminSubjects[selectedClass];
-            console.log('Available subjects for class', selectedClass, ':', availableSubjects);
+            console.log('Found subjects for class', selectedClass, ':', availableSubjects);
         } else {
             console.log('No subjects found for class', selectedClass);
+            console.log('Available classes:', Object.keys(currentUser.adminSubjects || {}));
         }
         
         if (availableSubjects.length > 0) {
+            console.log('Adding subjects to dropdown:', availableSubjects);
             // Add subjects to dropdown - only the ones assigned to this admin
             availableSubjects.forEach(subject => {
+                console.log('Adding subject:', subject);
                 const option = document.createElement('option');
-                option.value = subject.toLowerCase();
+                option.value = subject.toLowerCase().trim();
                 option.textContent = subject.charAt(0).toUpperCase() + subject.slice(1);
                 subjectSelect.appendChild(option);
             });
         } else {
+            console.log('No subjects available, showing "no subjects" message');
             const option = document.createElement('option');
             option.value = '';
             option.textContent = 'No subjects assigned to you for this class';
@@ -910,6 +918,7 @@ async function handleClassChange() {
     document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
     document.getElementById('adminTasksDefaultView').classList.remove('hidden');
 }
+
 
 async function handleSubjectChange() {
     const selectedClass = document.getElementById('adminTaskClassSelect').value;
@@ -1722,5 +1731,32 @@ function debugAdminData() {
     
     console.log('Parsed Classes:', adminClasses);
     console.log('Parsed Subjects:', adminSubjects);
+}
+
+// Debug function to check subject matching
+function debugSubjectMatching() {
+    console.log('=== DEBUGGING SUBJECT MATCHING ===');
+    console.log('Current User Admin Subjects:', currentUser.adminSubjects);
+    
+    // Check what subjects are available for Class 1
+    if (currentUser.adminSubjects && currentUser.adminSubjects['1']) {
+        console.log('Subjects for Class 1:', currentUser.adminSubjects['1']);
+        console.log('Subject types:', currentUser.adminSubjects['1'].map(s => typeof s));
+        console.log('Subject values:', currentUser.adminSubjects['1'].map(s => `"${s}"`));
+    } else {
+        console.log('No subjects found for Class 1');
+        console.log('Available classes:', Object.keys(currentUser.adminSubjects || {}));
+    }
+    
+    // Check what the handleClassChange function will use
+    const selectedClass = '1';
+    let availableSubjects = [];
+    
+    if (currentUser.adminSubjects && currentUser.adminSubjects[selectedClass]) {
+        availableSubjects = currentUser.adminSubjects[selectedClass];
+    }
+    
+    console.log('Available subjects that will be shown:', availableSubjects);
+    console.log('Length:', availableSubjects.length);
 }
 
