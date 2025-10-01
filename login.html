@@ -619,25 +619,31 @@
     }
 
     .submit-btn {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 0.5rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        width: 100%;
-        margin-top: 1rem;
-        font-size: 0.875rem;
-    }
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 1.5rem;
+    font-size: 1rem;
+    min-height: 50px;
+    touch-action: manipulation;
+}
 
-    @media (min-width: 768px) {
-        .submit-btn {
-            padding: 0.75rem 2rem;
-            font-size: 1rem;
-        }
+@media (max-width: 768px) {
+    .submit-btn {
+        padding: 1.25rem 2rem;
+        font-size: 1.125rem;
+        min-height: 60px;
+        margin-top: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     }
+}
 
     .submit-btn:hover {
         background: linear-gradient(135deg, #059669, #047857);
@@ -859,8 +865,8 @@
     /* Better touch targets for mobile */
     @media (max-width: 768px) {
         .task-checkbox {
-            min-width: 44px;
-            min-height: 44px;
+            width: 1rem;
+            height: 1rem;
         }
         
         .subject-header {
@@ -1285,4 +1291,5 @@
     </script>
 </body>
 </html>
+
 
