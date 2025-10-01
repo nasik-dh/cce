@@ -803,12 +803,29 @@
     object-fit: cover;
     border: 2px solid rgba(255, 255, 255, 0.3);
     transition: all 0.3s ease;
-    /* Add these for high quality */
-    image-rendering: -webkit-optimize-contrast;
+    
+    /* These are the key properties for sharp images */
+    image-rendering: -webkit-crisp-edges;
+    image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
-    image-rendering: optimizeQuality;
-    -ms-interpolation-mode: bicubic;
+    image-rendering: pixelated;
+    
+    /* Prevent subpixel blurring */
+    transform: translateZ(0);
+    -webkit-font-smoothing: antialiased;
+    
+    /* Force GPU acceleration */
+    will-change: transform;
 }
+
+/* For high-DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .profile-pic {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
 
 
     .profile-pic:hover {
@@ -1560,4 +1577,5 @@
     </script>
 </body>
 </html>
+
 
