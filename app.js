@@ -1928,3 +1928,44 @@ function debugCurrentUser() {
         console.log('AdminSubjects:', currentUser.adminSubjects);
     }
 }
+
+function loadUserProfile(username) {
+    const profilePic = document.getElementById('profilePic');
+    const profileName = document.getElementById('profileName');
+    const profileUsername = document.getElementById('profileUsername');
+    const profileFallback = document.getElementById('profileFallback');
+    const container = profilePic.closest('.profile-pic-container');
+    
+    // Add loading state
+    container.classList.add('loading');
+    
+    const img = new Image();
+    
+    img.onload = function() {
+        profilePic.src = this.src;
+        profilePic.style.display = 'block';
+        profileFallback.classList.add('hidden');
+        container.classList.remove('loading');
+    };
+    
+    img.onerror = function() {
+        showProfileFallback(profilePic);
+        container.classList.remove('loading');
+    };
+    
+    // Try multiple image formats/sizes for best quality
+    const imageUrls = [
+        `https://cce-dhdc.vercel.app/pic/${username}.png`,
+        `https://cce-dhdc.vercel.app/pic/${username}.jpg`,
+        `https://cce-dhdc.vercel.app/pic/${username}.jpeg`
+    ];
+    
+    img.src = imageUrls[0];
+    
+    // Set profile info
+    if (currentUser) {
+        profileName.textContent = currentUser.name;
+        profileUsername.textContent = `@${username}`;
+    }
+}
+
