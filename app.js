@@ -708,52 +708,19 @@ async function loadAdminData() {
                 adminClasses = classStr.split(/[,\s]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
             }
             
-            // Parse subjects from the subjects column - format: (1-english,mathematics,science)(2-urdu,arabic)
+            // Parse subjects - NOW CORRECTLY HANDLING SIMPLE FORMAT
             if (currentUser.subjects) {
                 const subjectsStr = currentUser.subjects.toString().trim();
                 
-                if (subjectsStr.includes('(') && subjectsStr.includes(')')) {
-                    // Parse subject assignments - format: (class-subject1,subject2,subject3)
-                    const subjectMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
-                    if (subjectMatches) {
-                        subjectMatches.forEach(match => {
-                            const innerContent = match.slice(1, -1); // Remove parentheses
-                            const dashIndex = innerContent.indexOf('-');
-                            if (dashIndex > 0) {
-                                const classNum = innerContent.substring(0, dashIndex);
-                                const subjectsString = innerContent.substring(dashIndex + 1);
-                                
-                                let subjects;
-                                if (subjectsString.toLowerCase() === 'all') {
-                                    subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
-                                } else {
-                                    subjects = subjectsString.split(',').map(s => s.trim()).filter(s => s);
-                                }
-                                
-                                if (subjects.length > 0) {
-                                    adminSubjects[classNum] = subjects;
-                                }
-                            }
-                        });
-                    }
-                } else {
-                    // Handle simple format - assign subjects to all classes
-                    const subjects = subjectsStr.split(/[,\s]+/).map(s => s.trim()).filter(s => s);
-                    if (subjects.length > 0) {
-                        adminClasses.forEach(classNum => {
-                            adminSubjects[classNum] = subjects;
-                        });
-                    }
+                // Split by comma and assign to ALL classes
+                const subjects = subjectsStr.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+                
+                if (subjects.length > 0) {
+                    adminClasses.forEach(classNum => {
+                        adminSubjects[classNum] = subjects;
+                    });
                 }
             }
-            
-            // Ensure all assigned classes have subject assignments
-            adminClasses.forEach(classNum => {
-                if (!adminSubjects[classNum]) {
-                    // If no specific subjects assigned, assign default subjects
-                    adminSubjects[classNum] = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
-                }
-            });
             
             console.log('Parsed admin classes:', adminClasses);
             console.log('Parsed admin subjects:', adminSubjects);
@@ -787,9 +754,6 @@ async function loadAdminData() {
         }
     }
 }
-
-
-
 
 async function loadAdminTasks() {
     const adminTaskClassSelect = document.getElementById('adminTaskClassSelect');
@@ -857,7 +821,7 @@ async function handleClassChange() {
         if (availableSubjects.length > 0) {
             availableSubjects.forEach(subject => {
                 const option = document.createElement('option');
-                option.value = subject;
+                option.value = subject.toLowerCase(); // Ensure lowercase for consistency
                 option.textContent = subject.charAt(0).toUpperCase() + subject.slice(1);
                 subjectSelect.appendChild(option);
             });
