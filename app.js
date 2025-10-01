@@ -157,9 +157,20 @@ function loadUserProfile(username) {
     const profileUsername = document.getElementById('profileUsername');
     const profileFallback = document.getElementById('profileFallback');
     
-    // Use higher resolution image with size parameter
-    const profilePicUrl = `https://dqdhdc.netlify.app/pic/${username}.png?w=200&h=200&q=90`;
-    profilePic.src = profilePicUrl;
+    // Set profile picture with fallback chain
+    profilePic.src = `https://qdhdc.netlify.app/pic/${username}.png`;
+    profilePic.onerror = function() {
+        this.onerror = function() {
+            this.onerror = function() {
+                // All formats failed, show fallback
+                this.style.display = 'none';
+                profileFallback.classList.remove('hidden');
+            };
+            this.src = `https://qdhdc.netlify.app/pic/${username}.jpeg`;
+        };
+        this.src = `https://qdhdc.netlify.app/pic/${username}.jpg`;
+    };
+    
     profilePic.style.display = 'block';
     profileFallback.classList.add('hidden');
     
