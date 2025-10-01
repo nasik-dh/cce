@@ -1492,23 +1492,34 @@
         }
 
         function loadUserProfile(username) {
-            const profilePic = document.getElementById('profilePic');
-            const profileName = document.getElementById('profileName');
-            const profileUsername = document.getElementById('profileUsername');
-            const profileFallback = document.getElementById('profileFallback');
-            
-            // Set profile picture URL
-            const profilePicUrl = `https://dqdhdc.netlify.app/pic/${username}.png`;
-            profilePic.src = profilePicUrl;
-            profilePic.style.display = 'block';
-            profileFallback.classList.add('hidden');
-            
-            // Set profile info
-            if (currentUser) {
-                profileName.textContent = currentUser.name;
-                profileUsername.textContent = `@${username}`;
-            }
-        }
+    const profilePic = document.getElementById('profilePic');
+    const profileName = document.getElementById('profileName');
+    const profileUsername = document.getElementById('profileUsername');
+    const profileFallback = document.getElementById('profileFallback');
+    
+    // Set profile picture with fallback chain
+    profilePic.src = `https://qdhdc.netlify.app/pic/${username}.png`;
+    profilePic.onerror = function() {
+        this.onerror = function() {
+            this.onerror = function() {
+                // All formats failed, show fallback
+                this.style.display = 'none';
+                profileFallback.classList.remove('hidden');
+            };
+            this.src = `https://qdhdc.netlify.app/pic/${username}.jpeg`;
+        };
+        this.src = `https://qdhdc.netlify.app/pic/${username}.jpg`;
+    };
+    
+    profilePic.style.display = 'block';
+    profileFallback.classList.add('hidden');
+    
+    // Set profile info
+    if (currentUser) {
+        profileName.textContent = currentUser.name;
+        profileUsername.textContent = `@${username}`;
+    }
+}
 
         // Close profile menu when clicking outside
         document.addEventListener('click', function(event) {
@@ -1577,6 +1588,7 @@
     </script>
 </body>
 </html>
+
 
 
 
