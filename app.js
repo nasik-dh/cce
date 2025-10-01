@@ -158,7 +158,7 @@ function loadUserProfile(username) {
     const profileFallback = document.getElementById('profileFallback');
     
     // Set profile picture with fallback chain
-    profilePic.src = `https://qdhdc.netlify.app/pic/${username}.png`;
+    profilePic.src = `https://dqdhdc.netlify.app/pic/${username}.png`;
     profilePic.onerror = function() {
         this.onerror = function() {
             this.onerror = function() {
@@ -166,9 +166,9 @@ function loadUserProfile(username) {
                 this.style.display = 'none';
                 profileFallback.classList.remove('hidden');
             };
-            this.src = `https://qdhdc.netlify.app/pic/${username}.jpeg`;
+            this.src = `https://dqdhdc.netlify.app/pic/${username}.jpeg`;
         };
-        this.src = `https://qdhdc.netlify.app/pic/${username}.jpg`;
+        this.src = `https://dqdhdc.netlify.app/pic/${username}.jpg`;
     };
     
     profilePic.style.display = 'block';
