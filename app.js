@@ -157,7 +157,6 @@ class GoogleSheetsAPI {
             return { error: error.message };
         }
     }
-}
 
     // Alternative method using PUT request
     async updatePasswordPut(username, newPassword) {
@@ -261,28 +260,16 @@ async function login() {
             return;
         }
         
-        console.log('Login - All users:', users); // Debug log
-        
-        const user = users.find(u => {
-            // Handle different possible username fields
-            const userUsername = u.username || u.user || Object.values(u)[1];
-            const userPassword = u.password || u.pass || userUsername; // Default to username if no password
-            
-            console.log('Login checking:', userUsername, userPassword); // Debug log
-            
-            return userUsername && 
-                   userUsername.toString() === username && 
-                   userPassword.toString() === password;
-        });
+        const user = users.find(u => u.username === username && u.password === password);
 
         if (user) {
             currentUser = {
-                username: username,
-                name: user.full_name || user.name || username,
+                username: user.username,
+                name: user.full_name || user.username,
                 role: user.role || 'student',
                 class: user.class || null,
                 subjects: user.subjects || null,
-                userId: username
+                userId: user.username
             };
 
             // Show dashboard immediately
@@ -313,6 +300,9 @@ async function login() {
                     showPage('tasks')
                 ]);
             }
+            
+            // Pre-load critical data in background
+            setTimeout(() => preloadCriticalData(), 100);
             
             hideError();
         } else {
@@ -2064,35 +2054,15 @@ async function changePassword(event) {
             throw new Error('Failed to fetch user data');
         }
         
-        console.log('All users:', users); // Debug log
-        
         // Find current user and verify current password
-        // Since your sheet structure uses numeric usernames, we need to handle this
-        const user = users.find(u => {
-            // Handle both string and numeric usernames
-            const userUsername = u.username || u.user || Object.values(u)[1]; // Try different possible fields
-            console.log('Checking user:', userUsername, 'against:', currentUser.username); // Debug log
-            return userUsername && userUsername.toString() === currentUser.username.toString();
-        });
-        
-        console.log('Found user:', user); // Debug log
+        const user = users.find(u => u.username === currentUser.username && u.password === currentPassword);
         
         if (!user) {
-            throw new Error('User not found in database');
-        }
-        
-        // Check if user has password field or use default
-        // For existing users without passwords, we'll assume the password is the same as username initially
-        const userPassword = user.password || user.pass || currentUser.username; // Default to username if no password set
-        
-        if (userPassword !== currentPassword) {
             throw new Error('Current password is incorrect');
         }
         
         // Update password using the API
         const updateResult = await api.updatePassword(currentUser.username, newPassword);
-        
-        console.log('Update result:', updateResult); // Debug log
         
         if (updateResult && updateResult.success) {
             showChangePasswordSuccess('Password changed successfully! You will be logged out in 3 seconds.');
@@ -2104,7 +2074,7 @@ async function changePassword(event) {
                 logout();
             }, 3000);
         } else {
-            throw new Error(updateResult?.error || 'Failed to update password in database');
+            throw new Error(updateResult?.error || 'Failed to update password');
         }
         
     } catch (error) {
@@ -2115,24 +2085,6 @@ async function changePassword(event) {
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
     }
-}
-
-function showChangePasswordError(message) {
-    const errorDiv = document.getElementById('changePasswordError');
-    errorDiv.textContent = message;
-    errorDiv.classList.remove('hidden');
-    
-    // Scroll to error message
-    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-function showChangePasswordSuccess(message) {
-    const successDiv = document.getElementById('changePasswordSuccess');
-    successDiv.textContent = message;
-    successDiv.classList.remove('hidden');
-    
-    // Scroll to success message
-    successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 async function updateUserPassword(username, newPassword) {
