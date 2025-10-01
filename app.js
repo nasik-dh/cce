@@ -109,41 +109,6 @@ class GoogleSheetsAPI {
 const api = new GoogleSheetsAPI();
 
 // =============================
-// 📅 Date Formatting Functions
-// =============================
-function formatDisplayDate(dateString) {
-    // If it's already in DD-MM-YYYY format, return as is
-    if (typeof dateString === 'string' && dateString.match(/^\d{2}-\d{2}-\d{4}$/)) {
-        return dateString;
-    }
-    
-    try {
-        // Parse various date formats and return as DD-MM-YYYY
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) {
-            return dateString; // Return original if invalid
-        }
-        
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        
-        return `${day}-${month}-${year}`;
-    } catch (error) {
-        return dateString; // Return original if error
-    }
-}
-
-function parseDueDate(dateString) {
-    // Parse DD-MM-YYYY format for date comparisons
-    if (typeof dateString === 'string' && dateString.match(/^\d{2}-\d{2}-\d{4}$/)) {
-        const [day, month, year] = dateString.split('-');
-        return new Date(year, month - 1, day);
-    }
-    return new Date(dateString);
-}
-
-// =============================
 // 🔑 Authentication
 // =============================
 async function login() {
@@ -483,7 +448,7 @@ async function loadTasks() {
                             const completed = !!userTask;
                             const grade = userTask ? userTask.grade : null;
                             
-                            const dueDate = parseDueDate(task.due_date);
+                            const dueDate = new Date(task.due_date);
                             const today = new Date();
                             today.setHours(0, 0, 0, 0);
                             dueDate.setHours(0, 0, 0, 0);
@@ -502,7 +467,11 @@ async function loadTasks() {
                                 statusText = 'Due Today';
                             }
                             
-                            const dueDateFormatted = formatDisplayDate(task.due_date);
+                            const dueDateFormatted = new Date(task.due_date).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            });
                             
                             // Update the task item display in student view
 return `
@@ -1068,7 +1037,7 @@ async function loadAdminClassSubjectData(classNum, subject) {
                 today.setHours(0, 0, 0, 0);
                 
                 const tasksHtml = subjectTasks.map(task => {
-                    const dueDate = parseDueDate(task.due_date);
+                    const dueDate = new Date(task.due_date);
                     dueDate.setHours(0, 0, 0, 0);
                     const isOverdue = dueDate < today;
                     const isDueToday = dueDate.getTime() === today.getTime();
@@ -1096,7 +1065,11 @@ async function loadAdminClassSubjectData(classNum, subject) {
                                     <p class="task-description">${task.description}</p>
                                     <p class="task-due-date">
                                         <i class="fas fa-calendar-alt"></i>
-                                        Due: ${formatDisplayDate(task.due_date)}
+                                        Due: ${new Date(task.due_date).toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric'
+                                        })}
                                     </p>
                                 </div>
                             </div>
@@ -1208,7 +1181,7 @@ async function openStudentTaskModal(username, fullName, classNum) {
             const completed = !!userTask;
             const currentGrade = userTask ? parseInt(userTask.grade || 30) : 30;
             
-            const dueDate = parseDueDate(task.due_date);
+            const dueDate = new Date(task.due_date);
             dueDate.setHours(0, 0, 0, 0);
             const isOverdue = !completed && dueDate < today;
             const isDueToday = dueDate.getTime() === today.getTime();
@@ -1255,7 +1228,11 @@ return `
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
                     <p class="task-due-date">
                         <i class="fas fa-calendar-alt mr-1"></i>
-                        Due: ${formatDisplayDate(task.due_date)}
+                        Due: ${new Date(task.due_date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        })}
                     </p>
                     <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                         ${task.subject}
@@ -1374,137 +1351,6 @@ function clearAdminTaskFilters() {
     
     document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
     document.getElementById('adminTasksDefaultView').classList.remove('hidden');
-}
-
-// =============================
-// ➕ Add Task Functions
-// =============================
-async function openAddTaskModal() {
-    const selectedClass = document.getElementById('adminTaskClassSelect').value;
-    const selectedSubject = document.getElementById('adminTaskSubjectSelect').value;
-    
-    if (!selectedClass || !selectedSubject) {
-        alert('Please select both class and subject first.');
-        return;
-    }
-    
-    try {
-        const modal = document.getElementById('addTaskModal');
-        const autoSubject = document.getElementById('autoSubject');
-        const autoTaskId = document.getElementById('autoTaskId');
-        
-        // Set the auto-filled subject
-        autoSubject.value = selectedSubject.charAt(0).toUpperCase() + selectedSubject.slice(1);
-        
-        // Generate next task ID
-        const nextTaskId = await getNextTaskId(selectedClass);
-        autoTaskId.value = nextTaskId;
-        
-        // Clear form
-        document.getElementById('taskTitle').value = '';
-        document.getElementById('taskDescription').value = '';
-        document.getElementById('taskDueDate').value = '';
-        
-        modal.classList.remove('hidden');
-        
-    } catch (error) {
-        console.error('Error opening add task modal:', error);
-        alert('Error preparing to add task. Please try again.');
-    }
-}
-
-function closeAddTaskModal() {
-    document.getElementById('addTaskModal').classList.add('hidden');
-}
-
-async function getNextTaskId(classNum) {
-    try {
-        const tasksSheetName = `${classNum}_tasks_master`;
-        const tasks = await api.getSheet(tasksSheetName);
-        
-        if (!tasks || tasks.error || tasks.length === 0) {
-            return 'T1'; // First task
-        }
-        
-        // Extract all task IDs and find the highest number
-        const taskIds = tasks
-            .map(task => task.task_id)
-            .filter(id => id && id.startsWith('T'))
-            .map(id => {
-                const num = parseInt(id.substring(1));
-                return isNaN(num) ? 0 : num;
-            });
-        
-        if (taskIds.length === 0) {
-            return 'T1';
-        }
-        
-        const maxId = Math.max(...taskIds);
-        return `T${maxId + 1}`;
-        
-    } catch (error) {
-        console.error('Error generating next task ID:', error);
-        return 'T1'; // Fallback
-    }
-}
-
-async function submitAddTaskForm(event) {
-    event.preventDefault();
-    
-    const submitBtn = event.target.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    
-    try {
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Adding Task...';
-        submitBtn.disabled = true;
-        
-        const selectedClass = document.getElementById('adminTaskClassSelect').value;
-        const selectedSubject = document.getElementById('adminTaskSubjectSelect').value;
-        const taskId = document.getElementById('autoTaskId').value;
-        const title = document.getElementById('taskTitle').value.trim();
-        const description = document.getElementById('taskDescription').value.trim();
-        const dueDate = document.getElementById('taskDueDate').value;
-        
-        // Validation
-        if (!title || !description || !dueDate) {
-            alert('Please fill in all required fields.');
-            return;
-        }
-        
-        // Format due date to DD-MM-YYYY
-        const dateObj = new Date(dueDate);
-        const formattedDueDate = `${String(dateObj.getDate()).padStart(2, '0')}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${dateObj.getFullYear()}`;
-        
-        // Prepare row data
-        const rowData = [
-            selectedSubject,
-            taskId,
-            title,
-            description,
-            formattedDueDate
-        ];
-        
-        // Add to Google Sheet
-        const tasksSheetName = `${selectedClass}_tasks_master`;
-        const result = await api.addRow(tasksSheetName, rowData);
-        
-        if (result && (result.success || result.message?.includes('Success'))) {
-            alert('Task added successfully!');
-            closeAddTaskModal();
-            
-            // Refresh the tasks list
-            await loadAdminClassSubjectData(selectedClass, selectedSubject);
-        } else {
-            throw new Error(result?.error || 'Failed to add task');
-        }
-        
-    } catch (error) {
-        console.error('Error adding task:', error);
-        alert('Error adding task: ' + error.message);
-    } finally {
-        submitBtn.innerHTML = '<i class="fas fa-plus mr-2"></i>Add Task';
-        submitBtn.disabled = false;
-    }
 }
 
 // =============================
@@ -1750,15 +1596,14 @@ document.addEventListener('DOMContentLoaded', function() {
         login();
     });
     
-    // Add Task Form event listener
-    document.getElementById('addTaskForm').addEventListener('submit', submitAddTaskForm);
-    
     // Modal close event listeners
     document.getElementById('studentTaskModal').addEventListener('click', function(e) {
         if (e.target === this) {
             closeStudentTaskModal();
         }
     });
+ // Add Task Form event listener
+    document.getElementById('addTaskForm').addEventListener('submit', submitAddTaskForm);
     
     // Add Task Modal close event
     document.getElementById('addTaskModal').addEventListener('click', function(e) {
@@ -1947,4 +1792,162 @@ function debugAdminData() {
     
     console.log('Parsed Classes:', adminClasses);
     console.log('Parsed Subjects:', adminSubjects);
+}
+
+// =============================
+// ➕ Add Task Functions
+// =============================
+async function openAddTaskModal() {
+    const selectedClass = document.getElementById('adminTaskClassSelect').value;
+    const selectedSubject = document.getElementById('adminTaskSubjectSelect').value;
+    
+    if (!selectedClass || !selectedSubject) {
+        alert('Please select both class and subject first.');
+        return;
+    }
+    
+    try {
+        const modal = document.getElementById('addTaskModal');
+        const autoSubject = document.getElementById('autoSubject');
+        const autoTaskId = document.getElementById('autoTaskId');
+        
+        // Set the auto-filled subject
+        autoSubject.value = selectedSubject.charAt(0).toUpperCase() + selectedSubject.slice(1);
+        
+        // Generate next task ID
+        const nextTaskId = await getNextTaskId(selectedClass);
+        autoTaskId.value = nextTaskId;
+        
+        // Clear form
+        document.getElementById('taskTitle').value = '';
+        document.getElementById('taskDescription').value = '';
+        document.getElementById('taskDueDate').value = '';
+        
+        modal.classList.remove('hidden');
+        
+    } catch (error) {
+        console.error('Error opening add task modal:', error);
+        alert('Error preparing to add task. Please try again.');
+    }
+}
+
+function closeAddTaskModal() {
+    document.getElementById('addTaskModal').classList.add('hidden');
+}
+
+async function getNextTaskId(classNum) {
+    try {
+        const tasksSheetName = `${classNum}_tasks_master`;
+        const tasks = await api.getSheet(tasksSheetName);
+        
+        if (!tasks || tasks.error || tasks.length === 0) {
+            return 'T1'; // First task
+        }
+        
+        // Extract all task IDs and find the highest number
+        const taskIds = tasks
+            .map(task => task.task_id)
+            .filter(id => id && id.startsWith('T'))
+            .map(id => {
+                const num = parseInt(id.substring(1));
+                return isNaN(num) ? 0 : num;
+            });
+        
+        if (taskIds.length === 0) {
+            return 'T1';
+        }
+        
+        const maxId = Math.max(...taskIds);
+        return `T${maxId + 1}`;
+        
+    } catch (error) {
+        console.error('Error generating next task ID:', error);
+        return 'T1'; // Fallback
+    }
+}
+
+async function submitAddTaskForm(event) {
+    event.preventDefault();
+    
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    try {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Adding Task...';
+        submitBtn.disabled = true;
+        
+        const selectedClass = document.getElementById('adminTaskClassSelect').value;
+        const selectedSubject = document.getElementById('adminTaskSubjectSelect').value;
+        const taskId = document.getElementById('autoTaskId').value;
+        const title = document.getElementById('taskTitle').value.trim();
+        const description = document.getElementById('taskDescription').value.trim();
+        const dueDate = document.getElementById('taskDueDate').value;
+        
+        // Validation
+        if (!title || !description || !dueDate) {
+            alert('Please fill in all required fields.');
+            return;
+        }
+        
+        // Format due date to DD-MM-YYYY
+        const dateObj = new Date(dueDate);
+        const formattedDueDate = `${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}-${dateObj.getFullYear()}`;
+        
+        // Prepare row data
+        const rowData = [
+            selectedSubject,
+            taskId,
+            title,
+            description,
+            formattedDueDate
+        ];
+        
+        // Add to Google Sheet
+        const tasksSheetName = `${selectedClass}_tasks_master`;
+        const result = await api.addRow(tasksSheetName, rowData);
+        
+        if (result && (result.success || result.message?.includes('Success'))) {
+            alert('Task added successfully!');
+            closeAddTaskModal();
+            
+            // Refresh the tasks list
+            await loadAdminClassSubjectData(selectedClass, selectedSubject);
+        } else {
+            throw new Error(result?.error || 'Failed to add task');
+        }
+        
+    } catch (error) {
+        console.error('Error adding task:', error);
+        alert('Error adding task: ' + error.message);
+    } finally {
+        submitBtn.innerHTML = '<i class="fas fa-plus mr-2"></i>Add Task';
+        submitBtn.disabled = false;
+    }
+}
+
+// Update the handleSubjectChange function to enable the Add Task button
+async function handleSubjectChange() {
+    const selectedClass = document.getElementById('adminTaskClassSelect').value;
+    const selectedSubject = this.value;
+    
+    console.log('Subject selected:', selectedSubject, 'for class:', selectedClass);
+    
+    if (selectedClass && selectedSubject) {
+        // Verify admin has access to this class-subject combination
+        const hasAccess = currentUser.adminSubjects && 
+                         currentUser.adminSubjects[selectedClass] && 
+                         currentUser.adminSubjects[selectedClass].includes(selectedSubject);
+        
+        if (hasAccess) {
+            selectedClassForModal = selectedClass;
+            selectedSubjectForModal = selectedSubject;
+            await loadAdminClassSubjectData(selectedClass, selectedSubject);
+        } else {
+            alert('Access denied: You are not assigned to this class-subject combination.');
+            this.value = '';
+        }
+    } else {
+        document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
+        document.getElementById('adminTasksDefaultView').classList.remove('hidden');
+    }
 }
