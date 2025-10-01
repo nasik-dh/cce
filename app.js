@@ -1889,9 +1889,10 @@ async function submitAddTaskForm(event) {
             return;
         }
         
-        // Format due date to DD-MM-YYYY
+        // Format due date to MM-DD-YYYY
         const dateObj = new Date(dueDate);
-        const formattedDueDate = `${String(dateObj.getDate()).padStart(2, '0')}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${dateObj.getFullYear()}`;
+        const formattedDueDate = `${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}-${dateObj.getFullYear()}`;
+
         
         // Prepare row data
         const rowData = [
