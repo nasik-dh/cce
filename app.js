@@ -1602,6 +1602,15 @@ document.addEventListener('DOMContentLoaded', function() {
             closeStudentTaskModal();
         }
     });
+ // Add Task Form event listener
+    document.getElementById('addTaskForm').addEventListener('submit', submitAddTaskForm);
+    
+    // Add Task Modal close event
+    document.getElementById('addTaskModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeAddTaskModal();
+        }
+    });
 });
 
 // Performance optimization: Debounce resize events
@@ -1783,4 +1792,162 @@ function debugAdminData() {
     
     console.log('Parsed Classes:', adminClasses);
     console.log('Parsed Subjects:', adminSubjects);
+}
+
+// =============================
+// ➕ Add Task Functions
+// =============================
+async function openAddTaskModal() {
+    const selectedClass = document.getElementById('adminTaskClassSelect').value;
+    const selectedSubject = document.getElementById('adminTaskSubjectSelect').value;
+    
+    if (!selectedClass || !selectedSubject) {
+        alert('Please select both class and subject first.');
+        return;
+    }
+    
+    try {
+        const modal = document.getElementById('addTaskModal');
+        const autoSubject = document.getElementById('autoSubject');
+        const autoTaskId = document.getElementById('autoTaskId');
+        
+        // Set the auto-filled subject
+        autoSubject.value = selectedSubject.charAt(0).toUpperCase() + selectedSubject.slice(1);
+        
+        // Generate next task ID
+        const nextTaskId = await getNextTaskId(selectedClass);
+        autoTaskId.value = nextTaskId;
+        
+        // Clear form
+        document.getElementById('taskTitle').value = '';
+        document.getElementById('taskDescription').value = '';
+        document.getElementById('taskDueDate').value = '';
+        
+        modal.classList.remove('hidden');
+        
+    } catch (error) {
+        console.error('Error opening add task modal:', error);
+        alert('Error preparing to add task. Please try again.');
+    }
+}
+
+function closeAddTaskModal() {
+    document.getElementById('addTaskModal').classList.add('hidden');
+}
+
+async function getNextTaskId(classNum) {
+    try {
+        const tasksSheetName = `${classNum}_tasks_master`;
+        const tasks = await api.getSheet(tasksSheetName);
+        
+        if (!tasks || tasks.error || tasks.length === 0) {
+            return 'T1'; // First task
+        }
+        
+        // Extract all task IDs and find the highest number
+        const taskIds = tasks
+            .map(task => task.task_id)
+            .filter(id => id && id.startsWith('T'))
+            .map(id => {
+                const num = parseInt(id.substring(1));
+                return isNaN(num) ? 0 : num;
+            });
+        
+        if (taskIds.length === 0) {
+            return 'T1';
+        }
+        
+        const maxId = Math.max(...taskIds);
+        return `T${maxId + 1}`;
+        
+    } catch (error) {
+        console.error('Error generating next task ID:', error);
+        return 'T1'; // Fallback
+    }
+}
+
+async function submitAddTaskForm(event) {
+    event.preventDefault();
+    
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    try {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Adding Task...';
+        submitBtn.disabled = true;
+        
+        const selectedClass = document.getElementById('adminTaskClassSelect').value;
+        const selectedSubject = document.getElementById('adminTaskSubjectSelect').value;
+        const taskId = document.getElementById('autoTaskId').value;
+        const title = document.getElementById('taskTitle').value.trim();
+        const description = document.getElementById('taskDescription').value.trim();
+        const dueDate = document.getElementById('taskDueDate').value;
+        
+        // Validation
+        if (!title || !description || !dueDate) {
+            alert('Please fill in all required fields.');
+            return;
+        }
+        
+        // Format due date to DD-MM-YYYY
+        const dateObj = new Date(dueDate);
+        const formattedDueDate = `${String(dateObj.getDate()).padStart(2, '0')}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${dateObj.getFullYear()}`;
+        
+        // Prepare row data
+        const rowData = [
+            selectedSubject,
+            taskId,
+            title,
+            description,
+            formattedDueDate
+        ];
+        
+        // Add to Google Sheet
+        const tasksSheetName = `${selectedClass}_tasks_master`;
+        const result = await api.addRow(tasksSheetName, rowData);
+        
+        if (result && (result.success || result.message?.includes('Success'))) {
+            alert('Task added successfully!');
+            closeAddTaskModal();
+            
+            // Refresh the tasks list
+            await loadAdminClassSubjectData(selectedClass, selectedSubject);
+        } else {
+            throw new Error(result?.error || 'Failed to add task');
+        }
+        
+    } catch (error) {
+        console.error('Error adding task:', error);
+        alert('Error adding task: ' + error.message);
+    } finally {
+        submitBtn.innerHTML = '<i class="fas fa-plus mr-2"></i>Add Task';
+        submitBtn.disabled = false;
+    }
+}
+
+// Update the handleSubjectChange function to enable the Add Task button
+async function handleSubjectChange() {
+    const selectedClass = document.getElementById('adminTaskClassSelect').value;
+    const selectedSubject = this.value;
+    
+    console.log('Subject selected:', selectedSubject, 'for class:', selectedClass);
+    
+    if (selectedClass && selectedSubject) {
+        // Verify admin has access to this class-subject combination
+        const hasAccess = currentUser.adminSubjects && 
+                         currentUser.adminSubjects[selectedClass] && 
+                         currentUser.adminSubjects[selectedClass].includes(selectedSubject);
+        
+        if (hasAccess) {
+            selectedClassForModal = selectedClass;
+            selectedSubjectForModal = selectedSubject;
+            await loadAdminClassSubjectData(selectedClass, selectedSubject);
+        } else {
+            alert('Access denied: You are not assigned to this class-subject combination.');
+            this.value = '';
+        }
+    } else {
+        document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
+        document.getElementById('adminTasksDefaultView').classList.remove('hidden');
+    }
 }
