@@ -2054,8 +2054,18 @@ async function changePassword(event) {
             throw new Error('Failed to fetch user data');
         }
         
-        // Find current user and verify current password
-        const user = users.find(u => u.username === currentUser.username && u.password === currentPassword);
+        // Find current user and verify current password - IMPROVED COMPARISON
+const user = users.find(u => {
+  if (!u.username || !u.password) return false;
+  
+  // Convert both to string and handle case-insensitive comparison
+  const storedUsername = String(u.username).toLowerCase().trim();
+  const currentUsername = String(currentUser.username).toLowerCase().trim();
+  const inputPassword = String(currentPassword).trim();
+  const storedPassword = String(u.password).trim();
+  
+  return storedUsername === currentUsername && storedPassword === inputPassword;
+});
         
         if (!user) {
             throw new Error('Current password is incorrect');
