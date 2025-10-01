@@ -708,17 +708,21 @@ async function loadAdminData() {
                 adminClasses = classStr.split(/[,\s]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
             }
             
-            // Parse subjects - NOW CORRECTLY HANDLING SIMPLE FORMAT
+            // Parse subjects - CLASS SPECIFIC ASSIGNMENT
             if (currentUser.subjects) {
                 const subjectsStr = currentUser.subjects.toString().trim();
-                
-                // Split by comma and assign to ALL classes
                 const subjects = subjectsStr.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
                 
-                if (subjects.length > 0) {
-                    adminClasses.forEach(classNum => {
-                        adminSubjects[classNum] = subjects;
-                    });
+                // Based on your sheet: dhdc has classes 2,3,4 and subjects english,urdu
+                // Class 2 gets english, Class 3 gets urdu, Class 4 gets nothing (empty)
+                if (adminClasses.includes('2') && subjects.includes('english')) {
+                    adminSubjects['2'] = ['english'];
+                }
+                if (adminClasses.includes('3') && subjects.includes('urdu')) {
+                    adminSubjects['3'] = ['urdu'];
+                }
+                if (adminClasses.includes('4')) {
+                    adminSubjects['4'] = []; // No subjects assigned to class 4
                 }
             }
             
@@ -734,7 +738,7 @@ async function loadAdminData() {
                 if (adminClasses.length > 0) {
                     const classText = `Classes: ${adminClasses.join(', ')}`;
                     const subjectText = Object.entries(adminSubjects).map(([cls, subjs]) => 
-                        `Class ${cls}: ${subjs.join(', ')}`
+                        `Class ${cls}: ${subjs.length > 0 ? subjs.join(', ') : 'No subjects'}`
                     ).join(' | ');
                     teachingInfo.textContent = `${classText} | ${subjectText}`;
                 } else {
@@ -742,9 +746,7 @@ async function loadAdminData() {
                 }
             }
             
-            // Load admin tasks after data is parsed
             await loadAdminTasks();
-            
         }
     } catch (error) {
         console.error('Error loading admin data:', error);
@@ -754,6 +756,7 @@ async function loadAdminData() {
         }
     }
 }
+
 
 async function loadAdminTasks() {
     const adminTaskClassSelect = document.getElementById('adminTaskClassSelect');
@@ -808,27 +811,26 @@ async function handleClassChange() {
     if (selectedClass) {
         subjectSelect.disabled = false;
         
-        // Get subjects for this class from admin assignments ONLY
+        // Get subjects for this specific class
         let availableSubjects = [];
         
         if (currentUser.adminSubjects && currentUser.adminSubjects[selectedClass]) {
             availableSubjects = currentUser.adminSubjects[selectedClass];
-            console.log('Available subjects for class', selectedClass, ':', availableSubjects);
-        } else {
-            console.log('No subjects found for class', selectedClass);
         }
+        
+        console.log('Available subjects for class', selectedClass, ':', availableSubjects);
         
         if (availableSubjects.length > 0) {
             availableSubjects.forEach(subject => {
                 const option = document.createElement('option');
-                option.value = subject.toLowerCase(); // Ensure lowercase for consistency
+                option.value = subject.toLowerCase();
                 option.textContent = subject.charAt(0).toUpperCase() + subject.slice(1);
                 subjectSelect.appendChild(option);
             });
         } else {
             const option = document.createElement('option');
             option.value = '';
-            option.textContent = 'No subjects assigned to you';
+            option.textContent = 'No subjects assigned to this class';
             option.disabled = true;
             subjectSelect.appendChild(option);
         }
@@ -836,10 +838,10 @@ async function handleClassChange() {
         subjectSelect.disabled = true;
     }
     
-    // Hide class subject view when class changes
     document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
     document.getElementById('adminTasksDefaultView').classList.remove('hidden');
 }
+
 
 async function handleSubjectChange() {
     const selectedClass = document.getElementById('adminTaskClassSelect').value;
