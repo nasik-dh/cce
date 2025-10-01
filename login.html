@@ -879,6 +879,24 @@
             align-items: center;
         }
     }
+    
+    /* Add Task Modal Styles */
+    #addTaskModal input:read-only {
+        cursor: not-allowed;
+    }
+
+    #addTaskModal textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    /* Ensure modal is responsive */
+    @media (max-width: 768px) {
+        .task-assignment-modal-content {
+            margin: 1rem;
+            max-height: 85vh;
+        }
+    }
 </style>
 </head>
 <body>
@@ -1137,6 +1155,13 @@
                         <div class="bg-blue-50 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
                             <h3 class="text-base md:text-lg font-semibold text-blue-800">Managing Tasks For:</h3>
                             <p class="text-blue-700 text-sm md:text-base" id="selectedClassSubjectInfo">-</p>
+                            
+                            <!-- Add Task Button -->
+                            <div class="mt-3">
+                                <button onclick="openAddTaskModal()" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-semibold transition duration-300">
+                                    <i class="fas fa-plus mr-2"></i>Add New Task
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Tasks Section -->
@@ -1229,6 +1254,66 @@
         </div>
     </div>
 
+    <!-- Add Task Modal -->
+    <div id="addTaskModal" class="task-assignment-modal hidden">
+        <div class="task-assignment-modal-content">
+            <div class="p-4 md:p-6">
+                <div class="flex justify-between items-center mb-3 md:mb-4">
+                    <h3 class="text-lg md:text-xl font-bold text-green-600">Add New Task</h3>
+                    <button onclick="closeAddTaskModal()" class="text-gray-500 hover:text-gray-700 p-1">
+                        <i class="fas fa-times text-lg md:text-xl"></i>
+                    </button>
+                </div>
+                
+                <form id="addTaskForm">
+                    <div class="space-y-4 mb-4 md:mb-6">
+                        <!-- Auto-filled Subject -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                            <input type="text" id="autoSubject" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600" readonly>
+                        </div>
+                        
+                        <!-- Auto-generated Task ID -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Task ID</label>
+                            <input type="text" id="autoTaskId" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600" readonly>
+                        </div>
+                        
+                        <!-- Title -->
+                        <div>
+                            <label for="taskTitle" class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                            <input type="text" id="taskTitle" name="taskTitle" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-300">
+                        </div>
+                        
+                        <!-- Description -->
+                        <div>
+                            <label for="taskDescription" class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                            <textarea id="taskDescription" name="taskDescription" required rows="3"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-300"></textarea>
+                        </div>
+                        
+                        <!-- Due Date -->
+                        <div>
+                            <label for="taskDueDate" class="block text-sm font-medium text-gray-700 mb-2">Due Date *</label>
+                            <input type="date" id="taskDueDate" name="taskDueDate" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-300">
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col md:flex-row justify-end space-y-2 md:space-y-0 md:space-x-3">
+                        <button type="button" onclick="closeAddTaskModal()" class="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg font-semibold transition duration-300">
+                            Cancel
+                        </button>
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-semibold transition duration-300">
+                            <i class="fas fa-plus mr-2"></i>Add Task
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 
     <script>
@@ -1289,7 +1374,3 @@
     </script>
 </body>
 </html>
-
-
-
-
