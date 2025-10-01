@@ -708,41 +708,76 @@ async function loadAdminData() {
                 adminClasses = classStr.split(/[,\s]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
             }
             
-            // Parse subjects and assign to classes
+            // Parse subjects using improved parsing logic
             if (currentUser.subjects && adminClasses.length > 0) {
                 const subjectsStr = currentUser.subjects.toString().trim();
-                const subjects = subjectsStr.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
                 
-                console.log('Available subjects from sheet:', subjects);
+                // Method 1: Parse bracket format like (1-english,mathematics)(2-arabic,urdu)
+                const bracketMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
+                if (bracketMatches) {
+                    bracketMatches.forEach(match => {
+                        const innerContent = match.slice(1, -1); // Remove parentheses
+                        const dashIndex = innerContent.indexOf('-');
+                        if (dashIndex > 0) {
+                            const classNum = innerContent.substring(0, dashIndex).trim();
+                            const subjectsString = innerContent.substring(dashIndex + 1).trim();
+                            
+                            let subjects;
+                            if (subjectsString.toLowerCase() === 'all') {
+                                // Define all available subjects
+                                subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
+                            } else {
+                                subjects = subjectsString.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+                            }
+                            
+                            if (subjects.length > 0 && adminClasses.includes(classNum)) {
+                                adminSubjects[classNum] = subjects;
+                            }
+                        }
+                    });
+                } else {
+                    // Method 2: If no bracket format, assign same subjects to all classes
+                    const subjects = subjectsStr.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+                    if (subjects.length > 0) {
+                        adminClasses.forEach(classNum => {
+                            adminSubjects[classNum] = [...subjects]; // Copy array for each class
+                        });
+                    }
+                }
                 
-                // For each class, check what subjects exist in their task sheets
-                for (const classNum of adminClasses) {
-                    try {
-                        const tasksSheetName = `${classNum}_tasks_master`;
-                        const tasks = await api.getSheet(tasksSheetName);
+                console.log('Parsed bracket matches:', bracketMatches);
+            }
+            
+            // Verify subjects exist in actual task sheets
+            for (const classNum of adminClasses) {
+                try {
+                    const tasksSheetName = `${classNum}_tasks_master`;
+                    const tasks = await api.getSheet(tasksSheetName);
+                    
+                    if (tasks && Array.isArray(tasks) && tasks.length > 0) {
+                        // Get unique subjects from this class's tasks
+                        const classSubjects = [...new Set(tasks.map(task => 
+                            task.subject ? task.subject.toLowerCase().trim() : ''
+                        ).filter(s => s))];
                         
-                        if (tasks && Array.isArray(tasks) && tasks.length > 0) {
-                            // Get unique subjects from this class's tasks
-                            const classSubjects = [...new Set(tasks.map(task => 
-                                task.subject ? task.subject.toLowerCase().trim() : ''
-                            ).filter(s => s))];
-                            
-                            console.log(`Class ${classNum} has subjects in tasks:`, classSubjects);
-                            
-                            // Only include subjects that admin is assigned AND exist in tasks
-                            const assignedSubjects = classSubjects.filter(subject => 
-                                subjects.includes(subject)
+                        console.log(`Class ${classNum} has subjects in tasks:`, classSubjects);
+                        
+                        // Only include subjects that admin is assigned AND exist in tasks
+                        if (adminSubjects[classNum]) {
+                            const assignedSubjects = adminSubjects[classNum].filter(subject => 
+                                classSubjects.includes(subject.toLowerCase())
                             );
-                            
                             adminSubjects[classNum] = assignedSubjects;
-                            console.log(`Admin assigned subjects for class ${classNum}:`, assignedSubjects);
+                            console.log(`Final verified subjects for class ${classNum}:`, assignedSubjects);
                         } else {
                             adminSubjects[classNum] = [];
                         }
-                    } catch (error) {
-                        console.log(`No tasks found for class ${classNum}`);
+                    } else {
                         adminSubjects[classNum] = [];
                     }
+                } catch (error) {
+                    console.log(`No tasks found for class ${classNum}`);
+                    adminSubjects[classNum] = [];
                 }
             }
             
@@ -776,6 +811,77 @@ async function loadAdminData() {
         }
     }
 }
+
+function testAdminSubjectParsing() {
+    console.log('=== TESTING ADMIN SUBJECT PARSING ===');
+    
+    const testCases = [
+        {
+            class: "1,2,3",
+            subjects: "(1-english,mathematics)(2-arabic,urdu)(3-mathematics,urdu,english)"
+        },
+        {
+            class: "1,2",
+            subjects: "(1-all)(2-arabic,urdu)"
+        },
+        {
+            class: "1,2,3",
+            subjects: "english,mathematics"
+        }
+    ];
+    
+    testCases.forEach((testCase, index) => {
+        console.log(`\n--- Test Case ${index + 1} ---`);
+        console.log('Input:', testCase);
+        
+        // Simulate parsing
+        let adminClasses = [];
+        let adminSubjects = {};
+        
+        if (testCase.class) {
+            const classStr = testCase.class.toString().trim();
+            adminClasses = classStr.split(/[,\s]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
+        }
+        
+        if (testCase.subjects && adminClasses.length > 0) {
+            const subjectsStr = testCase.subjects.toString().trim();
+            const bracketMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
+            
+            if (bracketMatches) {
+                bracketMatches.forEach(match => {
+                    const innerContent = match.slice(1, -1);
+                    const dashIndex = innerContent.indexOf('-');
+                    if (dashIndex > 0) {
+                        const classNum = innerContent.substring(0, dashIndex).trim();
+                        const subjectsString = innerContent.substring(dashIndex + 1).trim();
+                        
+                        let subjects;
+                        if (subjectsString.toLowerCase() === 'all') {
+                            subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
+                        } else {
+                            subjects = subjectsString.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+                        }
+                        
+                        if (subjects.length > 0 && adminClasses.includes(classNum)) {
+                            adminSubjects[classNum] = subjects;
+                        }
+                    }
+                });
+            } else {
+                const subjects = subjectsStr.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+                if (subjects.length > 0) {
+                    adminClasses.forEach(classNum => {
+                        adminSubjects[classNum] = [...subjects];
+                    });
+                }
+            }
+        }
+        
+        console.log('Parsed Classes:', adminClasses);
+        console.log('Parsed Subjects:', adminSubjects);
+    });
+}
+
 
 // Add this function to test in console
 function debugCurrentUser() {
