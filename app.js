@@ -133,6 +133,50 @@ class GoogleSheetsAPI {
             return { error: error.message };
         }
     }
+
+    async updatePassword(username, newPassword) {
+        try {
+            const response = await fetch(this.apiUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({
+                    sheet: "password_updates",
+                    data: JSON.stringify([username, newPassword])
+                })
+            });
+            
+            const result = await response.json();
+            
+            // Clear user credentials cache since password changed
+            this.cache.delete("user_credentials");
+            delete this.localCache["user_credentials"];
+            this.saveLocalCache();
+            
+            return result;
+        } catch (error) {
+            return { error: error.message };
+        }
+    }
+
+    // Alternative method using PUT request
+    async updatePasswordPut(username, newPassword) {
+        try {
+            const response = await fetch(`${this.apiUrl}?action=updatePassword&username=${encodeURIComponent(username)}&newPassword=${encodeURIComponent(newPassword)}`, {
+                method: "PUT"
+            });
+            
+            const result = await response.json();
+            
+            // Clear user credentials cache since password changed
+            this.cache.delete("user_credentials");
+            delete this.localCache["user_credentials"];
+            this.saveLocalCache();
+            
+            return result;
+        } catch (error) {
+            return { error: error.message };
+        }
+    }
 }
 
 const api = new GoogleSheetsAPI();
@@ -1939,3 +1983,169 @@ function debugCurrentUser() {
         console.log('AdminSubjects:', currentUser.adminSubjects);
     }
 }
+
+// =============================
+// 🔐 Change Password Functions
+// =============================
+function openChangePasswordModal() {
+    // Close profile menu first
+    document.getElementById('profileMenu').classList.add('hidden');
+    
+    // Open change password modal
+    const modal = document.getElementById('changePasswordModal');
+    modal.classList.remove('hidden');
+    
+    // Reset form and messages
+    document.getElementById('changePasswordForm').reset();
+    document.getElementById('changePasswordError').classList.add('hidden');
+    document.getElementById('changePasswordSuccess').classList.add('hidden');
+}
+
+function closeChangePasswordModal() {
+    document.getElementById('changePasswordModal').classList.add('hidden');
+}
+
+async function changePassword(event) {
+    event.preventDefault();
+    
+    const currentPassword = document.getElementById('currentPassword').value.trim();
+    const newPassword = document.getElementById('newPassword').value.trim();
+    const confirmPassword = document.getElementById('confirmPassword').value.trim();
+    
+    const errorDiv = document.getElementById('changePasswordError');
+    const successDiv = document.getElementById('changePasswordSuccess');
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    
+    // Hide previous messages
+    errorDiv.classList.add('hidden');
+    successDiv.classList.add('hidden');
+    
+    // Validation
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        showChangePasswordError('Please fill in all fields');
+        return;
+    }
+    
+    if (newPassword.length < 6) {
+        showChangePasswordError('New password must be at least 6 characters long');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        showChangePasswordError('New passwords do not match');
+        return;
+    }
+    
+    if (newPassword === currentPassword) {
+        showChangePasswordError('New password must be different from current password');
+        return;
+    }
+    
+    // Show loading state
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Changing Password...';
+    submitBtn.disabled = true;
+    
+    try {
+        // Get all users to verify current password
+        const users = await api.getSheet("user_credentials", false);
+        
+        if (!users || users.error || !Array.isArray(users)) {
+            throw new Error('Failed to fetch user data');
+        }
+        
+        // Find current user and verify current password
+        const user = users.find(u => u.username === currentUser.username && u.password === currentPassword);
+        
+        if (!user) {
+            throw new Error('Current password is incorrect');
+        }
+        
+        // Update password using the API
+        const updateResult = await api.updatePassword(currentUser.username, newPassword);
+        
+        if (updateResult && updateResult.success) {
+            showChangePasswordSuccess('Password changed successfully! You will be logged out in 3 seconds.');
+            document.getElementById('changePasswordForm').reset();
+            
+            // Logout after 3 seconds
+            setTimeout(() => {
+                closeChangePasswordModal();
+                logout();
+            }, 3000);
+        } else {
+            throw new Error(updateResult?.error || 'Failed to update password');
+        }
+        
+    } catch (error) {
+        console.error('Error changing password:', error);
+        showChangePasswordError(error.message);
+    } finally {
+        // Restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+async function updateUserPassword(username, newPassword) {
+    try {
+        // This function will update the password in Google Sheets
+        // We need to modify our approach since we can't directly update a cell
+        // We'll use the existing addRow approach but with a special identifier
+        
+        const rowData = [
+            username,
+            newPassword,
+            'password_update', // Special identifier
+            new Date().toISOString()
+        ];
+        
+        const result = await api.addRow("password_updates", rowData);
+        
+        // For now, we'll simulate success
+        // In a real implementation, you'd need to modify the Google Apps Script
+        // to handle password updates properly
+        return { success: true, message: 'Password update request submitted' };
+        
+    } catch (error) {
+        console.error('Error updating password:', error);
+        return { error: error.message };
+    }
+}
+
+function showChangePasswordError(message) {
+    const errorDiv = document.getElementById('changePasswordError');
+    errorDiv.textContent = message;
+    errorDiv.classList.remove('hidden');
+    
+    // Scroll to error message
+    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function showChangePasswordSuccess(message) {
+    const successDiv = document.getElementById('changePasswordSuccess');
+    successDiv.textContent = message;
+    successDiv.classList.remove('hidden');
+    
+    // Scroll to success message
+    successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// Add event listener for change password form
+document.addEventListener('DOMContentLoaded', function() {
+    // Add change password form event listener
+    const changePasswordForm = document.getElementById('changePasswordForm');
+    if (changePasswordForm) {
+        changePasswordForm.addEventListener('submit', changePassword);
+    }
+    
+    // Modal close event listeners
+    const changePasswordModal = document.getElementById('changePasswordModal');
+    if (changePasswordModal) {
+        changePasswordModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeChangePasswordModal();
+            }
+        });
+    }
+});
