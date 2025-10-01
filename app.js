@@ -708,26 +708,46 @@ async function loadAdminData() {
                 adminClasses = classStr.split(/[,\s]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
             }
             
-            // Parse subjects and assign them to classes
-            if (currentUser.subjects) {
+            // Parse subjects and assign to classes
+            if (currentUser.subjects && adminClasses.length > 0) {
                 const subjectsStr = currentUser.subjects.toString().trim();
                 const subjects = subjectsStr.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
                 
-                // Manual assignment based on your requirement:
-                // Class 2 → english, Class 3 → urdu, Class 4 → no subjects
-                adminClasses.forEach(classNum => {
-                    if (classNum === '2' && subjects.includes('english')) {
-                        adminSubjects['2'] = ['english'];
-                    } else if (classNum === '3' && subjects.includes('urdu')) {
-                        adminSubjects['3'] = ['urdu'];
-                    } else if (classNum === '4') {
-                        adminSubjects['4'] = []; // No subjects for class 4
+                console.log('Available subjects from sheet:', subjects);
+                
+                // For each class, check what subjects exist in their task sheets
+                for (const classNum of adminClasses) {
+                    try {
+                        const tasksSheetName = `${classNum}_tasks_master`;
+                        const tasks = await api.getSheet(tasksSheetName);
+                        
+                        if (tasks && Array.isArray(tasks) && tasks.length > 0) {
+                            // Get unique subjects from this class's tasks
+                            const classSubjects = [...new Set(tasks.map(task => 
+                                task.subject ? task.subject.toLowerCase().trim() : ''
+                            ).filter(s => s))];
+                            
+                            console.log(`Class ${classNum} has subjects in tasks:`, classSubjects);
+                            
+                            // Only include subjects that admin is assigned AND exist in tasks
+                            const assignedSubjects = classSubjects.filter(subject => 
+                                subjects.includes(subject)
+                            );
+                            
+                            adminSubjects[classNum] = assignedSubjects;
+                            console.log(`Admin assigned subjects for class ${classNum}:`, assignedSubjects);
+                        } else {
+                            adminSubjects[classNum] = [];
+                        }
+                    } catch (error) {
+                        console.log(`No tasks found for class ${classNum}`);
+                        adminSubjects[classNum] = [];
                     }
-                });
+                }
             }
             
-            console.log('Parsed admin classes:', adminClasses);
-            console.log('Parsed admin subjects:', adminSubjects);
+            console.log('Final parsed admin classes:', adminClasses);
+            console.log('Final parsed admin subjects:', adminSubjects);
             
             currentUser.adminClasses = adminClasses;
             currentUser.adminSubjects = adminSubjects;
@@ -754,6 +774,19 @@ async function loadAdminData() {
         if (teachingInfo) {
             teachingInfo.textContent = 'Error loading teaching assignments';
         }
+    }
+}
+
+// Add this function to test in console
+function debugCurrentUser() {
+    console.log('=== CURRENT USER DEBUG ===');
+    console.log('currentUser:', currentUser);
+    if (currentUser) {
+        console.log('Role:', currentUser.role);
+        console.log('Class:', currentUser.class);
+        console.log('Subjects:', currentUser.subjects);
+        console.log('AdminClasses:', currentUser.adminClasses);
+        console.log('AdminSubjects:', currentUser.adminSubjects);
     }
 }
 
