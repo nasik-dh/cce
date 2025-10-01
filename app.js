@@ -138,6 +138,49 @@ class GoogleSheetsAPI {
 const api = new GoogleSheetsAPI();
 
 // =============================
+// 👤 Profile Picture Functions
+// =============================
+function toggleProfileMenu() {
+    const profileMenu = document.getElementById('profileMenu');
+    profileMenu.classList.toggle('hidden');
+}
+
+function showProfileFallback(img) {
+    const fallback = document.getElementById('profileFallback');
+    img.style.display = 'none';
+    fallback.classList.remove('hidden');
+}
+
+function loadUserProfile(username) {
+    const profilePic = document.getElementById('profilePic');
+    const profileName = document.getElementById('profileName');
+    const profileUsername = document.getElementById('profileUsername');
+    const profileFallback = document.getElementById('profileFallback');
+    
+    // Set profile picture URL
+    const profilePicUrl = `https://cce-dhdc.vercel.app/pic/${username}.png`;
+    profilePic.src = profilePicUrl;
+    profilePic.style.display = 'block';
+    profileFallback.classList.add('hidden');
+    
+    // Set profile info
+    if (currentUser) {
+        profileName.textContent = currentUser.name;
+        profileUsername.textContent = `@${username}`;
+    }
+}
+
+// Close profile menu when clicking outside
+document.addEventListener('click', function(event) {
+    const profileContainer = event.target.closest('.profile-pic-container');
+    const profileMenu = document.getElementById('profileMenu');
+    
+    if (!profileContainer && profileMenu && !profileMenu.classList.contains('hidden')) {
+        profileMenu.classList.add('hidden');
+    }
+});
+
+// =============================
 // 🔑 Authentication (OPTIMIZED)
 // =============================
 async function login() {
@@ -178,6 +221,9 @@ async function login() {
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('dashboardContainer').classList.remove('hidden');
             document.getElementById('welcomeUser').textContent = `Welcome, ${currentUser.name}`;
+
+            // Load user profile picture
+            loadUserProfile(username);
 
             // Pre-load common data in background
             if (currentUser.role === 'admin') {
