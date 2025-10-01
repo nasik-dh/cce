@@ -158,7 +158,7 @@ function loadUserProfile(username) {
     const profileFallback = document.getElementById('profileFallback');
     
     // Use higher resolution image with size parameter
-    const profilePicUrl = `dqdhdc.netlify.app/pic/${username}.png?w=200&h=200&q=90`;
+    const profilePicUrl = `https://dqdhdc.netlify.app/pic/${username}.png?w=200&h=200&q=90`;
     profilePic.src = profilePicUrl;
     profilePic.style.display = 'block';
     profileFallback.classList.add('hidden');
@@ -1955,9 +1955,9 @@ function loadUserProfile(username) {
     
     // Try multiple image formats/sizes for best quality
     const imageUrls = [
-        `dqdhdc.netlify.app/pic/${username}.png`,
-        `dqdhdc.netlify.app/pic/${username}.jpg`,
-        `dqdhdc.netlify.app/pic/${username}.jpeg`
+        `https://dqdhdc.netlify.app/pic/${username}.png`,
+        `https://dqdhdc.netlify.app/pic/${username}.jpg`,
+        `https://dqdhdc.netlify.app/pic/${username}.jpeg`
     ];
     
     img.src = imageUrls[0];
