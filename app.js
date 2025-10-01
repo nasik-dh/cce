@@ -708,22 +708,22 @@ async function loadAdminData() {
                 adminClasses = classStr.split(/[,\s]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
             }
             
-            // Parse subjects - CLASS SPECIFIC ASSIGNMENT
+            // Parse subjects and assign them to classes
             if (currentUser.subjects) {
                 const subjectsStr = currentUser.subjects.toString().trim();
                 const subjects = subjectsStr.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
                 
-                // Based on your sheet: dhdc has classes 2,3,4 and subjects english,urdu
-                // Class 2 gets english, Class 3 gets urdu, Class 4 gets nothing (empty)
-                if (adminClasses.includes('2') && subjects.includes('english')) {
-                    adminSubjects['2'] = ['english'];
-                }
-                if (adminClasses.includes('3') && subjects.includes('urdu')) {
-                    adminSubjects['3'] = ['urdu'];
-                }
-                if (adminClasses.includes('4')) {
-                    adminSubjects['4'] = []; // No subjects assigned to class 4
-                }
+                // Manual assignment based on your requirement:
+                // Class 2 → english, Class 3 → urdu, Class 4 → no subjects
+                adminClasses.forEach(classNum => {
+                    if (classNum === '2' && subjects.includes('english')) {
+                        adminSubjects['2'] = ['english'];
+                    } else if (classNum === '3' && subjects.includes('urdu')) {
+                        adminSubjects['3'] = ['urdu'];
+                    } else if (classNum === '4') {
+                        adminSubjects['4'] = []; // No subjects for class 4
+                    }
+                });
             }
             
             console.log('Parsed admin classes:', adminClasses);
@@ -812,11 +812,7 @@ async function handleClassChange() {
         subjectSelect.disabled = false;
         
         // Get subjects for this specific class
-        let availableSubjects = [];
-        
-        if (currentUser.adminSubjects && currentUser.adminSubjects[selectedClass]) {
-            availableSubjects = currentUser.adminSubjects[selectedClass];
-        }
+        let availableSubjects = currentUser.adminSubjects[selectedClass] || [];
         
         console.log('Available subjects for class', selectedClass, ':', availableSubjects);
         
