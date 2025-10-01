@@ -1738,7 +1738,7 @@ async function submitAddTaskForm(event) {
         
         // Format due date to DD-MM-YYYY
         const dateObj = new Date(dueDate);
-        const formattedDueDate = `${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}-${dateObj.getFullYear()}`;
+        const formattedDueDate = `${String(dateObj.getMonth()).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}-${dateObj.getFullYear()}`;
         
         // Prepare row data
         const rowData = [
