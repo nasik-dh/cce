@@ -797,13 +797,19 @@
     }
 
     .profile-pic {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        transition: all 0.3s ease;
-    }
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+    /* Add these for high quality */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    image-rendering: optimizeQuality;
+    -ms-interpolation-mode: bicubic;
+}
+
 
     .profile-pic:hover {
         border-color: rgba(255, 255, 255, 0.6);
@@ -1013,6 +1019,8 @@
             max-height: 85vh;
         }
     }
+
+    
 </style>
 </head>
 <body>
@@ -1552,3 +1560,4 @@
     </script>
 </body>
 </html>
+
