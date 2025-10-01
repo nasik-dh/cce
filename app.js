@@ -16,51 +16,74 @@ let dataCache = {
 };
 
 // =============================
-// 📊 Google Sheets Integration
+// 📊 Google Sheets Integration (OPTIMIZED)
 // =============================
 class GoogleSheetsAPI {
     constructor() {
         this.apiUrl = "https://script.google.com/macros/s/AKfycbw0jNeTVwrG8wVloSCtsqPf76yAy4_LP4JrZa9OGoIOivBQ2B0OaEBr5XHyhCUjvh_cXg/exec";
         this.cache = new Map();
-        this.cacheTimeout = 2 * 60 * 1000; // 2 minutes cache
+        this.localCache = this.initLocalCache();
+        this.cacheTimeout = 30 * 1000; // 30 seconds only
+        this.requestQueue = [];
+        this.processing = false;
+    }
+
+    initLocalCache() {
+        try {
+            const cached = localStorage.getItem('dhdc_cache');
+            return cached ? JSON.parse(cached) : {};
+        } catch {
+            return {};
+        }
+    }
+
+    saveLocalCache() {
+        try {
+            localStorage.setItem('dhdc_cache', JSON.stringify(this.localCache));
+        } catch (e) {
+            console.warn('Failed to save cache:', e);
+        }
     }
 
     async getSheet(sheetName, useCache = true) {
         const cacheKey = sheetName;
+        const now = Date.now();
         
-        // Check cache first
+        // Check in-memory cache first (fastest)
         if (useCache && this.cache.has(cacheKey)) {
             const cached = this.cache.get(cacheKey);
-            if (Date.now() - cached.timestamp < this.cacheTimeout) {
-                console.log(`Using cached data for ${sheetName}`);
+            if (now - cached.timestamp < this.cacheTimeout) {
+                return cached.data;
+            }
+        }
+        
+        // Check localStorage cache (fast)
+        if (useCache && this.localCache[cacheKey]) {
+            const cached = this.localCache[cacheKey];
+            if (now - cached.timestamp < 5 * 60 * 1000) { // 5 minutes for localStorage
+                this.cache.set(cacheKey, cached); // Promote to memory cache
                 return cached.data;
             }
         }
 
         try {
-            const url = `${this.apiUrl}?sheet=${encodeURIComponent(sheetName)}&cachebust=${Date.now()}`;
-            console.log(`Fetching sheet: ${sheetName}`);
+            const url = `${this.apiUrl}?sheet=${encodeURIComponent(sheetName)}&t=${now}`;
             
             const response = await fetch(url, {
                 method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                }
+                headers: { 'Accept': 'application/json' }
             });
             
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             
-            const text = await response.text();
-            const data = JSON.parse(text);
+            const data = await response.json();
             
-            // Cache the result
+            // Cache in both memory and localStorage
+            const cacheData = { data, timestamp: now };
             if (useCache) {
-                this.cache.set(cacheKey, {
-                    data: data,
-                    timestamp: Date.now()
-                });
+                this.cache.set(cacheKey, cacheData);
+                this.localCache[cacheKey] = cacheData;
+                this.saveLocalCache();
             }
             
             return data;
@@ -70,37 +93,43 @@ class GoogleSheetsAPI {
         }
     }
 
+    // Batch multiple sheet requests
+    async getBatchSheets(sheetNames) {
+        const promises = sheetNames.map(name => this.getSheet(name));
+        const results = await Promise.all(promises);
+        const batchResult = {};
+        sheetNames.forEach((name, index) => {
+            batchResult[name] = results[index];
+        });
+        return batchResult;
+    }
+
     clearCache() {
         this.cache.clear();
+        this.localCache = {};
+        localStorage.removeItem('dhdc_cache');
     }
 
     async addRow(sheetName, row) {
-        try {            
+        try {
             const response = await fetch(this.apiUrl, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: new URLSearchParams({
                     sheet: sheetName,
                     data: JSON.stringify(row)
                 })
             });
             
-            const text = await response.text();
-            let result;
-            try {
-                result = JSON.parse(text);
-            } catch (parseError) {
-                result = { message: text };
-            }
+            const result = await response.json();
             
-            // Clear relevant cache entries after adding data
+            // Invalidate related caches
             this.cache.delete(sheetName);
+            delete this.localCache[sheetName];
+            this.saveLocalCache();
             
             return result;
         } catch (error) {
-            console.error('Error adding row:', error);
             return { error: error.message };
         }
     }
@@ -109,7 +138,7 @@ class GoogleSheetsAPI {
 const api = new GoogleSheetsAPI();
 
 // =============================
-// 🔑 Authentication
+// 🔑 Authentication (OPTIMIZED)
 // =============================
 async function login() {
     const username = document.getElementById('username').value.trim();
@@ -120,30 +149,20 @@ async function login() {
         return;
     }
 
-    // Show loading state
     const loginBtn = document.querySelector('button[type="submit"]');
     const originalText = loginBtn.innerHTML;
     loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Signing In...';
     loginBtn.disabled = true;
 
     try {
-        console.log('Attempting login with:', username);
         const users = await api.getSheet("user_credentials", false);
         
-        if (!users || users.error) {
-            showError(users?.error || 'Failed to fetch user data');
+        if (!users || users.error || !Array.isArray(users)) {
+            showError('Failed to fetch user data');
             return;
         }
         
-        if (!Array.isArray(users) || users.length === 0) {
-            showError('No users found in database');
-            return;
-        }
-        
-        // Find user with exact match
-        const user = users.find(u => 
-            u.username === username && u.password === password
-        );
+        const user = users.find(u => u.username === username && u.password === password);
 
         if (user) {
             currentUser = {
@@ -155,37 +174,46 @@ async function login() {
                 userId: user.username
             };
 
-            // Hide login, show dashboard
+            // Show dashboard immediately
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('dashboardContainer').classList.remove('hidden');
             document.getElementById('welcomeUser').textContent = `Welcome, ${currentUser.name}`;
 
-            // Show appropriate navigation based on role
+            // Pre-load common data in background
             if (currentUser.role === 'admin') {
                 document.getElementById('studentNav').classList.add('hidden');
                 document.getElementById('adminNav').classList.remove('hidden');
-                await loadAdminData(); // Load admin data first
-                showPage('adminTasks');
+                
+                // Load admin data and show page simultaneously
+                Promise.all([
+                    loadAdminData(),
+                    showPage('adminTasks')
+                ]);
             } else {
                 document.getElementById('studentNav').classList.remove('hidden');
                 document.getElementById('adminNav').classList.add('hidden');
-                showPage('tasks');
-                await loadTasks();
+                
+                // Load tasks and show page simultaneously
+                Promise.all([
+                    loadTasks(),
+                    showPage('tasks')
+                ]);
             }
+            
+            // Pre-load critical data in background
+            setTimeout(() => preloadCriticalData(), 100);
             
             hideError();
         } else {
             showError('Invalid username or password');
         }
     } catch (error) {
-        console.error('Login error:', error);
         showError('Network error: ' + error.message);
     } finally {
         loginBtn.innerHTML = originalText;
         loginBtn.disabled = false;
     }
 }
-
 
 function showError(message) {
     const errorDiv = document.getElementById('loginError');
@@ -317,7 +345,7 @@ async function submitSignup() {
 }
 
 // =============================
-// 📍 Navigation
+// 📍 Navigation (OPTIMIZED)
 // =============================
 async function showPage(page) {
     document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
@@ -345,14 +373,13 @@ async function showPage(page) {
 
     currentPage = page;
 
-    // Load page-specific data
+    // Load page-specific data with optimized loading
     if (page === 'status') {
         loadStatusCharts();
     } else if (page === 'adminTasks') {
-        // Ensure admin data is loaded before loading admin tasks
         if (currentUser.role === 'admin' && (!currentUser.adminClasses || currentUser.adminClasses.length === 0)) {
             await loadAdminData();
-        } else {
+        } else if (currentUser.adminClasses) {
             await loadAdminTasks();
         }
     } else if (page === 'adminStatus') {
@@ -360,63 +387,119 @@ async function showPage(page) {
     }
 }
 
-
 // =============================
-// ✅ Tasks (Class-Based System)
+// ✅ Tasks (SUPER OPTIMIZED)
 // =============================
 async function loadTasks() {
     const tasksContainer = document.getElementById('subjectCards');
     
-    // Show loading state
-    tasksContainer.innerHTML = '<div class="text-center py-6 md:py-8"><i class="fas fa-spinner fa-spin mr-2"></i>Loading your tasks...</div>';
+    // Show skeleton immediately
+    tasksContainer.innerHTML = `
+        <div class="animate-pulse space-y-4">
+            ${Array(3).fill(0).map(() => `
+                <div class="bg-white rounded-lg p-4 border-2 border-gray-200">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gray-200 rounded-full"></div>
+                        <div class="flex-1">
+                            <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                            <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
 
     try {
         if (currentUser.role === 'student') {
             if (!currentUser.class) {
-                tasksContainer.innerHTML = '<p class="text-gray-500 text-center py-6 md:py-8 text-sm md:text-base">No class assigned. Please contact administrator.</p>';
+                tasksContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No class assigned. Please contact administrator.</p>';
                 document.getElementById('userClass').textContent = 'Class: Not Assigned';
                 return;
             }
             
-            // Update class info display
             document.getElementById('userClass').textContent = `Class ${currentUser.class}`;
             
-            const tasksSheetName = `${currentUser.class}_tasks_master`;
+            // Load data in parallel
             const [tasks, progress] = await Promise.all([
-                api.getSheet(tasksSheetName),
+                api.getSheet(`${currentUser.class}_tasks_master`),
                 api.getSheet(`${currentUser.username}_progress`)
             ]);
             
-            tasksContainer.innerHTML = '';
-
             if (!tasks || tasks.error || tasks.length === 0) {
-                tasksContainer.innerHTML = '<p class="text-gray-500 text-center py-6 md:py-8 text-sm md:text-base">No tasks found for your class.</p>';
+                tasksContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No tasks found for your class.</p>';
                 return;
             }
 
-            // Group tasks by subject
+            // Pre-process data for faster rendering
+            const progressMap = new Map();
+            if (Array.isArray(progress)) {
+                progress.forEach(p => {
+                    if (p.item_type === "task" && p.status === "complete") {
+                        progressMap.set(String(p.item_id), {
+                            completed: true,
+                            grade: p.grade
+                        });
+                    }
+                });
+            }
+
+            // Group tasks by subject with optimized loop
             const tasksBySubject = {};
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
             tasks.forEach(task => {
                 const subject = task.subject || 'General';
                 if (!tasksBySubject[subject]) {
-                    tasksBySubject[subject] = [];
+                    tasksBySubject[subject] = {
+                        tasks: [],
+                        completedCount: 0
+                    };
                 }
-                tasksBySubject[subject].push(task);
+                
+                // Pre-calculate status
+                const userProgress = progressMap.get(String(task.task_id));
+                const completed = !!userProgress;
+                if (completed) tasksBySubject[subject].completedCount++;
+                
+                const dueDate = new Date(task.due_date);
+                dueDate.setHours(0, 0, 0, 0);
+                
+                let statusClass = 'status-pending';
+                let statusText = 'Pending';
+                
+                if (completed) {
+                    statusClass = 'status-completed';
+                    statusText = 'Completed';
+                } else if (dueDate < today) {
+                    statusClass = 'status-overdue';
+                    statusText = 'Overdue';
+                } else if (dueDate.getTime() === today.getTime()) {
+                    statusClass = 'status-pending';
+                    statusText = 'Due Today';
+                }
+                
+                tasksBySubject[subject].tasks.push({
+                    ...task,
+                    completed,
+                    grade: userProgress?.grade,
+                    statusClass,
+                    statusText,
+                    dueDateFormatted: new Date(task.due_date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    })
+                });
             });
 
+            // Use DocumentFragment for faster DOM manipulation
             const fragment = document.createDocumentFragment();
 
-            // Create subject cards
-            Object.entries(tasksBySubject).forEach(([subject, subjectTasks]) => {
-                const completedCount = subjectTasks.filter(task => {
-                    const userTask = Array.isArray(progress) ? progress.find(p => 
-                        String(p.item_id) === String(task.task_id) && 
-                        p.item_type === "task" && 
-                        p.status === "complete"
-                    ) : null;
-                    return !!userTask;
-                }).length;
-
+            Object.entries(tasksBySubject).forEach(([subject, subjectData]) => {
+                const { tasks: subjectTasks, completedCount } = subjectData;
+                
                 const subjectCard = document.createElement('div');
                 subjectCard.className = 'subject-card';
                 subjectCard.setAttribute('data-subject', subject);
@@ -439,72 +522,35 @@ async function loadTasks() {
                     </div>
                     
                     <div class="tasks-container" id="tasks-${subject}">
-                        ${subjectTasks.map(task => {
-                            const userTask = Array.isArray(progress) ? progress.find(p => 
-                                String(p.item_id) === String(task.task_id) && 
-                                p.item_type === "task" && 
-                                p.status === "complete"
-                            ) : null;
-                            const completed = !!userTask;
-                            const grade = userTask ? userTask.grade : null;
-                            
-                            const dueDate = new Date(task.due_date);
-                            const today = new Date();
-                            today.setHours(0, 0, 0, 0);
-                            dueDate.setHours(0, 0, 0, 0);
-                            
-                            let statusClass = 'status-pending';
-                            let statusText = 'Pending';
-                            
-                            if (completed) {
-                                statusClass = 'status-completed';
-                                statusText = 'Completed';
-                            } else if (dueDate < today) {
-                                statusClass = 'status-overdue';
-                                statusText = 'Overdue';
-                            } else if (dueDate.getTime() === today.getTime()) {
-                                statusClass = 'status-pending';
-                                statusText = 'Due Today';
-                            }
-                            
-                            const dueDateFormatted = new Date(task.due_date).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                            });
-                            
-                            // Update the task item display in student view
-return `
-    <div class="task-item">
-        <div class="task-header">
-            <span class="task-id-badge">${task.task_id}</span>
-            <span class="task-status ${statusClass}">
-                ${statusText}
-            </span>
-        </div>
-        <h4 class="task-title">${task.title}</h4>
-        <p class="task-description">${task.description}</p>
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
-            <p class="task-due-date">
-                <i class="fas fa-calendar-alt"></i>
-                Due: ${dueDateFormatted}
-            </p>
-            ${completed && grade ? `<span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Score: ${grade}</span>` : ''}
-        </div>
-    </div>
-`;
-                        }).join('')}
+                        ${subjectTasks.map(task => `
+                            <div class="task-item">
+                                <div class="task-header">
+                                    <span class="task-id-badge">${task.task_id}</span>
+                                    <span class="task-status ${task.statusClass}">${task.statusText}</span>
+                                </div>
+                                <h4 class="task-title">${task.title}</h4>
+                                <p class="task-description">${task.description}</p>
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
+                                    <p class="task-due-date">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        Due: ${task.dueDateFormatted}
+                                    </p>
+                                    ${task.completed && task.grade ? `<span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Score: ${task.grade}</span>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
                 `;
                 fragment.appendChild(subjectCard);
             });
 
+            tasksContainer.innerHTML = '';
             tasksContainer.appendChild(fragment);
         }
         
     } catch (error) {
         console.error('Error loading tasks:', error);
-        tasksContainer.innerHTML = '<p class="text-red-500 text-center py-6 md:py-8 text-sm md:text-base">Error loading tasks. Please try again.</p>';
+        tasksContainer.innerHTML = '<p class="text-red-500 text-center py-8">Error loading tasks. Please try again.</p>';
     }
 }
 
@@ -556,7 +602,7 @@ function getSubjectIcon(subject) {
 }
 
 // =============================
-// 📊 Status Charts & Progress
+// 📊 Status Charts & Progress (OPTIMIZED)
 // =============================
 async function loadStatusCharts() {
     try {
@@ -583,7 +629,6 @@ async function loadSubjectPointsSummary(progress) {
         
         // Group tasks by subject and calculate points
         const subjectStats = {};
-        // Remove maxPointsPerTask constant
         
         tasks.forEach(task => {
             const subject = task.subject || 'General';
@@ -607,14 +652,12 @@ async function loadSubjectPointsSummary(progress) {
             
             if (userTask) {
                 subjectStats[subject].completedTasks++;
-                subjectStats[subject].earnedPoints += parseInt(userTask.grade || 0); // Use 0 as default
+                subjectStats[subject].earnedPoints += parseInt(userTask.grade || 0);
             }
         });
         
-        // Calculate total possible points for each subject
+        // Calculate total points
         Object.keys(subjectStats).forEach(subject => {
-            // Since there's no fixed limit per task, totalPoints is the sum of all completed task points
-            // For display purposes, we'll show earned points vs completed tasks
             subjectStats[subject].totalPoints = subjectStats[subject].earnedPoints;
         });
         
@@ -691,7 +734,7 @@ async function loadTaskChart(progress) {
 }
 
 // =============================
-// 👨‍💼 Admin Functions
+// 👨‍💼 Admin Functions (SUPER OPTIMIZED)
 // =============================
 async function loadAdminData() {
     try {
@@ -699,95 +742,73 @@ async function loadAdminData() {
             let adminClasses = [];
             let adminSubjects = {};
             
-            console.log('Admin class raw:', currentUser.class);
-            console.log('Admin subjects raw:', currentUser.subjects);
-            
-            // Parse classes from the class column (comma separated)
+            // Parse classes (optimized)
             if (currentUser.class) {
-                const classStr = currentUser.class.toString().trim();
-                adminClasses = classStr.split(/[,\s]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
+                adminClasses = currentUser.class.toString().trim()
+                    .split(/[,\s]+/)
+                    .map(c => c.trim())
+                    .filter(c => c && /^\d+$/.test(c));
             }
             
-            // Parse subjects using improved parsing logic
+            // Parse subjects (optimized)
             if (currentUser.subjects && adminClasses.length > 0) {
                 const subjectsStr = currentUser.subjects.toString().trim();
-                
-                // Method 1: Parse bracket format like (1-english,mathematics)(2-arabic,urdu)
                 const bracketMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
+                
                 if (bracketMatches) {
                     bracketMatches.forEach(match => {
-                        const innerContent = match.slice(1, -1); // Remove parentheses
-                        const dashIndex = innerContent.indexOf('-');
-                        if (dashIndex > 0) {
-                            const classNum = innerContent.substring(0, dashIndex).trim();
-                            const subjectsString = innerContent.substring(dashIndex + 1).trim();
+                        const [classNum, subjectsString] = match.slice(1, -1).split('-', 2);
+                        if (classNum && subjectsString) {
+                            const subjects = subjectsString.toLowerCase() === 'all' 
+                                ? ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science']
+                                : subjectsString.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
                             
-                            let subjects;
-                            if (subjectsString.toLowerCase() === 'all') {
-                                // Define all available subjects
-                                subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
-                            } else {
-                                subjects = subjectsString.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
-                            }
-                            
-                            if (subjects.length > 0 && adminClasses.includes(classNum)) {
-                                adminSubjects[classNum] = subjects;
+                            if (subjects.length > 0 && adminClasses.includes(classNum.trim())) {
+                                adminSubjects[classNum.trim()] = subjects;
                             }
                         }
                     });
                 } else {
-                    // Method 2: If no bracket format, assign same subjects to all classes
                     const subjects = subjectsStr.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
-                    if (subjects.length > 0) {
-                        adminClasses.forEach(classNum => {
-                            adminSubjects[classNum] = [...subjects]; // Copy array for each class
-                        });
-                    }
+                    adminClasses.forEach(classNum => {
+                        adminSubjects[classNum] = [...subjects];
+                    });
                 }
-                
-                console.log('Parsed bracket matches:', bracketMatches);
             }
             
-            // Verify subjects exist in actual task sheets
-            for (const classNum of adminClasses) {
-                try {
-                    const tasksSheetName = `${classNum}_tasks_master`;
-                    const tasks = await api.getSheet(tasksSheetName);
+            // Pre-load all task sheets in parallel
+            const taskSheetPromises = adminClasses.map(classNum => 
+                api.getSheet(`${classNum}_tasks_master`).then(tasks => ({
+                    classNum,
+                    tasks: tasks && Array.isArray(tasks) ? tasks : []
+                }))
+            );
+            
+            const taskResults = await Promise.all(taskSheetPromises);
+            
+            // Verify subjects exist and optimize
+            taskResults.forEach(({ classNum, tasks }) => {
+                if (tasks.length > 0) {
+                    const classSubjects = [...new Set(tasks.map(task => 
+                        task.subject ? task.subject.toLowerCase().trim() : ''
+                    ).filter(s => s))];
                     
-                    if (tasks && Array.isArray(tasks) && tasks.length > 0) {
-                        // Get unique subjects from this class's tasks
-                        const classSubjects = [...new Set(tasks.map(task => 
-                            task.subject ? task.subject.toLowerCase().trim() : ''
-                        ).filter(s => s))];
-                        
-                        console.log(`Class ${classNum} has subjects in tasks:`, classSubjects);
-                        
-                        // Only include subjects that admin is assigned AND exist in tasks
-                        if (adminSubjects[classNum]) {
-                            const assignedSubjects = adminSubjects[classNum].filter(subject => 
-                                classSubjects.includes(subject.toLowerCase())
-                            );
-                            adminSubjects[classNum] = assignedSubjects;
-                            console.log(`Final verified subjects for class ${classNum}:`, assignedSubjects);
-                        } else {
-                            adminSubjects[classNum] = [];
-                        }
+                    if (adminSubjects[classNum]) {
+                        adminSubjects[classNum] = adminSubjects[classNum].filter(subject => 
+                            classSubjects.includes(subject.toLowerCase())
+                        );
                     } else {
                         adminSubjects[classNum] = [];
                     }
-                } catch (error) {
-                    console.log(`No tasks found for class ${classNum}`);
+                } else {
                     adminSubjects[classNum] = [];
                 }
-            }
-            
-            console.log('Final parsed admin classes:', adminClasses);
-            console.log('Final parsed admin subjects:', adminSubjects);
+            });
             
             currentUser.adminClasses = adminClasses;
             currentUser.adminSubjects = adminSubjects;
             
-            // Update teaching info display
+            // Update UI immediately
             const teachingInfo = document.getElementById('teachingSubjects');
             if (teachingInfo) {
                 if (adminClasses.length > 0) {
@@ -801,6 +822,7 @@ async function loadAdminData() {
                 }
             }
             
+            // Load admin tasks UI immediately after data processing
             await loadAdminTasks();
         }
     } catch (error) {
@@ -811,91 +833,6 @@ async function loadAdminData() {
         }
     }
 }
-
-function testAdminSubjectParsing() {
-    console.log('=== TESTING ADMIN SUBJECT PARSING ===');
-    
-    const testCases = [
-        {
-            class: "1,2,3",
-            subjects: "(1-english,mathematics)(2-arabic,urdu)(3-mathematics,urdu,english)"
-        },
-        {
-            class: "1,2",
-            subjects: "(1-all)(2-arabic,urdu)"
-        },
-        {
-            class: "1,2,3",
-            subjects: "english,mathematics"
-        }
-    ];
-    
-    testCases.forEach((testCase, index) => {
-        console.log(`\n--- Test Case ${index + 1} ---`);
-        console.log('Input:', testCase);
-        
-        // Simulate parsing
-        let adminClasses = [];
-        let adminSubjects = {};
-        
-        if (testCase.class) {
-            const classStr = testCase.class.toString().trim();
-            adminClasses = classStr.split(/[,\s]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
-        }
-        
-        if (testCase.subjects && adminClasses.length > 0) {
-            const subjectsStr = testCase.subjects.toString().trim();
-            const bracketMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
-            
-            if (bracketMatches) {
-                bracketMatches.forEach(match => {
-                    const innerContent = match.slice(1, -1);
-                    const dashIndex = innerContent.indexOf('-');
-                    if (dashIndex > 0) {
-                        const classNum = innerContent.substring(0, dashIndex).trim();
-                        const subjectsString = innerContent.substring(dashIndex + 1).trim();
-                        
-                        let subjects;
-                        if (subjectsString.toLowerCase() === 'all') {
-                            subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
-                        } else {
-                            subjects = subjectsString.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
-                        }
-                        
-                        if (subjects.length > 0 && adminClasses.includes(classNum)) {
-                            adminSubjects[classNum] = subjects;
-                        }
-                    }
-                });
-            } else {
-                const subjects = subjectsStr.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
-                if (subjects.length > 0) {
-                    adminClasses.forEach(classNum => {
-                        adminSubjects[classNum] = [...subjects];
-                    });
-                }
-            }
-        }
-        
-        console.log('Parsed Classes:', adminClasses);
-        console.log('Parsed Subjects:', adminSubjects);
-    });
-}
-
-
-// Add this function to test in console
-function debugCurrentUser() {
-    console.log('=== CURRENT USER DEBUG ===');
-    console.log('currentUser:', currentUser);
-    if (currentUser) {
-        console.log('Role:', currentUser.role);
-        console.log('Class:', currentUser.class);
-        console.log('Subjects:', currentUser.subjects);
-        console.log('AdminClasses:', currentUser.adminClasses);
-        console.log('AdminSubjects:', currentUser.adminSubjects);
-    }
-}
-
 
 async function loadAdminTasks() {
     const adminTaskClassSelect = document.getElementById('adminTaskClassSelect');
@@ -908,9 +845,6 @@ async function loadAdminTasks() {
     adminTaskSubjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
     adminTaskSubjectSelect.disabled = true;
     
-    console.log('Loading admin tasks, admin classes:', currentUser.adminClasses);
-    console.log('Loading admin tasks, admin subjects:', currentUser.adminSubjects);
-    
     // Only show admin's assigned classes
     if (currentUser.adminClasses && currentUser.adminClasses.length > 0) {
         currentUser.adminClasses.forEach(classNum => {
@@ -920,7 +854,6 @@ async function loadAdminTasks() {
             adminTaskClassSelect.appendChild(option);
         });
     } else {
-        // Show message if no classes assigned
         const option = document.createElement('option');
         option.value = '';
         option.textContent = 'No classes assigned';
@@ -944,16 +877,10 @@ async function handleClassChange() {
     const subjectSelect = document.getElementById('adminTaskSubjectSelect');
     subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
     
-    console.log('Class selected:', selectedClass);
-    console.log('Admin subjects for verification:', currentUser.adminSubjects);
-    
     if (selectedClass) {
         subjectSelect.disabled = false;
         
-        // Get subjects for this specific class
         let availableSubjects = currentUser.adminSubjects[selectedClass] || [];
-        
-        console.log('Available subjects for class', selectedClass, ':', availableSubjects);
         
         if (availableSubjects.length > 0) {
             availableSubjects.forEach(subject => {
@@ -977,15 +904,11 @@ async function handleClassChange() {
     document.getElementById('adminTasksDefaultView').classList.remove('hidden');
 }
 
-
 async function handleSubjectChange() {
     const selectedClass = document.getElementById('adminTaskClassSelect').value;
     const selectedSubject = this.value;
     
-    console.log('Subject selected:', selectedSubject, 'for class:', selectedClass);
-    
     if (selectedClass && selectedSubject) {
-        // Verify admin has access to this class-subject combination
         const hasAccess = currentUser.adminSubjects && 
                          currentUser.adminSubjects[selectedClass] && 
                          currentUser.adminSubjects[selectedClass].includes(selectedSubject);
@@ -1004,8 +927,6 @@ async function handleSubjectChange() {
     }
 }
 
-
-
 async function loadAdminClassSubjectData(classNum, subject) {
     try {
         // Show class subject view
@@ -1020,10 +941,26 @@ async function loadAdminClassSubjectData(classNum, subject) {
         const tasks = await api.getSheet(tasksSheetName);
         
         const adminClassSubjectTasksList = document.getElementById('adminClassSubjectTasksList');
-        adminClassSubjectTasksList.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading tasks...</div>';
+        
+        // Show skeleton while loading
+        adminClassSubjectTasksList.innerHTML = `
+            <div class="animate-pulse space-y-3">
+                ${Array(2).fill(0).map(() => `
+                    <div class="bg-gray-50 rounded-lg p-4 border">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="h-4 bg-gray-200 rounded w-16"></div>
+                            <div class="h-6 bg-gray-200 rounded w-20"></div>
+                        </div>
+                        <div class="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+                        <div class="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                        <div class="h-3 bg-gray-200 rounded w-32"></div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
         
         if (!tasks || tasks.error || tasks.length === 0) {
-            adminClassSubjectTasksList.innerHTML = '<p class="text-gray-500 text-center py-6 md:py-8 text-sm md:text-base">No tasks found for this class.</p>';
+            adminClassSubjectTasksList.innerHTML = '<p class="text-gray-500 text-center py-8">No tasks found for this class.</p>';
         } else {
             // Filter tasks by subject
             const subjectTasks = tasks.filter(task => 
@@ -1031,7 +968,7 @@ async function loadAdminClassSubjectData(classNum, subject) {
             );
             
             if (subjectTasks.length === 0) {
-                adminClassSubjectTasksList.innerHTML = `<p class="text-gray-500 text-center py-6 md:py-8 text-sm md:text-base">No tasks found for ${subject} in Class ${classNum}.</p>`;
+                adminClassSubjectTasksList.innerHTML = `<p class="text-gray-500 text-center py-8">No tasks found for ${subject} in Class ${classNum}.</p>`;
             } else {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -1086,7 +1023,7 @@ async function loadAdminClassSubjectData(classNum, subject) {
         
     } catch (error) {
         console.error('Error loading admin class subject data:', error);
-        document.getElementById('adminClassSubjectTasksList').innerHTML = '<p class="text-red-500 text-center py-6 md:py-8 text-sm md:text-base">Error loading tasks. Please try again.</p>';
+        document.getElementById('adminClassSubjectTasksList').innerHTML = '<p class="text-red-500 text-center py-8">Error loading tasks. Please try again.</p>';
     }
 }
 
@@ -1095,10 +1032,22 @@ async function loadAdminClassStudents(classNum) {
         const users = await api.getSheet("user_credentials");
         const adminClassStudentsList = document.getElementById('adminClassStudentsList');
         
-        adminClassStudentsList.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading students...</div>';
+        // Show skeleton
+        adminClassStudentsList.innerHTML = `
+            <div class="animate-pulse grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                ${Array(6).fill(0).map(() => `
+                    <div class="bg-white rounded-lg p-4 border-2 border-gray-200 text-center">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full mx-auto mb-3"></div>
+                        <div class="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-2"></div>
+                        <div class="h-3 bg-gray-200 rounded w-1/2 mx-auto mb-2"></div>
+                        <div class="h-6 bg-gray-200 rounded w-16 mx-auto"></div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
         
         if (!users || users.error) {
-            adminClassStudentsList.innerHTML = '<p class="text-red-500 text-center py-6 md:py-8 text-sm md:text-base">Error loading students.</p>';
+            adminClassStudentsList.innerHTML = '<p class="text-red-500 text-center py-8">Error loading students.</p>';
             return;
         }
         
@@ -1108,7 +1057,7 @@ async function loadAdminClassStudents(classNum) {
         );
         
         if (classStudents.length === 0) {
-            adminClassStudentsList.innerHTML = `<p class="text-gray-500 text-center py-6 md:py-8 text-sm md:text-base">No students found in Class ${classNum}.</p>`;
+            adminClassStudentsList.innerHTML = `<p class="text-gray-500 text-center py-8">No students found in Class ${classNum}.</p>`;
             return;
         }
         
@@ -1132,7 +1081,7 @@ async function loadAdminClassStudents(classNum) {
     } catch (error) {
         console.error('Error loading admin class students:', error);
         const adminClassStudentsList = document.getElementById('adminClassStudentsList');
-        adminClassStudentsList.innerHTML = '<p class="text-red-500 text-center py-6 md:py-8 text-sm md:text-base">Error loading students. Please try again.</p>';
+        adminClassStudentsList.innerHTML = '<p class="text-red-500 text-center py-8">Error loading students. Please try again.</p>';
     }
 }
 
@@ -1143,18 +1092,39 @@ async function openStudentTaskModal(username, fullName, classNum) {
         const content = document.getElementById('studentTaskModalContent');
         
         title.textContent = `Tasks for ${fullName} - ${selectedSubjectForModal}`;
-        content.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading student tasks...</div>';
+        
+        // Show skeleton immediately
+        content.innerHTML = `
+            <div class="animate-pulse space-y-4">
+                ${Array(3).fill(0).map(() => `
+                    <div class="bg-gray-50 rounded-lg p-4 border-2 border-gray-200">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-4 h-4 bg-gray-200 rounded mt-1"></div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center mb-2">
+                                    <div class="h-4 bg-gray-200 rounded w-16"></div>
+                                    <div class="h-6 bg-gray-200 rounded w-20"></div>
+                                </div>
+                                <div class="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                <div class="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                                <div class="h-3 bg-gray-200 rounded w-32"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
         
         modal.classList.remove('hidden');
         
-        // Load student's progress and class tasks, but filter by selected subject
+        // Load student's progress and class tasks in parallel
         const [progress, tasks] = await Promise.all([
             api.getSheet(`${username}_progress`),
             api.getSheet(`${classNum}_tasks_master`)
         ]);
         
         if (!tasks || tasks.error || tasks.length === 0) {
-            content.innerHTML = '<p class="text-gray-500 text-center py-6 md:py-8 text-sm md:text-base">No tasks found for this class.</p>';
+            content.innerHTML = '<p class="text-gray-500 text-center py-8">No tasks found for this class.</p>';
             return;
         }
         
@@ -1164,7 +1134,7 @@ async function openStudentTaskModal(username, fullName, classNum) {
             tasks;
         
         if (subjectTasks.length === 0) {
-            content.innerHTML = `<p class="text-gray-500 text-center py-6 md:py-8 text-sm md:text-base">No tasks found for ${selectedSubjectForModal} in this class.</p>`;
+            content.innerHTML = `<p class="text-gray-500 text-center py-8">No tasks found for ${selectedSubjectForModal} in this class.</p>`;
             return;
         }
         
@@ -1205,54 +1175,53 @@ async function openStudentTaskModal(username, fullName, classNum) {
                 statusText = 'Pending';
             }
             
-            // In the tasksHtml generation part, update the grade input section:
-return `
-    <div class="${taskClass}">
-        <div class="flex items-start space-x-3">
-            <input type="checkbox" 
-                   data-task-id="${task.task_id}"
-                   data-username="${username}"
-                   ${completed ? 'checked disabled' : ''}
-                   class="task-checkbox"
-                   onchange="toggleGradeSection('${task.task_id}', this.checked)">
-            <div class="flex-1">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="task-id-badge">${task.task_id}</span>
-                    <div class="flex items-center space-x-2">
-                        ${statusIcon}
-                        <span class="text-xs font-medium">${statusText}</span>
+            return `
+                <div class="${taskClass}">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" 
+                               data-task-id="${task.task_id}"
+                               data-username="${username}"
+                               ${completed ? 'checked disabled' : ''}
+                               class="task-checkbox"
+                               onchange="toggleGradeSection('${task.task_id}', this.checked)">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="task-id-badge">${task.task_id}</span>
+                                <div class="flex items-center space-x-2">
+                                    ${statusIcon}
+                                    <span class="text-xs font-medium">${statusText}</span>
+                                </div>
+                            </div>
+                            <h4 class="task-title">${task.title}</h4>
+                            <p class="task-description">${task.description}</p>
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
+                                <p class="task-due-date">
+                                    <i class="fas fa-calendar-alt mr-1"></i>
+                                    Due: ${new Date(task.due_date).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric'
+                                    })}
+                                </p>
+                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                    ${task.subject}
+                                </span>
+                            </div>
+                            <div class="grade-section" id="grade-${task.task_id}">
+                                <div class="grade-input-group">
+                                    <span class="grade-label">Points:</span>
+                                    <input type="number" 
+                                           class="grade-input" 
+                                           id="grade-input-${task.task_id}"
+                                           min="0" 
+                                           value="${currentGrade}"
+                                           placeholder="Enter points">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <h4 class="task-title">${task.title}</h4>
-                <p class="task-description">${task.description}</p>
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
-                    <p class="task-due-date">
-                        <i class="fas fa-calendar-alt mr-1"></i>
-                        Due: ${new Date(task.due_date).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                        })}
-                    </p>
-                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        ${task.subject}
-                    </span>
-                </div>
-                <div class="grade-section" id="grade-${task.task_id}">
-                    <div class="grade-input-group">
-                        <span class="grade-label">Points:</span>
-                        <input type="number" 
-                               class="grade-input" 
-                               id="grade-input-${task.task_id}"
-                               min="0" 
-                               value="${currentGrade}"
-                               placeholder="Enter points">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-`;
+            `;
         }).join('');
         
         content.innerHTML = tasksHtml;
@@ -1260,7 +1229,7 @@ return `
     } catch (error) {
         console.error('Error opening student task modal:', error);
         const content = document.getElementById('studentTaskModalContent');
-        content.innerHTML = '<p class="text-red-500 text-center py-6 md:py-8 text-sm md:text-base">Error loading student tasks. Please try again.</p>';
+        content.innerHTML = '<p class="text-red-500 text-center py-8">Error loading student tasks. Please try again.</p>';
     }
 }
 
@@ -1297,10 +1266,10 @@ async function submitSelectedStudentTasks() {
             const taskId = checkbox.getAttribute('data-task-id');
             const username = checkbox.getAttribute('data-username');
             const gradeInput = document.getElementById(`grade-input-${taskId}`);
-            let grade = 0; // Start from 0
+            let grade = 0;
             
             if (gradeInput && gradeInput.value) {
-                grade = Math.max(0, parseInt(gradeInput.value) || 0); // Remove the 30-point limit
+                grade = Math.max(0, parseInt(gradeInput.value) || 0);
             }
             
             const rowData = [
@@ -1354,7 +1323,7 @@ function clearAdminTaskFilters() {
 }
 
 // =============================
-// 👨‍💼 Admin Status Functions (Simplified)
+// 👨‍💼 Admin Status Functions (OPTIMIZED)
 // =============================
 async function loadAllUsersStatus() {
     try {
@@ -1412,8 +1381,12 @@ async function loadAllUsersStatus() {
 
 async function loadSelectedUserStatus(username) {
     try {
-        // Load user data and progress
-        const users = await api.getSheet("user_credentials");
+        // Load user data and progress in parallel
+        const [users, progress] = await Promise.all([
+            api.getSheet("user_credentials"),
+            api.getSheet(`${username}_progress`)
+        ]);
+        
         const user = users.find(u => u.username === username);
         
         if (!user) {
@@ -1425,23 +1398,11 @@ async function loadSelectedUserStatus(username) {
         document.getElementById('selectedUserName').textContent = user.full_name || user.username;
         document.getElementById('selectedUserInfo').textContent = `Username: ${user.username} | Class: ${user.class || 'Not Assigned'} | Role: ${user.role}`;
         
-        // Load user's progress
-        const progress = await api.getSheet(`${username}_progress`);
-        
         // Load simplified admin status (only task chart and subject points)
         await Promise.all([
             loadAdminTaskChart(progress, user.class),
             loadAdminSubjectPointsSummary(progress, user.class)
         ]);
-        
-        // Hide other sections that are not needed
-        const courseChartContainer = document.getElementById('adminCourseChart')?.closest('.bg-gray-50');
-        const activityChartContainer = document.getElementById('adminActivityChart')?.closest('.bg-gray-50');
-        const progressBarsContainer = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.gap-6');
-        
-        if (courseChartContainer) courseChartContainer.style.display = 'none';
-        if (activityChartContainer) activityChartContainer.style.display = 'none';
-        if (progressBarsContainer) progressBarsContainer.style.display = 'none';
         
     } catch (error) {
         console.error('Error loading selected user status:', error);
@@ -1503,7 +1464,6 @@ async function loadAdminSubjectPointsSummary(progress, userClass) {
         
         // Group tasks by subject and calculate points
         const subjectStats = {};
-        // Remove maxPointsPerTask constant
         
         tasks.forEach(task => {
             const subject = task.subject || 'General';
@@ -1527,7 +1487,7 @@ async function loadAdminSubjectPointsSummary(progress, userClass) {
             
             if (userTask) {
                 subjectStats[subject].completedTasks++;
-                subjectStats[subject].earnedPoints += parseInt(userTask.grade || 0); // Use 0 as default
+                subjectStats[subject].earnedPoints += parseInt(userTask.grade || 0);
             }
         });
         
@@ -1581,7 +1541,138 @@ async function loadAdminSubjectPointsSummary(progress, userClass) {
 }
 
 // =============================
-// 🎯 Event Listeners & Initialization
+// ➕ Add Task Functions (OPTIMIZED)
+// =============================
+async function openAddTaskModal() {
+    const selectedClass = document.getElementById('adminTaskClassSelect').value;
+    const selectedSubject = document.getElementById('adminTaskSubjectSelect').value;
+    
+    if (!selectedClass || !selectedSubject) {
+        alert('Please select both class and subject first.');
+        return;
+    }
+    
+    try {
+        const modal = document.getElementById('addTaskModal');
+        const autoSubject = document.getElementById('autoSubject');
+        const autoTaskId = document.getElementById('autoTaskId');
+        
+        // Set the auto-filled subject
+        autoSubject.value = selectedSubject.charAt(0).toUpperCase() + selectedSubject.slice(1);
+        
+        // Generate next task ID
+        const nextTaskId = await getNextTaskId(selectedClass);
+        autoTaskId.value = nextTaskId;
+        
+        // Clear form
+        document.getElementById('taskTitle').value = '';
+        document.getElementById('taskDescription').value = '';
+        document.getElementById('taskDueDate').value = '';
+        
+        modal.classList.remove('hidden');
+        
+    } catch (error) {
+        console.error('Error opening add task modal:', error);
+        alert('Error preparing to add task. Please try again.');
+    }
+}
+
+function closeAddTaskModal() {
+    document.getElementById('addTaskModal').classList.add('hidden');
+}
+
+async function getNextTaskId(classNum) {
+    try {
+        const tasksSheetName = `${classNum}_tasks_master`;
+        const tasks = await api.getSheet(tasksSheetName);
+        
+        if (!tasks || tasks.error || tasks.length === 0) {
+            return 'T1';
+        }
+        
+        // Extract all task IDs and find the highest number
+        const taskIds = tasks
+            .map(task => task.task_id)
+            .filter(id => id && id.startsWith('T'))
+            .map(id => {
+                const num = parseInt(id.substring(1));
+                return isNaN(num) ? 0 : num;
+            });
+        
+        if (taskIds.length === 0) {
+            return 'T1';
+        }
+        
+        const maxId = Math.max(...taskIds);
+        return `T${maxId + 1}`;
+        
+    } catch (error) {
+        console.error('Error generating next task ID:', error);
+        return 'T1';
+    }
+}
+
+async function submitAddTaskForm(event) {
+    event.preventDefault();
+    
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    try {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Adding Task...';
+        submitBtn.disabled = true;
+        
+        const selectedClass = document.getElementById('adminTaskClassSelect').value;
+        const selectedSubject = document.getElementById('adminTaskSubjectSelect').value;
+        const taskId = document.getElementById('autoTaskId').value;
+        const title = document.getElementById('taskTitle').value.trim();
+        const description = document.getElementById('taskDescription').value.trim();
+        const dueDate = document.getElementById('taskDueDate').value;
+        
+        // Validation
+        if (!title || !description || !dueDate) {
+            alert('Please fill in all required fields.');
+            return;
+        }
+        
+        // Format due date to DD-MM-YYYY
+        const dateObj = new Date(dueDate);
+        const formattedDueDate = `${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}-${dateObj.getFullYear()}`;
+        
+        // Prepare row data
+        const rowData = [
+            selectedSubject,
+            taskId,
+            title,
+            description,
+            formattedDueDate
+        ];
+        
+        // Add to Google Sheet
+        const tasksSheetName = `${selectedClass}_tasks_master`;
+        const result = await api.addRow(tasksSheetName, rowData);
+        
+        if (result && (result.success || result.message?.includes('Success'))) {
+            alert('Task added successfully!');
+            closeAddTaskModal();
+            
+            // Refresh the tasks list
+            await loadAdminClassSubjectData(selectedClass, selectedSubject);
+        } else {
+            throw new Error(result?.error || 'Failed to add task');
+        }
+        
+    } catch (error) {
+        console.error('Error adding task:', error);
+        alert('Error adding task: ' + error.message);
+    } finally {
+        submitBtn.innerHTML = '<i class="fas fa-plus mr-2"></i>Add Task';
+        submitBtn.disabled = false;
+    }
+}
+
+// =============================
+// 🎯 Event Listeners & Initialization (OPTIMIZED)
 // =============================
 document.addEventListener('DOMContentLoaded', function() {
     // Add signup form event listener
@@ -1602,7 +1693,8 @@ document.addEventListener('DOMContentLoaded', function() {
             closeStudentTaskModal();
         }
     });
- // Add Task Form event listener
+    
+    // Add Task Form event listener
     document.getElementById('addTaskForm').addEventListener('submit', submitAddTaskForm);
     
     // Add Task Modal close event
@@ -1689,6 +1781,38 @@ function showNotification(message, type = 'info', duration = 5000) {
 }
 
 // =============================
+// 🚀 OPTIMIZATION FUNCTIONS
+// =============================
+
+// Pre-load critical data on app start
+async function preloadCriticalData() {
+    if (currentUser) {
+        const criticalSheets = ['user_credentials'];
+        
+        if (currentUser.role === 'student' && currentUser.class) {
+            criticalSheets.push(
+                `${currentUser.class}_tasks_master`,
+                `${currentUser.username}_progress`
+            );
+        } else if (currentUser.role === 'admin' && currentUser.adminClasses) {
+            currentUser.adminClasses.forEach(classNum => {
+                criticalSheets.push(`${classNum}_tasks_master`);
+            });
+        }
+        
+        // Pre-load all critical sheets in background
+        api.getBatchSheets(criticalSheets);
+    }
+}
+
+// Background refresh every 2 minutes
+setInterval(() => {
+    if (currentUser) {
+        preloadCriticalData();
+    }
+}, 2 * 60 * 1000);
+
+// =============================
 // 🔒 Security Functions
 // =============================
 // Disable right-click
@@ -1739,215 +1863,22 @@ function initializeApp() {
 console.log('%c🎓 DHDC MANOOR System Loaded Successfully! 🎓', 'color: #059669; font-size: 16px; font-weight: bold;');
 console.log('%cDarul Hidaya Da\'wa College Management System', 'color: #1e40af; font-size: 12px;');
 
-// Add this function for testing - call it in console
+// Debug functions for testing
 function debugAdminData() {
     console.log('=== ADMIN DATA DEBUG ===');
     console.log('Current User:', currentUser);
     console.log('Admin Classes:', currentUser?.adminClasses);
     console.log('Admin Subjects:', currentUser?.adminSubjects);
-    
-    // Test with sample data
-    const testUser = {
-        class: "1 2 3",
-        subjects: "(1-english,mathematics,science)(2-urdu,arabic)(3-all)"
-    };
-    
-    console.log('=== TESTING WITH SAMPLE DATA ===');
-    console.log('Test input:', testUser);
-    
-    // Test parsing
-    let adminClasses = [];
-    let adminSubjects = {};
-    
-    if (testUser.class) {
-        const classStr = testUser.class.toString().trim();
-        adminClasses = classStr.split(/[\s,;]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
-    }
-    
-    if (testUser.subjects) {
-        const subjectsStr = testUser.subjects.toString().trim();
-        const subjectMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
-        if (subjectMatches) {
-            subjectMatches.forEach(match => {
-                const innerContent = match.slice(1, -1);
-                const dashIndex = innerContent.indexOf('-');
-                if (dashIndex > 0) {
-                    const classNum = innerContent.substring(0, dashIndex);
-                    const subjectsString = innerContent.substring(dashIndex + 1);
-                    
-                    let subjects;
-                    if (subjectsString.toLowerCase() === 'all') {
-                        subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
-                    } else {
-                        subjects = subjectsString.split(',').map(s => s.trim()).filter(s => s);
-                    }
-                    
-                    if (subjects.length > 0) {
-                        adminSubjects[classNum] = subjects;
-                    }
-                }
-            });
-        }
-    }
-    
-    console.log('Parsed Classes:', adminClasses);
-    console.log('Parsed Subjects:', adminSubjects);
 }
 
-// =============================
-// ➕ Add Task Functions
-// =============================
-async function openAddTaskModal() {
-    const selectedClass = document.getElementById('adminTaskClassSelect').value;
-    const selectedSubject = document.getElementById('adminTaskSubjectSelect').value;
-    
-    if (!selectedClass || !selectedSubject) {
-        alert('Please select both class and subject first.');
-        return;
-    }
-    
-    try {
-        const modal = document.getElementById('addTaskModal');
-        const autoSubject = document.getElementById('autoSubject');
-        const autoTaskId = document.getElementById('autoTaskId');
-        
-        // Set the auto-filled subject
-        autoSubject.value = selectedSubject.charAt(0).toUpperCase() + selectedSubject.slice(1);
-        
-        // Generate next task ID
-        const nextTaskId = await getNextTaskId(selectedClass);
-        autoTaskId.value = nextTaskId;
-        
-        // Clear form
-        document.getElementById('taskTitle').value = '';
-        document.getElementById('taskDescription').value = '';
-        document.getElementById('taskDueDate').value = '';
-        
-        modal.classList.remove('hidden');
-        
-    } catch (error) {
-        console.error('Error opening add task modal:', error);
-        alert('Error preparing to add task. Please try again.');
-    }
-}
-
-function closeAddTaskModal() {
-    document.getElementById('addTaskModal').classList.add('hidden');
-}
-
-async function getNextTaskId(classNum) {
-    try {
-        const tasksSheetName = `${classNum}_tasks_master`;
-        const tasks = await api.getSheet(tasksSheetName);
-        
-        if (!tasks || tasks.error || tasks.length === 0) {
-            return 'T1'; // First task
-        }
-        
-        // Extract all task IDs and find the highest number
-        const taskIds = tasks
-            .map(task => task.task_id)
-            .filter(id => id && id.startsWith('T'))
-            .map(id => {
-                const num = parseInt(id.substring(1));
-                return isNaN(num) ? 0 : num;
-            });
-        
-        if (taskIds.length === 0) {
-            return 'T1';
-        }
-        
-        const maxId = Math.max(...taskIds);
-        return `T${maxId + 1}`;
-        
-    } catch (error) {
-        console.error('Error generating next task ID:', error);
-        return 'T1'; // Fallback
-    }
-}
-
-async function submitAddTaskForm(event) {
-    event.preventDefault();
-    
-    const submitBtn = event.target.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    
-    try {
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Adding Task...';
-        submitBtn.disabled = true;
-        
-        const selectedClass = document.getElementById('adminTaskClassSelect').value;
-        const selectedSubject = document.getElementById('adminTaskSubjectSelect').value;
-        const taskId = document.getElementById('autoTaskId').value;
-        const title = document.getElementById('taskTitle').value.trim();
-        const description = document.getElementById('taskDescription').value.trim();
-        const dueDate = document.getElementById('taskDueDate').value;
-        
-        // Validation
-        if (!title || !description || !dueDate) {
-            alert('Please fill in all required fields.');
-            return;
-        }
-        
-        // Format due date to DD-MM-YYYY
-        const dateObj = new Date(dueDate);
-        const formattedDueDate = `${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}-${dateObj.getFullYear()}`;
-        
-        // Prepare row data
-        const rowData = [
-            selectedSubject,
-            taskId,
-            title,
-            description,
-            formattedDueDate
-        ];
-        
-        // Add to Google Sheet
-        const tasksSheetName = `${selectedClass}_tasks_master`;
-        const result = await api.addRow(tasksSheetName, rowData);
-        
-        if (result && (result.success || result.message?.includes('Success'))) {
-            alert('Task added successfully!');
-            closeAddTaskModal();
-            
-            // Refresh the tasks list
-            await loadAdminClassSubjectData(selectedClass, selectedSubject);
-        } else {
-            throw new Error(result?.error || 'Failed to add task');
-        }
-        
-    } catch (error) {
-        console.error('Error adding task:', error);
-        alert('Error adding task: ' + error.message);
-    } finally {
-        submitBtn.innerHTML = '<i class="fas fa-plus mr-2"></i>Add Task';
-        submitBtn.disabled = false;
-    }
-}
-
-// Update the handleSubjectChange function to enable the Add Task button
-async function handleSubjectChange() {
-    const selectedClass = document.getElementById('adminTaskClassSelect').value;
-    const selectedSubject = this.value;
-    
-    console.log('Subject selected:', selectedSubject, 'for class:', selectedClass);
-    
-    if (selectedClass && selectedSubject) {
-        // Verify admin has access to this class-subject combination
-        const hasAccess = currentUser.adminSubjects && 
-                         currentUser.adminSubjects[selectedClass] && 
-                         currentUser.adminSubjects[selectedClass].includes(selectedSubject);
-        
-        if (hasAccess) {
-            selectedClassForModal = selectedClass;
-            selectedSubjectForModal = selectedSubject;
-            await loadAdminClassSubjectData(selectedClass, selectedSubject);
-        } else {
-            alert('Access denied: You are not assigned to this class-subject combination.');
-            this.value = '';
-        }
-    } else {
-        document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
-        document.getElementById('adminTasksDefaultView').classList.remove('hidden');
+function debugCurrentUser() {
+    console.log('=== CURRENT USER DEBUG ===');
+    console.log('currentUser:', currentUser);
+    if (currentUser) {
+        console.log('Role:', currentUser.role);
+        console.log('Class:', currentUser.class);
+        console.log('Subjects:', currentUser.subjects);
+        console.log('AdminClasses:', currentUser.adminClasses);
+        console.log('AdminSubjects:', currentUser.adminSubjects);
     }
 }
