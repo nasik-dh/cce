@@ -164,8 +164,8 @@ async function login() {
             if (currentUser.role === 'admin') {
                 document.getElementById('studentNav').classList.add('hidden');
                 document.getElementById('adminNav').classList.remove('hidden');
+                await loadAdminData(); // Load admin data first
                 showPage('adminTasks');
-                await loadAdminData();
             } else {
                 document.getElementById('studentNav').classList.remove('hidden');
                 document.getElementById('adminNav').classList.add('hidden');
@@ -185,6 +185,7 @@ async function login() {
         loginBtn.disabled = false;
     }
 }
+
 
 function showError(message) {
     const errorDiv = document.getElementById('loginError');
@@ -348,11 +349,17 @@ async function showPage(page) {
     if (page === 'status') {
         loadStatusCharts();
     } else if (page === 'adminTasks') {
-        loadAdminTasks();
+        // Ensure admin data is loaded before loading admin tasks
+        if (currentUser.role === 'admin' && (!currentUser.adminClasses || currentUser.adminClasses.length === 0)) {
+            await loadAdminData();
+        } else {
+            await loadAdminTasks();
+        }
     } else if (page === 'adminStatus') {
         await loadAllUsersStatus();
     }
 }
+
 
 // =============================
 // ✅ Tasks (Class-Based System)
@@ -466,25 +473,26 @@ async function loadTasks() {
                                 day: 'numeric'
                             });
                             
-                            return `
-                                <div class="task-item">
-                                    <div class="task-header">
-                                        <span class="task-id-badge">${task.task_id}</span>
-                                        <span class="task-status ${statusClass}">
-                                            ${statusText}
-                                        </span>
-                                    </div>
-                                    <h4 class="task-title">${task.title}</h4>
-                                    <p class="task-description">${task.description}</p>
-                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
-                                        <p class="task-due-date">
-                                            <i class="fas fa-calendar-alt"></i>
-                                            Due: ${dueDateFormatted}
-                                        </p>
-                                        ${completed && grade ? `<span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Score: ${grade}/30</span>` : ''}
-                                    </div>
-                                </div>
-                            `;
+                            // Update the task item display in student view
+return `
+    <div class="task-item">
+        <div class="task-header">
+            <span class="task-id-badge">${task.task_id}</span>
+            <span class="task-status ${statusClass}">
+                ${statusText}
+            </span>
+        </div>
+        <h4 class="task-title">${task.title}</h4>
+        <p class="task-description">${task.description}</p>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
+            <p class="task-due-date">
+                <i class="fas fa-calendar-alt"></i>
+                Due: ${dueDateFormatted}
+            </p>
+            ${completed && grade ? `<span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Score: ${grade}</span>` : ''}
+        </div>
+    </div>
+`;
                         }).join('')}
                     </div>
                 `;
@@ -575,7 +583,7 @@ async function loadSubjectPointsSummary(progress) {
         
         // Group tasks by subject and calculate points
         const subjectStats = {};
-        const maxPointsPerTask = 30; // Updated to 30 points per task
+        // Remove maxPointsPerTask constant
         
         tasks.forEach(task => {
             const subject = task.subject || 'General';
@@ -589,7 +597,6 @@ async function loadSubjectPointsSummary(progress) {
             }
             
             subjectStats[subject].totalTasks++;
-            subjectStats[subject].totalPoints += maxPointsPerTask; // Each task worth 30 points
             
             // Check if task is completed
             const userTask = Array.isArray(progress) ? progress.find(p => 
@@ -600,8 +607,15 @@ async function loadSubjectPointsSummary(progress) {
             
             if (userTask) {
                 subjectStats[subject].completedTasks++;
-                subjectStats[subject].earnedPoints += parseInt(userTask.grade || maxPointsPerTask);
+                subjectStats[subject].earnedPoints += parseInt(userTask.grade || 0); // Use 0 as default
             }
+        });
+        
+        // Calculate total possible points for each subject
+        Object.keys(subjectStats).forEach(subject => {
+            // Since there's no fixed limit per task, totalPoints is the sum of all completed task points
+            // For display purposes, we'll show earned points vs completed tasks
+            subjectStats[subject].totalPoints = subjectStats[subject].earnedPoints;
         });
         
         // Generate subject points grid
@@ -618,7 +632,7 @@ async function loadSubjectPointsSummary(progress) {
                         <h4>${subject}</h4>
                     </div>
                     <div class="points-display">${stats.earnedPoints}</div>
-                    <div class="points-label">of ${stats.totalPoints} points</div>
+                    <div class="points-label">total points</div>
                     <div class="text-xs text-gray-500 mt-2">
                         ${stats.completedTasks}/${stats.totalTasks} tasks completed
                     </div>
@@ -682,45 +696,64 @@ async function loadTaskChart(progress) {
 async function loadAdminData() {
     try {
         if (currentUser.role === 'admin') {
-            // Parse admin's subjects more robustly
             let adminClasses = [];
             let adminSubjects = {};
             
+            console.log('Admin class raw:', currentUser.class);
             console.log('Admin subjects raw:', currentUser.subjects);
             
+            // Parse classes from the class column (comma separated)
+            if (currentUser.class) {
+                const classStr = currentUser.class.toString().trim();
+                adminClasses = classStr.split(/[,\s]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
+            }
+            
+            // Parse subjects from the subjects column - format: (1-english,mathematics,science)(2-urdu,arabic)
             if (currentUser.subjects) {
                 const subjectsStr = currentUser.subjects.toString().trim();
                 
-                // Extract classes (numbers at the beginning)
-                const classMatch = subjectsStr.match(/^[\d,\s]+/);
-                if (classMatch) {
-                    adminClasses = classMatch[0].split(',').map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
-                }
-                
-                // Extract subject mappings in format (class-subject1,subject2)
-                const subjectMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
-                if (subjectMatches) {
-                    subjectMatches.forEach(match => {
-                        const innerContent = match.slice(1, -1); // Remove parentheses
-                        const [classNum, ...subjectParts] = innerContent.split('-');
-                        if (classNum && subjectParts.length > 0) {
-                            const subjectsString = subjectParts.join('-');
-                            const subjects = subjectsString.split(',').map(s => s.trim()).filter(s => s);
-                            if (subjects.length > 0) {
-                                adminSubjects[classNum] = subjects;
+                if (subjectsStr.includes('(') && subjectsStr.includes(')')) {
+                    // Parse subject assignments - format: (class-subject1,subject2,subject3)
+                    const subjectMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
+                    if (subjectMatches) {
+                        subjectMatches.forEach(match => {
+                            const innerContent = match.slice(1, -1); // Remove parentheses
+                            const dashIndex = innerContent.indexOf('-');
+                            if (dashIndex > 0) {
+                                const classNum = innerContent.substring(0, dashIndex);
+                                const subjectsString = innerContent.substring(dashIndex + 1);
+                                
+                                let subjects;
+                                if (subjectsString.toLowerCase() === 'all') {
+                                    subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
+                                } else {
+                                    subjects = subjectsString.split(',').map(s => s.trim()).filter(s => s);
+                                }
+                                
+                                if (subjects.length > 0) {
+                                    adminSubjects[classNum] = subjects;
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
+                } else {
+                    // Handle simple format - assign subjects to all classes
+                    const subjects = subjectsStr.split(/[,\s]+/).map(s => s.trim()).filter(s => s);
+                    if (subjects.length > 0) {
+                        adminClasses.forEach(classNum => {
+                            adminSubjects[classNum] = subjects;
+                        });
+                    }
                 }
             }
             
-            // Fallback: if no subjects found, assign all available subjects to all classes
-            if (Object.keys(adminSubjects).length === 0 && adminClasses.length > 0) {
-                const defaultSubjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
-                adminClasses.forEach(classNum => {
-                    adminSubjects[classNum] = defaultSubjects;
-                });
-            }
+            // Ensure all assigned classes have subject assignments
+            adminClasses.forEach(classNum => {
+                if (!adminSubjects[classNum]) {
+                    // If no specific subjects assigned, assign default subjects
+                    adminSubjects[classNum] = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
+                }
+            });
             
             console.log('Parsed admin classes:', adminClasses);
             console.log('Parsed admin subjects:', adminSubjects);
@@ -733,14 +766,18 @@ async function loadAdminData() {
             if (teachingInfo) {
                 if (adminClasses.length > 0) {
                     const classText = `Classes: ${adminClasses.join(', ')}`;
-                    const subjectText = Object.keys(adminSubjects).length > 0 ? 
-                        Object.entries(adminSubjects).map(([cls, subjs]) => `Class ${cls}: ${subjs.join(', ')}`).join(' | ') : 
-                        'All subjects assigned';
+                    const subjectText = Object.entries(adminSubjects).map(([cls, subjs]) => 
+                        `Class ${cls}: ${subjs.join(', ')}`
+                    ).join(' | ');
                     teachingInfo.textContent = `${classText} | ${subjectText}`;
                 } else {
                     teachingInfo.textContent = 'No classes or subjects assigned';
                 }
             }
+            
+            // Load admin tasks after data is parsed
+            await loadAdminTasks();
+            
         }
     } catch (error) {
         console.error('Error loading admin data:', error);
@@ -750,6 +787,9 @@ async function loadAdminData() {
         }
     }
 }
+
+
+
 
 async function loadAdminTasks() {
     const adminTaskClassSelect = document.getElementById('adminTaskClassSelect');
@@ -762,9 +802,10 @@ async function loadAdminTasks() {
     adminTaskSubjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
     adminTaskSubjectSelect.disabled = true;
     
-    console.log('Loading admin tasks, classes:', currentUser.adminClasses);
+    console.log('Loading admin tasks, admin classes:', currentUser.adminClasses);
+    console.log('Loading admin tasks, admin subjects:', currentUser.adminSubjects);
     
-    // Populate class dropdown with admin's assigned classes
+    // Only show admin's assigned classes
     if (currentUser.adminClasses && currentUser.adminClasses.length > 0) {
         currentUser.adminClasses.forEach(classNum => {
             const option = document.createElement('option');
@@ -773,55 +814,47 @@ async function loadAdminTasks() {
             adminTaskClassSelect.appendChild(option);
         });
     } else {
-        // Fallback: show all available classes if no specific assignment
-        const allClasses = ['1', '2', '3']; // Based on your sheet structure
-        allClasses.forEach(classNum => {
-            const option = document.createElement('option');
-            option.value = classNum;
-            option.textContent = `Class ${classNum}`;
-            adminTaskClassSelect.appendChild(option);
-        });
+        // Show message if no classes assigned
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No classes assigned';
+        option.disabled = true;
+        adminTaskClassSelect.appendChild(option);
+        return;
     }
     
-    // Remove existing event listeners to avoid duplication
-    const newClassSelect = adminTaskClassSelect.cloneNode(true);
-    adminTaskClassSelect.parentNode.replaceChild(newClassSelect, adminTaskClassSelect);
+    // Remove existing event listeners first
+    adminTaskClassSelect.removeEventListener('change', handleClassChange);
+    adminTaskSubjectSelect.removeEventListener('change', handleSubjectChange);
     
-    const newSubjectSelect = adminTaskSubjectSelect.cloneNode(true);
-    adminTaskSubjectSelect.parentNode.replaceChild(newSubjectSelect, adminTaskSubjectSelect);
+    // Add event listeners
+    adminTaskClassSelect.addEventListener('change', handleClassChange);
+    adminTaskSubjectSelect.addEventListener('change', handleSubjectChange);
+}
+
+// Separate event handler functions
+async function handleClassChange() {
+    const selectedClass = this.value;
+    const subjectSelect = document.getElementById('adminTaskSubjectSelect');
+    subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
     
-    // Add event listener for class selection
-    document.getElementById('adminTaskClassSelect').addEventListener('change', async function() {
-        const selectedClass = this.value;
-        const subjectSelect = document.getElementById('adminTaskSubjectSelect');
-        subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
+    console.log('Class selected:', selectedClass);
+    console.log('Admin subjects for verification:', currentUser.adminSubjects);
+    
+    if (selectedClass) {
+        subjectSelect.disabled = false;
         
-        console.log('Class selected:', selectedClass);
+        // Get subjects for this class from admin assignments ONLY
+        let availableSubjects = [];
         
-        if (selectedClass) {
-            subjectSelect.disabled = false;
-            
-            // Get subjects for this class from admin assignments or from tasks
-            let availableSubjects = [];
-            
-            if (currentUser.adminSubjects && currentUser.adminSubjects[selectedClass]) {
-                availableSubjects = currentUser.adminSubjects[selectedClass];
-            } else {
-                // Fallback: get subjects from the tasks sheet
-                try {
-                    const tasksSheetName = `${selectedClass}_tasks_master`;
-                    const tasks = await api.getSheet(tasksSheetName);
-                    if (tasks && Array.isArray(tasks)) {
-                        const uniqueSubjects = [...new Set(tasks.map(task => task.subject).filter(subject => subject))];
-                        availableSubjects = uniqueSubjects;
-                    }
-                } catch (error) {
-                    console.error('Error fetching subjects from tasks:', error);
-                }
-            }
-            
+        if (currentUser.adminSubjects && currentUser.adminSubjects[selectedClass]) {
+            availableSubjects = currentUser.adminSubjects[selectedClass];
             console.log('Available subjects for class', selectedClass, ':', availableSubjects);
-            
+        } else {
+            console.log('No subjects found for class', selectedClass);
+        }
+        
+        if (availableSubjects.length > 0) {
             availableSubjects.forEach(subject => {
                 const option = document.createElement('option');
                 option.value = subject;
@@ -829,31 +862,48 @@ async function loadAdminTasks() {
                 subjectSelect.appendChild(option);
             });
         } else {
-            subjectSelect.disabled = true;
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No subjects assigned to you';
+            option.disabled = true;
+            subjectSelect.appendChild(option);
         }
-        
-        // Hide class subject view when class changes
-        document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
-        document.getElementById('adminTasksDefaultView').classList.remove('hidden');
-    });
+    } else {
+        subjectSelect.disabled = true;
+    }
     
-    // Add event listener for subject selection
-    document.getElementById('adminTaskSubjectSelect').addEventListener('change', async function() {
-        const selectedClass = document.getElementById('adminTaskClassSelect').value;
-        const selectedSubject = this.value;
+    // Hide class subject view when class changes
+    document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
+    document.getElementById('adminTasksDefaultView').classList.remove('hidden');
+}
+
+async function handleSubjectChange() {
+    const selectedClass = document.getElementById('adminTaskClassSelect').value;
+    const selectedSubject = this.value;
+    
+    console.log('Subject selected:', selectedSubject, 'for class:', selectedClass);
+    
+    if (selectedClass && selectedSubject) {
+        // Verify admin has access to this class-subject combination
+        const hasAccess = currentUser.adminSubjects && 
+                         currentUser.adminSubjects[selectedClass] && 
+                         currentUser.adminSubjects[selectedClass].includes(selectedSubject);
         
-        console.log('Subject selected:', selectedSubject, 'for class:', selectedClass);
-        
-        if (selectedClass && selectedSubject) {
+        if (hasAccess) {
             selectedClassForModal = selectedClass;
             selectedSubjectForModal = selectedSubject;
             await loadAdminClassSubjectData(selectedClass, selectedSubject);
         } else {
-            document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
-            document.getElementById('adminTasksDefaultView').classList.remove('hidden');
+            alert('Access denied: You are not assigned to this class-subject combination.');
+            this.value = '';
         }
-    });
+    } else {
+        document.getElementById('adminTasksClassSubjectView').classList.add('hidden');
+        document.getElementById('adminTasksDefaultView').classList.remove('hidden');
+    }
 }
+
+
 
 async function loadAdminClassSubjectData(classNum, subject) {
     try {
@@ -1054,55 +1104,54 @@ async function openStudentTaskModal(username, fullName, classNum) {
                 statusText = 'Pending';
             }
             
-            return `
-                <div class="${taskClass}">
-                    <div class="flex items-start space-x-3">
-                        <input type="checkbox" 
-                               data-task-id="${task.task_id}"
-                               data-username="${username}"
-                               ${completed ? 'checked disabled' : ''}
-                               class="task-checkbox"
-                               onchange="toggleGradeSection('${task.task_id}', this.checked)">
-                        <div class="flex-1">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="task-id-badge">${task.task_id}</span>
-                                <div class="flex items-center space-x-2">
-                                    ${statusIcon}
-                                    <span class="text-xs font-medium">${statusText}</span>
-                                </div>
-                            </div>
-                            <h4 class="task-title">${task.title}</h4>
-                            <p class="task-description">${task.description}</p>
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
-                                <p class="task-due-date">
-                                    <i class="fas fa-calendar-alt mr-1"></i>
-                                    Due: ${new Date(task.due_date).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'short',
-                                        day: 'numeric'
-                                    })}
-                                </p>
-                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                    ${task.subject}
-                                </span>
-                            </div>
-                            <div class="grade-section" id="grade-${task.task_id}">
-                                <div class="grade-input-group">
-                                    <span class="grade-label">Grade:</span>
-                                    <input type="number" 
-                                           class="grade-input" 
-                                           id="grade-input-${task.task_id}"
-                                           min="0" 
-                                           max="30" 
-                                           value="${currentGrade}"
-                                           placeholder="0-30">
-                                    <span class="grade-label">/ 30</span>
-                                </div>
-                            </div>
-                        </div>
+            // In the tasksHtml generation part, update the grade input section:
+return `
+    <div class="${taskClass}">
+        <div class="flex items-start space-x-3">
+            <input type="checkbox" 
+                   data-task-id="${task.task_id}"
+                   data-username="${username}"
+                   ${completed ? 'checked disabled' : ''}
+                   class="task-checkbox"
+                   onchange="toggleGradeSection('${task.task_id}', this.checked)">
+            <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="task-id-badge">${task.task_id}</span>
+                    <div class="flex items-center space-x-2">
+                        ${statusIcon}
+                        <span class="text-xs font-medium">${statusText}</span>
                     </div>
                 </div>
-            `;
+                <h4 class="task-title">${task.title}</h4>
+                <p class="task-description">${task.description}</p>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
+                    <p class="task-due-date">
+                        <i class="fas fa-calendar-alt mr-1"></i>
+                        Due: ${new Date(task.due_date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        })}
+                    </p>
+                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        ${task.subject}
+                    </span>
+                </div>
+                <div class="grade-section" id="grade-${task.task_id}">
+                    <div class="grade-input-group">
+                        <span class="grade-label">Points:</span>
+                        <input type="number" 
+                               class="grade-input" 
+                               id="grade-input-${task.task_id}"
+                               min="0" 
+                               value="${currentGrade}"
+                               placeholder="Enter points">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+`;
         }).join('');
         
         content.innerHTML = tasksHtml;
@@ -1147,10 +1196,10 @@ async function submitSelectedStudentTasks() {
             const taskId = checkbox.getAttribute('data-task-id');
             const username = checkbox.getAttribute('data-username');
             const gradeInput = document.getElementById(`grade-input-${taskId}`);
-            let grade = 30; // default grade
+            let grade = 0; // Start from 0
             
             if (gradeInput && gradeInput.value) {
-                grade = Math.max(0, Math.min(30, parseInt(gradeInput.value) || 30));
+                grade = Math.max(0, parseInt(gradeInput.value) || 0); // Remove the 30-point limit
             }
             
             const rowData = [
@@ -1353,7 +1402,7 @@ async function loadAdminSubjectPointsSummary(progress, userClass) {
         
         // Group tasks by subject and calculate points
         const subjectStats = {};
-        const maxPointsPerTask = 30; // Updated to 30 points per task
+        // Remove maxPointsPerTask constant
         
         tasks.forEach(task => {
             const subject = task.subject || 'General';
@@ -1367,7 +1416,6 @@ async function loadAdminSubjectPointsSummary(progress, userClass) {
             }
             
             subjectStats[subject].totalTasks++;
-            subjectStats[subject].totalPoints += maxPointsPerTask; // Each task worth 30 points
             
             // Check if task is completed
             const userTask = Array.isArray(progress) ? progress.find(p => 
@@ -1378,8 +1426,13 @@ async function loadAdminSubjectPointsSummary(progress, userClass) {
             
             if (userTask) {
                 subjectStats[subject].completedTasks++;
-                subjectStats[subject].earnedPoints += parseInt(userTask.grade || maxPointsPerTask);
+                subjectStats[subject].earnedPoints += parseInt(userTask.grade || 0); // Use 0 as default
             }
+        });
+        
+        // Calculate total points
+        Object.keys(subjectStats).forEach(subject => {
+            subjectStats[subject].totalPoints = subjectStats[subject].earnedPoints;
         });
         
         // Create or find the subject points container in admin status
@@ -1411,7 +1464,7 @@ async function loadAdminSubjectPointsSummary(progress, userClass) {
                         <h4>${subject}</h4>
                     </div>
                     <div class="points-display">${stats.earnedPoints}</div>
-                    <div class="points-label">of ${stats.totalPoints} points</div>
+                    <div class="points-label">total points</div>
                     <div class="text-xs text-gray-500 mt-2">
                         ${stats.completedTasks}/${stats.totalTasks} tasks completed
                     </div>
@@ -1575,3 +1628,58 @@ function initializeApp() {
 // Console welcome message
 console.log('%c🎓 DHDC MANOOR System Loaded Successfully! 🎓', 'color: #059669; font-size: 16px; font-weight: bold;');
 console.log('%cDarul Hidaya Da\'wa College Management System', 'color: #1e40af; font-size: 12px;');
+
+// Add this function for testing - call it in console
+function debugAdminData() {
+    console.log('=== ADMIN DATA DEBUG ===');
+    console.log('Current User:', currentUser);
+    console.log('Admin Classes:', currentUser?.adminClasses);
+    console.log('Admin Subjects:', currentUser?.adminSubjects);
+    
+    // Test with sample data
+    const testUser = {
+        class: "1 2 3",
+        subjects: "(1-english,mathematics,science)(2-urdu,arabic)(3-all)"
+    };
+    
+    console.log('=== TESTING WITH SAMPLE DATA ===');
+    console.log('Test input:', testUser);
+    
+    // Test parsing
+    let adminClasses = [];
+    let adminSubjects = {};
+    
+    if (testUser.class) {
+        const classStr = testUser.class.toString().trim();
+        adminClasses = classStr.split(/[\s,;]+/).map(c => c.trim()).filter(c => c && /^\d+$/.test(c));
+    }
+    
+    if (testUser.subjects) {
+        const subjectsStr = testUser.subjects.toString().trim();
+        const subjectMatches = subjectsStr.match(/\(\d+-[^)]+\)/g);
+        if (subjectMatches) {
+            subjectMatches.forEach(match => {
+                const innerContent = match.slice(1, -1);
+                const dashIndex = innerContent.indexOf('-');
+                if (dashIndex > 0) {
+                    const classNum = innerContent.substring(0, dashIndex);
+                    const subjectsString = innerContent.substring(dashIndex + 1);
+                    
+                    let subjects;
+                    if (subjectsString.toLowerCase() === 'all') {
+                        subjects = ['english', 'mathematics', 'urdu', 'arabic', 'malayalam', 'social science', 'science'];
+                    } else {
+                        subjects = subjectsString.split(',').map(s => s.trim()).filter(s => s);
+                    }
+                    
+                    if (subjects.length > 0) {
+                        adminSubjects[classNum] = subjects;
+                    }
+                }
+            });
+        }
+    }
+    
+    console.log('Parsed Classes:', adminClasses);
+    console.log('Parsed Subjects:', adminSubjects);
+}
