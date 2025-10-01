@@ -157,8 +157,8 @@ function loadUserProfile(username) {
     const profileUsername = document.getElementById('profileUsername');
     const profileFallback = document.getElementById('profileFallback');
     
-    // Set profile picture URL
-    const profilePicUrl = `https://cce-dhdc.vercel.app/pic/${username}.png`;
+    // Use higher resolution image with size parameter
+    const profilePicUrl = `https://cce-dhdc.vercel.app/pic/${username}.png?w=200&h=200&q=90`;
     profilePic.src = profilePicUrl;
     profilePic.style.display = 'block';
     profileFallback.classList.add('hidden');
